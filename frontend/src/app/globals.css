@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 245, 245, 245;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 15, 23, 42;
+    --background-end-rgb: 30, 41, 59;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Korean typography optimization */
+.korean-text {
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* Original language (Greek/Hebrew) styling */
+.original-text {
+  font-family: 'SBL Greek', 'SBL Hebrew', 'Times New Roman', serif;
+  direction: ltr;
+}
+
+.hebrew-text {
+  direction: rtl;
+  font-family: 'SBL Hebrew', 'Times New Roman', serif;
+}
+
+/* Verse text styling */
+.verse-text {
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+.verse-text-korean {
+  font-size: 1.125rem;
+  line-height: 1.9;
+}
+
+/* Search input styling */
+.search-input {
+  @apply w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-full;
+  @apply focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200;
+  @apply transition-all duration-200;
+}
+
+.search-input::placeholder {
+  @apply text-gray-400;
+}
+
+/* Card styling */
+.verse-card {
+  @apply bg-white rounded-xl shadow-md p-6;
+  @apply border border-gray-100;
+  @apply hover:shadow-lg transition-shadow duration-200;
+}
+
+/* Badge styling */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-ot {
+  @apply bg-amber-100 text-amber-800;
+}
+
+.badge-nt {
+  @apply bg-blue-100 text-blue-800;
+}
+
+/* Translation tabs */
+.translation-tab {
+  @apply px-4 py-2 text-sm font-medium rounded-t-lg;
+  @apply hover:bg-gray-100 transition-colors;
+}
+
+.translation-tab-active {
+  @apply bg-primary-100 text-primary-700 border-b-2 border-primary-500;
+}
+
+/* Relevance score indicator */
+.relevance-bar {
+  @apply h-1 rounded-full bg-gray-200;
+}
+
+.relevance-fill {
+  @apply h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply animate-spin h-5 w-5 border-2 border-primary-500 rounded-full;
+  border-top-color: transparent;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .verse-card {
+    @apply bg-slate-800 border-slate-700;
+  }
+
+  .search-input {
+    @apply bg-slate-800 border-slate-600 text-white;
+  }
+
+  .search-input::placeholder {
+    @apply text-slate-400;
+  }
+}
