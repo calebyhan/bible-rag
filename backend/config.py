@@ -12,6 +12,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",  # Allow extra fields in .env for Docker Compose
     )
 
     # Database
@@ -44,6 +45,11 @@ class Settings(BaseSettings):
     # Rate Limiting
     gemini_rpm: int = 10  # Requests per minute
     groq_rpm: int = 30
+
+    # Batch Processing
+    enable_batching: bool = True
+    batch_window_ms: int = 500  # Wait time to accumulate requests
+    max_batch_size: int = 10  # Maximum requests per batch
 
 
 @lru_cache

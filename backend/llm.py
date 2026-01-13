@@ -119,7 +119,7 @@ def generate_response_gemini(
 
         genai.configure(api_key=settings.gemini_api_key)
 
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
 
         prompt = _build_prompt(query, verses, language)
 

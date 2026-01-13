@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from llm import detect_language, generate_contextual_response
+from llm_batcher import batched_generate_response
 from schemas import SearchRequest, SearchResponse
 from search import search_verses
 
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/api", tags=["search"])
 
 
 @router.post("/search", response_model=SearchResponse)
-def semantic_search(
+async def semantic_search(
     request: SearchRequest,
     db: Session = Depends(get_db),
 ):
@@ -49,10 +50,10 @@ def semantic_search(
         if "ko" in request.languages:
             language = "ko"
 
-        # Generate AI response if we have results
+        # Generate AI response if we have results (using batching)
         ai_response = None
         if results.get("results"):
-            ai_response = generate_contextual_response(
+            ai_response = await batched_generate_response(
                 query=request.query,
                 verses=results["results"],
                 language=language,

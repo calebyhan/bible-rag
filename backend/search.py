@@ -10,6 +10,8 @@ from uuid import UUID
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.postgresql import ARRAY, UUID as PGUUID
+from sqlalchemy import bindparam, Integer, Float
 
 from cache import get_cache
 from config import get_settings
@@ -81,7 +83,15 @@ def search_verses(
 
     # Build the SQL query for vector similarity search
     # Using raw SQL for pgvector operations
-    sql = """
+    # Convert query_embedding to string format for PostgreSQL
+    query_vector_str = str(query_embedding.tolist())
+
+    # Set ivfflat probes for better accuracy (search more clusters)
+    # Higher = more accurate but slower. Default is 1, we use 20 for better recall
+    db.execute(text("SET ivfflat.probes = 20"))
+
+    # Build SQL query - embed vector directly, use bindparams for UUIDs/scalars
+    sql_template = f"""
         WITH verse_scores AS (
             SELECT
                 v.id as verse_id,
@@ -90,37 +100,39 @@ def search_verses(
                 v.verse,
                 v.text,
                 v.translation_id,
-                1 - (e.vector <=> :query_vector::vector) as similarity
+                1 - (e.vector <=> '{query_vector_str}'::vector) as similarity
             FROM embeddings e
             JOIN verses v ON e.verse_id = v.id
             JOIN books b ON v.book_id = b.id
             WHERE v.translation_id = ANY(:translation_ids)
     """
 
-    params = {
-        "query_vector": query_embedding.tolist(),
-        "translation_ids": translation_ids,
-        "similarity_threshold": settings.similarity_threshold,
-        "max_results": max_results,
-    }
+    bindparams_list = [
+        bindparam("translation_ids", value=translation_ids, type_=ARRAY(PGUUID)),
+        bindparam("similarity_threshold", value=settings.similarity_threshold, type_=Float),
+        bindparam("max_results", value=max_results, type_=Integer),
+    ]
 
     # Apply filters
     if filters:
         if filters.get("testament"):
-            sql += " AND b.testament = :testament"
-            params["testament"] = filters["testament"]
+            sql_template += " AND b.testament = :testament"
+            bindparams_list.append(bindparam("testament", value=filters["testament"]))
 
         if filters.get("genre"):
-            sql += " AND b.genre = :genre"
-            params["genre"] = filters["genre"]
+            sql_template += " AND b.genre = :genre"
+            bindparams_list.append(bindparam("genre", value=filters["genre"]))
 
         if filters.get("books"):
-            sql += " AND b.abbreviation = ANY(:book_abbrevs)"
-            params["book_abbrevs"] = filters["books"]
+            sql_template += " AND b.abbreviation = ANY(:book_abbrevs)"
+            bindparams_list.append(
+                bindparam("book_abbrevs", value=filters["books"], type_=ARRAY(PGUUID))
+            )
 
-    sql += """
-            AND (1 - (e.vector <=> :query_vector::vector)) > :similarity_threshold
-            ORDER BY e.vector <=> :query_vector::vector
+    # Add similarity threshold and limit
+    sql_template += f"""
+            AND (1 - (e.vector <=> '{query_vector_str}'::vector)) > :similarity_threshold
+            ORDER BY e.vector <=> '{query_vector_str}'::vector
             LIMIT :max_results
         )
         SELECT
@@ -141,8 +153,9 @@ def search_verses(
         ORDER BY vs.similarity DESC
     """
 
-    # Execute query
-    result = db.execute(text(sql), params)
+    # Execute query with bindparams
+    stmt = text(sql_template).bindparams(*bindparams_list)
+    result = db.execute(stmt)
     rows = result.fetchall()
 
     # Group results by verse reference (book + chapter + verse)

@@ -171,11 +171,34 @@ def insert_verses_batch(
     return count
 
 
+def load_bible_data(translation_abbrev: str, api_key: Optional[str] = None) -> list[dict]:
+    """Load complete Bible data from online sources.
+
+    Args:
+        translation_abbrev: Translation abbreviation (e.g., 'KJV', 'NIV', 'RKV')
+        api_key: Optional API key for API.Bible (required for NIV, ESV, etc.)
+
+    Returns:
+        List of verse dictionaries
+    """
+    from data_fetchers import fetch_translation
+
+    # Try to fetch from online source
+    verses_data = fetch_translation(translation_abbrev, api_key)
+
+    if verses_data:
+        return verses_data
+
+    # Fall back to sample data if fetching fails
+    print(f"Falling back to sample data for {translation_abbrev}")
+    return load_sample_verses(translation_abbrev)
+
+
 def load_sample_verses(translation_abbrev: str) -> list[dict]:
-    """Load sample verses for testing.
+    """Load sample verses for testing (fallback).
 
     This returns a small sample of verses for development/testing.
-    In production, this would be replaced with actual API calls.
+    Used as fallback if online fetching fails.
     """
     # Sample verses from John 3 for testing
     sample_verses = {
@@ -269,6 +292,7 @@ def ingest_translation(
     translation: Translation,
     books_map: dict[int, Book],
     verses_data: Optional[list[dict]] = None,
+    api_key: Optional[str] = None,
 ) -> int:
     """Ingest a complete Bible translation.
 
@@ -277,13 +301,14 @@ def ingest_translation(
         translation: Translation object
         books_map: Mapping of book_number -> Book object
         verses_data: Optional list of verse data. If not provided,
-                     will try to load from sample data.
+                     will try to load from online source.
+        api_key: Optional API key for API.Bible
 
     Returns:
         Number of verses inserted
     """
     if verses_data is None:
-        verses_data = load_sample_verses(translation.abbreviation)
+        verses_data = load_bible_data(translation.abbreviation, api_key)
 
     if not verses_data:
         print(f"No verse data available for {translation.abbreviation}")
@@ -294,15 +319,20 @@ def ingest_translation(
     return count
 
 
-def run_ingestion(translations_to_load: Optional[list[str]] = None):
+def run_ingestion(
+    translations_to_load: Optional[list[str]] = None,
+    api_key: Optional[str] = None,
+):
     """Run the complete data ingestion process.
 
     Args:
         translations_to_load: List of translation abbreviations to load.
-                             If None, loads NIV and RKV (Korean).
+                             If None, loads KJV (public domain) and RKV (Korean).
+        api_key: Optional API.Bible API key for licensed translations (NIV, ESV)
     """
     if translations_to_load is None:
-        translations_to_load = ["NIV", "RKV"]
+        # Default to public domain translations
+        translations_to_load = ["KJV", "RKV"]
 
     db = SessionLocal()
 
@@ -322,7 +352,7 @@ def run_ingestion(translations_to_load: Optional[list[str]] = None):
         for abbrev in translations_to_load:
             translation = translations_map.get(abbrev)
             if translation:
-                count = ingest_translation(db, translation, books_map)
+                count = ingest_translation(db, translation, books_map, api_key=api_key)
                 total_verses += count
             else:
                 print(f"Translation {abbrev} not found")
