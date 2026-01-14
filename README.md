@@ -1,12 +1,6 @@
 # Bible RAG
 
-> A multilingual Bible study platform powered by semantic search, supporting English and Korean with deep integration of original biblical languages.
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/downloads/)
-[![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
-[![Node.js 24 LTS](https://img.shields.io/badge/Node.js-24_LTS-green)](https://nodejs.org/)
+A multilingual Bible study platform powered by semantic search, supporting English and Korean with deep integration of original biblical languages.
 
 ## Overview
 
@@ -19,10 +13,11 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
   - "용서에 대한 예수님의 말씀"
   - Handles code-switching: "요한복음에서 love에 대한 구절"
 
-- **Multi-Translation Support**
-  - **English**: NIV, ESV, NASB
-  - **Korean**: 개역개정, 개역한글, 새번역, 공동번역
+- **Multi-Translation Support** (10+ translations)
+  - **English**: NIV, ESV, NASB, KJV, NKJV, NLT, WEB
+  - **Korean**: 개역한글 (KRV), 새번역 (RNKSV), 개역개정 (NKRV - optional)
   - **Original Languages**: Hebrew (OT), Greek (NT), Aramaic
+  - All via free APIs - no API keys required!
 
 - **Parallel Translation View**: Compare verses side-by-side across translations
 
@@ -95,9 +90,15 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
    cp .env.example .env  # Configure your environment variables
-   python data_ingestion.py  # Ingest Bible data
-   python embeddings.py  # Generate embeddings (15-30 min one-time)
-   uvicorn main:app --reload  # Start API server at http://localhost:8000
+
+   # Ingest Bible data (fetches 9 translations automatically - ~90 min)
+   python data_ingestion.py
+
+   # Generate embeddings (15-30 min one-time)
+   python embeddings.py
+
+   # Start API server
+   uvicorn main:app --reload  # http://localhost:8000
    ```
 
 4. **Frontend setup**
@@ -168,7 +169,10 @@ bible-rag/
 - [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment
 - [Features](docs/FEATURES.md) - Comprehensive feature documentation
 - [Development Guide](docs/DEVELOPMENT.md) - Contributing guidelines
+- [Free Bible APIs](docs/FREE_BIBLE_APIS.md) - **NEW!** How to access 100+ free translations
+- [Data Sources](docs/DATA_SOURCES.md) - Licensing and attribution
 - [Korean Documentation](docs/KOREAN.md) - 한국어 문서
+- [NKRV Integration](backend/README_NKRV.md) - 개역개정 setup guide
 
 ## API Endpoints
 
@@ -222,11 +226,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- **Bible Translations**: NIV, ESV, NASB, 개역개정, and other translations via Bible API and open sources
+- **Bible Translations**:
+  - [Bolls.life API](https://bolls.life) - Free access to NIV, ESV, NASB, KRV, and 100+ translations
+  - [GetBible API](https://get.bible) - Public domain translations (KJV, WEB, RKV)
+  - [SIR.kr Community](https://sir.kr) - 개역개정 (NKRV) MySQL database
+  - 대한성서공회 (Korean Bible Society) - Korean translations copyright holder
 - **Original Languages**: Open Scripture Hebrew Bible, SBL Greek New Testament
 - **Strong's Concordance**: Public domain lexical data
+- **Cross-References**: [OpenBible.info](https://openbible.info) - 63,779+ verse connections (CC BY 4.0)
 - **Embedding Model**: [intfloat/multilingual-e5-large](https://huggingface.co/intfloat/multilingual-e5-large)
-- **LLM**: Google Gemini 2.5 Flash, Groq
+- **LLM**: Google Gemini 2.5 Flash, Groq Llama 3.3 70B
 
 ---
 

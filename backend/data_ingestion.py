@@ -124,25 +124,11 @@ def insert_verses_batch(
     count = 0
     batch = []
 
+    print(f"Inserting {len(verses_data)} verses for {translation.abbreviation}...")
     for verse_data in tqdm(verses_data, desc=f"Inserting {translation.abbreviation}"):
         book = books_map.get(verse_data["book_number"])
         if not book:
             print(f"Warning: Book {verse_data['book_number']} not found")
-            continue
-
-        # Check if verse already exists
-        existing = (
-            db.query(Verse)
-            .filter(
-                Verse.translation_id == translation.id,
-                Verse.book_id == book.id,
-                Verse.chapter == verse_data["chapter"],
-                Verse.verse == verse_data["verse"],
-            )
-            .first()
-        )
-
-        if existing:
             continue
 
         verse = Verse(
@@ -322,23 +308,61 @@ def ingest_translation(
 def run_ingestion(
     translations_to_load: Optional[list[str]] = None,
     api_key: Optional[str] = None,
+    reset_database: bool = True,
 ):
     """Run the complete data ingestion process.
 
     Args:
         translations_to_load: List of translation abbreviations to load.
-                             If None, loads KJV (public domain) and RKV (Korean).
+                             If None, loads all available public domain translations.
         api_key: Optional API.Bible API key for licensed translations (NIV, ESV)
+        reset_database: If True, clears all verses before ingestion (default: True)
     """
     if translations_to_load is None:
-        # Default to public domain translations
-        translations_to_load = ["KJV", "RKV"]
+        # Default: All free translations from Bolls.life + GetBible APIs
+        # ✅ Bolls.life API is back online (verified 2026-01-13)
+        translations_to_load = [
+            # English translations (Bolls.life - free, no API key required)
+            "NIV",      # New International Version (most popular)
+            "ESV",      # English Standard Version (literal)
+            "NASB",     # New American Standard Bible (very literal)
+            "NKJV",     # New King James Version (updated KJV)
+            "NLT",      # New Living Translation (readable)
+
+            # English translations (GetBible - public domain, reliable)
+            "KJV",      # King James Version (traditional)
+            "WEB",      # World English Bible (modern public domain)
+
+            # Korean translations (Bolls.life - free)
+            "KRV",      # 개역한글 (Korean Revised Version, copyright expired 2011)
+            "RNKSV",    # 새번역 (New Korean Revised Standard Version)
+
+            # Korean translation (GetBible - public domain)
+            "RKV",      # 개역성경 (Korean Revised Version)
+
+            # ⚠️ OPTIONAL: Uncomment to include 개역개정 (educational use only)
+            # Requires bible2_1.sql file from https://sir.kr/g5_tip/4160
+            # "NKRV",     # 개역개정 (New Korean Revised Version, 1998)
+
+            # Original languages (when available)
+            # "WLC",      # Westminster Leningrad Codex (Hebrew OT) - TODO: add fetcher
+            # "SBLGNT",   # SBL Greek New Testament (Greek NT) - TODO: add fetcher
+        ]
 
     db = SessionLocal()
 
     try:
         print("Initializing database...")
         init_db()
+
+        # Clear existing verses if requested
+        if reset_database:
+            print("\n⚠️  Resetting database - deleting all existing verses...")
+            verse_count = db.query(Verse).count()
+            if verse_count > 0:
+                db.query(Verse).delete()
+                db.commit()
+                print(f"Deleted {verse_count} existing verses")
 
         print("Initializing translations...")
         translations_map = init_translations(db)
