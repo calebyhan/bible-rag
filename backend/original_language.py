@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 class OriginalLanguageManager:
     """Manages original language word data for Bible verses."""
 
-    # Strong's concordance data sources
-    STRONGS_HEBREW_URL = "https://raw.githubusercontent.com/openscriptures/strongs/master/hebrew/strongsHebrew.json"
-    STRONGS_GREEK_URL = "https://raw.githubusercontent.com/openscriptures/strongs/master/greek/strongsGreek.json"
+    # Strong's concordance data sources (JavaScript format, not JSON)
+    STRONGS_HEBREW_URL = "https://raw.githubusercontent.com/openscriptures/strongs/master/hebrew/strongs-hebrew-dictionary.js"
+    STRONGS_GREEK_URL = "https://raw.githubusercontent.com/openscriptures/strongs/master/greek/strongs-greek-dictionary.js"
 
     def __init__(self, db: Optional[Session] = None):
         """Initialize the original language manager.
@@ -44,8 +44,53 @@ class OriginalLanguageManager:
         if self._should_close_db and self.db:
             self.db.close()
 
+    def _parse_js_dictionary(self, js_text: str) -> Dict:
+        """Parse JavaScript dictionary format to Python dict.
+
+        The data format is:
+        var strongsGreekDictionary = {"G1615": {...}, ...};
+        module.exports = strongsGreekDictionary;
+
+        Some entries may have problematic characters, so we use a robust approach.
+
+        Args:
+            js_text: JavaScript source code containing dictionary.
+
+        Returns:
+            Parsed dictionary.
+        """
+        import re
+
+        # Find the start of the dictionary object
+        dict_start = js_text.find('= {')
+        if dict_start == -1:
+            logger.error("Could not find dictionary start")
+            return {}
+
+        # Find the end - look for "}; module.exports" or similar
+        dict_end = js_text.rfind('};')
+        if dict_end == -1:
+            logger.error("Could not find dictionary end")
+            return {}
+
+        # Extract the JSON object (including the braces)
+        json_str = js_text[dict_start + 2:dict_end + 1]  # +2 to skip "= ", +1 to include final }
+
+        # Parse as JSON with error recovery
+        try:
+            data = json.loads(json_str)
+            return data
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON at position {e.pos}: {e.msg}")
+            # Try to identify the problematic entry
+            lines = json_str[:e.pos].split('\n')
+            logger.error(f"Error near line {len(lines)}: {lines[-1] if lines else 'unknown'}")
+            return {}
+
     async def fetch_strongs_data(self) -> tuple[Dict, Dict]:
         """Fetch Strong's concordance data from GitHub.
+
+        The data is in JavaScript format, not JSON, so requires parsing.
 
         Returns:
             Tuple of (hebrew_data, greek_data) dictionaries.
@@ -60,13 +105,13 @@ class OriginalLanguageManager:
             logger.info(f"Fetching Hebrew data from {self.STRONGS_HEBREW_URL}")
             hebrew_response = await client.get(self.STRONGS_HEBREW_URL)
             hebrew_response.raise_for_status()
-            hebrew_data = hebrew_response.json()
+            hebrew_data = self._parse_js_dictionary(hebrew_response.text)
 
             # Fetch Greek data
             logger.info(f"Fetching Greek data from {self.STRONGS_GREEK_URL}")
             greek_response = await client.get(self.STRONGS_GREEK_URL)
             greek_response.raise_for_status()
-            greek_data = greek_response.json()
+            greek_data = self._parse_js_dictionary(greek_response.text)
 
         logger.info(
             f"Fetched {len(hebrew_data)} Hebrew entries and {len(greek_data)} Greek entries"
@@ -81,6 +126,15 @@ class OriginalLanguageManager:
         self, strongs_number: str, language: str = "greek"
     ) -> Optional[Dict]:
         """Get Strong's definition for a given number.
+
+        The data format from openscriptures/strongs is:
+        {
+            "strongs_def": " to love (in a social or moral sense)",
+            "kjv_def": "(be-)love(-ed)",
+            "lemma": "ἀγαπάω",
+            "translit": "agapáō",
+            "derivation": "..."
+        }
 
         Args:
             strongs_number: Strong's number (e.g., "G25", "H430").
@@ -97,12 +151,10 @@ class OriginalLanguageManager:
             logger.warning("Hebrew Strong's data not loaded")
             return None
 
-        # Extract number from Strong's reference (remove G/H prefix)
-        number = strongs_number.lstrip("GH")
-
         data = self.strongs_greek_data if language == "greek" else self.strongs_hebrew_data
 
-        return data.get(number)
+        # The key includes the G/H prefix in the new format
+        return data.get(strongs_number)
 
     def parse_strongs_from_text(self, text: str) -> List[str]:
         """Extract Strong's numbers from text.
@@ -149,9 +201,13 @@ class OriginalLanguageManager:
         if strongs_number and not definition:
             strongs_data = self.get_strongs_definition(strongs_number, language)
             if strongs_data:
-                definition = strongs_data.get("def") or strongs_data.get("strongs_def")
+                # Use strongs_def (primary definition) or kjv_def as fallback
+                definition = strongs_data.get("strongs_def") or strongs_data.get("kjv_def")
                 if not transliteration:
                     transliteration = strongs_data.get("translit")
+                # Could also extract lemma (original script word)
+                if not word:
+                    word = strongs_data.get("lemma", "")
 
         original_word = OriginalWord(
             verse_id=verse.id,

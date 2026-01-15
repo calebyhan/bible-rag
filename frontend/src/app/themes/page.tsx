@@ -72,7 +72,7 @@ export default function ThemesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Header */}
       <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 text-white">
         <div className="container mx-auto px-4 py-12 md:py-16">
@@ -182,7 +182,7 @@ export default function ThemesPage() {
       {!results && !isLoading && !error && (
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">
               Popular Themes
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -190,10 +190,10 @@ export default function ThemesPage() {
                 <button
                   key={t.theme}
                   onClick={() => handleSearch(t.theme)}
-                  className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-purple-200 transition-all text-center group"
+                  className="p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md hover:border-purple-200 dark:hover:border-purple-600 transition-all text-center group"
                 >
                   <div className="text-4xl mb-2">{t.emoji}</div>
-                  <div className="font-medium text-gray-800 group-hover:text-purple-700">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-purple-700 dark:group-hover:text-purple-400">
                     {t.label}
                   </div>
                 </button>
@@ -201,16 +201,16 @@ export default function ThemesPage() {
             </div>
 
             {/* Info section */}
-            <div className="mt-12 bg-white rounded-xl p-8 shadow-sm border border-gray-100">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">
+            <div className="mt-12 bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-slate-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 What is Thematic Search?
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
                 Thematic search helps you explore specific topics or concepts throughout the Bible.
                 Unlike keyword search, it understands the meaning and context of themes, finding
                 relevant passages even when they use different words.
               </p>
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <div className="flex items-start gap-2">
                   <svg className="w-5 h-5 text-purple-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -250,7 +250,7 @@ export default function ThemesPage() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600">Searching for verses about "{theme}"...</p>
+            <p className="text-gray-700 dark:text-gray-300">Searching for verses about "{theme}"...</p>
           </div>
         </div>
       )}
@@ -262,10 +262,10 @@ export default function ThemesPage() {
             {/* Results header */}
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   Results for "{results.theme}"
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
                   {results.total_results} verses found
                   {results.testament_filter && ` in ${results.testament_filter}`}
                   {' · '}
@@ -277,7 +277,7 @@ export default function ThemesPage() {
                   setResults(null);
                   setTheme('');
                 }}
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
               >
                 New Search
               </button>
@@ -295,8 +295,8 @@ export default function ThemesPage() {
 
             {/* Related themes (if available) */}
             {results.related_themes && results.related_themes.length > 0 && (
-              <div className="mt-8 p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              <div className="mt-8 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
                   Related Themes
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -304,7 +304,7 @@ export default function ThemesPage() {
                     <button
                       key={relatedTheme}
                       onClick={() => handleSearch(relatedTheme)}
-                      className="px-4 py-2 bg-purple-50 text-purple-700 rounded-full text-sm font-medium hover:bg-purple-100 transition-colors"
+                      className="px-4 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
                     >
                       {relatedTheme}
                     </button>

@@ -117,7 +117,7 @@ export default function ComparePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-blue-800 text-white">
         <div className="container mx-auto px-4 py-8">
@@ -153,17 +153,17 @@ export default function ComparePage() {
       </div>
 
       {/* Controls */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           {/* Verse Selector */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             {/* Book selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Book</label>
+              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Book</label>
               <select
                 value={verseSelection.book}
                 onChange={(e) => handleBookChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
                 {books.map(book => (
                   <option key={book.id} value={book.name}>
@@ -175,7 +175,7 @@ export default function ComparePage() {
 
             {/* Chapter selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Chapter</label>
+              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Chapter</label>
               <input
                 type="number"
                 min="1"
@@ -185,13 +185,13 @@ export default function ComparePage() {
                   ...prev,
                   chapter: Math.max(1, Math.min(getMaxChapter(), parseInt(e.target.value) || 1))
                 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
 
             {/* Verse selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Verse</label>
+              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Verse</label>
               <input
                 type="number"
                 min="1"
@@ -201,17 +201,17 @@ export default function ComparePage() {
                   ...prev,
                   verse: Math.max(1, parseInt(e.target.value) || 1)
                 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
 
             {/* Quick reference input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quick Reference</label>
+              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Quick Reference</label>
               <input
                 type="text"
                 placeholder="e.g., John 3:16"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const input = e.currentTarget.value;
@@ -232,7 +232,7 @@ export default function ComparePage() {
 
           {/* Translation selector */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
               Select Translations ({selectedTranslations.length} selected)
             </label>
             <div className="flex flex-wrap gap-2">
@@ -244,7 +244,7 @@ export default function ComparePage() {
                     px-3 py-1.5 rounded-lg text-sm font-medium transition-all
                     ${selectedTranslations.includes(trans.abbreviation)
                       ? 'bg-primary-500 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
                     }
                   `}
                 >
@@ -261,8 +261,8 @@ export default function ComparePage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             {/* Layout selector */}
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Layout:</label>
-              <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Layout:</label>
+              <div className="inline-flex rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 p-1">
                 {(['grid', 'vertical', 'horizontal'] as const).map(l => (
                   <button
                     key={l}
@@ -270,8 +270,8 @@ export default function ComparePage() {
                     className={`
                       px-3 py-1 text-sm rounded-md transition-all
                       ${layout === l
-                        ? 'bg-white text-primary-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white dark:bg-slate-600 text-primary-600 dark:text-primary-400 shadow-sm'
+                        : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
                       }
                     `}
                   >
@@ -301,7 +301,7 @@ export default function ComparePage() {
         {isLoading && (
           <div className="text-center py-12">
             <div className="spinner mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading verse...</p>
+            <p className="text-gray-700 dark:text-gray-300">Loading verse...</p>
           </div>
         )}
 
@@ -321,16 +321,16 @@ export default function ComparePage() {
         )}
 
         {!isLoading && !error && selectedTranslations.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-            <p className="text-gray-600">Please select at least one translation to compare.</p>
+          <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+            <p className="text-gray-700 dark:text-gray-300">Please select at least one translation to compare.</p>
           </div>
         )}
 
         {/* Verse context navigation */}
         {verseData?.context && (
           <div className="mt-8 max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Context Navigation</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Context Navigation</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {verseData.context.previous && (
                   <button
@@ -338,13 +338,13 @@ export default function ComparePage() {
                       ...prev,
                       verse: prev.verse - 1
                     }))}
-                    className="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                   >
-                    <div className="text-sm font-medium text-gray-500 mb-1">← Previous Verse</div>
-                    <div className="text-sm text-gray-700">
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">← Previous Verse</div>
+                    <div className="text-sm text-gray-800 dark:text-gray-200">
                       {verseSelection.chapter}:{verseSelection.verse - 1}
                     </div>
-                    <p className="text-xs text-gray-600 mt-2 line-clamp-2">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                       {verseData.context.previous.text}
                     </p>
                   </button>
@@ -355,13 +355,13 @@ export default function ComparePage() {
                       ...prev,
                       verse: prev.verse + 1
                     }))}
-                    className="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                   >
-                    <div className="text-sm font-medium text-gray-500 mb-1">Next Verse →</div>
-                    <div className="text-sm text-gray-700">
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Next Verse →</div>
+                    <div className="text-sm text-gray-800 dark:text-gray-200">
                       {verseSelection.chapter}:{verseSelection.verse + 1}
                     </div>
-                    <p className="text-xs text-gray-600 mt-2 line-clamp-2">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                       {verseData.context.next.text}
                     </p>
                   </button>

@@ -72,7 +72,7 @@ export default function SearchBar({
           <button
             type="button"
             onClick={() => setShowFilters(!showFilters)}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+            className="text-sm text-gray-200 hover:text-white flex items-center gap-1"
           >
             <span>Translations</span>
             <svg
@@ -108,7 +108,7 @@ export default function SearchBar({
       </form>
 
       {/* Example queries */}
-      <div className="mt-6 text-center text-sm text-gray-500">
+      <div className="mt-6 text-center text-sm text-gray-200">
         <p>Try searching:</p>
         <div className="mt-2 flex flex-wrap justify-center gap-2">
           {[
@@ -121,7 +121,7 @@ export default function SearchBar({
               key={example}
               type="button"
               onClick={() => setQuery(example)}
-              className="px-3 py-1 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition-colors"
+              className="px-3 py-1 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
             >
               {example}
             </button>

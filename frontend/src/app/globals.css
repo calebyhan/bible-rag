@@ -124,4 +124,26 @@ body {
   .search-input::placeholder {
     @apply text-slate-400;
   }
+
+  /* Improved text contrast in dark mode */
+  .verse-text,
+  .verse-text-korean {
+    @apply text-slate-100;
+  }
+
+  .badge-ot {
+    @apply bg-amber-900 text-amber-200;
+  }
+
+  .badge-nt {
+    @apply bg-blue-900 text-blue-200;
+  }
+
+  .translation-tab {
+    @apply hover:bg-slate-700;
+  }
+
+  .translation-tab-active {
+    @apply bg-primary-900 text-primary-200 border-primary-400;
+  }
 }

@@ -27,11 +27,11 @@ export default function VerseCard({ result, showAllTranslations = false }: Verse
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {reference.book} {reference.chapter}:{reference.verse}
           </h3>
           {reference.book_korean && (
-            <p className="text-sm text-gray-500 korean-text">
+            <p className="text-sm text-gray-600 dark:text-gray-400 korean-text">
               {reference.book_korean} {reference.chapter}:{reference.verse}
             </p>
           )}
@@ -42,7 +42,7 @@ export default function VerseCard({ result, showAllTranslations = false }: Verse
           <span className={`badge ${reference.testament === 'OT' ? 'badge-ot' : 'badge-nt'}`}>
             {reference.testament}
           </span>
-          <span className="text-sm text-gray-500">{relevancePercent}%</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">{relevancePercent}%</span>
         </div>
       </div>
 
@@ -72,9 +72,9 @@ export default function VerseCard({ result, showAllTranslations = false }: Verse
       {showAllTranslations ? (
         <div className="space-y-4">
           {Object.entries(translations).map(([trans, text]) => (
-            <div key={trans} className="border-l-4 border-primary-200 pl-4">
-              <span className="text-xs font-medium text-primary-600 block mb-1">{trans}</span>
-              <p className={isKorean(text) ? 'verse-text-korean korean-text' : 'verse-text'}>
+            <div key={trans} className="border-l-4 border-primary-200 dark:border-primary-700 pl-4">
+              <span className="text-xs font-medium text-primary-600 dark:text-primary-400 block mb-1">{trans}</span>
+              <p className={`${isKorean(text) ? 'verse-text-korean korean-text' : 'verse-text'} text-gray-800 dark:text-gray-200`}>
                 {text}
               </p>
             </div>
@@ -82,11 +82,11 @@ export default function VerseCard({ result, showAllTranslations = false }: Verse
         </div>
       ) : (
         <p
-          className={
+          className={`${
             isKorean(translations[activeTranslation] || '')
               ? 'verse-text-korean korean-text'
               : 'verse-text'
-          }
+          } text-gray-800 dark:text-gray-200`}
         >
           {translations[activeTranslation]}
         </p>
@@ -94,10 +94,10 @@ export default function VerseCard({ result, showAllTranslations = false }: Verse
 
       {/* Cross-references */}
       {cross_references && cross_references.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
           <button
             onClick={() => setShowCrossRefs(!showCrossRefs)}
-            className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
+            className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1"
           >
             <span>Cross-references ({cross_references.length})</span>
             <svg
@@ -115,10 +115,10 @@ export default function VerseCard({ result, showAllTranslations = false }: Verse
               {cross_references.map((ref, idx) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 cursor-pointer"
                 >
                   {ref.book} {ref.chapter}:{ref.verse}
-                  <span className="ml-1 text-gray-400">({ref.relationship})</span>
+                  <span className="ml-1 text-gray-500 dark:text-gray-400">({ref.relationship})</span>
                 </span>
               ))}
             </div>

@@ -8,10 +8,10 @@ interface AIResponseProps {
 export default function AIResponse({ response, isLoading = false }: AIResponseProps) {
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-xl p-6 mb-6">
+      <div className="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-6 border border-primary-100 dark:border-primary-800">
         <div className="flex items-center gap-3">
           <div className="spinner" />
-          <span className="text-gray-600">Generating contextual response...</span>
+          <span className="text-gray-700 dark:text-gray-300">Generating contextual response...</span>
         </div>
       </div>
     );
@@ -24,11 +24,11 @@ export default function AIResponse({ response, isLoading = false }: AIResponsePr
     (response.match(/[\uac00-\ud7a3]/g)?.length || 0) > response.length * 0.3;
 
   return (
-    <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-xl p-6 mb-6">
+    <div className="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-6 border border-primary-100 dark:border-primary-800">
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+        <div className="flex-shrink-0 w-8 h-8 bg-primary-100 dark:bg-primary-800 rounded-full flex items-center justify-center">
           <svg
-            className="w-5 h-5 text-primary-600"
+            className="w-5 h-5 text-primary-600 dark:text-primary-300"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -42,8 +42,8 @@ export default function AIResponse({ response, isLoading = false }: AIResponsePr
           </svg>
         </div>
         <div className="flex-1">
-          <h4 className="text-sm font-medium text-primary-700 mb-2">AI Insight</h4>
-          <p className={`text-gray-700 ${isKorean ? 'korean-text' : ''}`}>
+          <h4 className="text-sm font-medium text-primary-700 dark:text-primary-300 mb-2">AI Insight</h4>
+          <p className={`text-gray-800 dark:text-gray-200 ${isKorean ? 'korean-text' : ''}`}>
             {response}
           </p>
         </div>

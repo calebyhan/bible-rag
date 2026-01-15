@@ -81,6 +81,31 @@ export async function getVerse(
 }
 
 /**
+ * Get an entire chapter with all verses.
+ */
+export async function getChapter(
+  book: string,
+  chapter: number,
+  translations?: string[],
+  includeOriginal: boolean = false,
+): Promise<any> {
+  try {
+    const params = new URLSearchParams();
+    if (translations?.length) {
+      params.set('translations', translations.join(','));
+    }
+    params.set('include_original', String(includeOriginal));
+
+    const response = await api.get(
+      `/api/chapter/${encodeURIComponent(book)}/${chapter}?${params.toString()}`
+    );
+    return response.data;
+  } catch (error) {
+    handleError(error as AxiosError);
+  }
+}
+
+/**
  * Thematic search.
  */
 export async function searchThemes(request: ThemeRequest): Promise<ThemeResponse> {

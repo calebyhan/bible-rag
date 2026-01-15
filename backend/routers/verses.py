@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas import VerseDetailResponse
-from search import get_verse_by_reference
+from search import get_verse_by_reference, get_chapter_by_reference
 
 router = APIRouter(prefix="/api", tags=["verses"])
 
@@ -77,3 +77,60 @@ def get_verse(
         )
 
     return VerseDetailResponse(**result)
+
+
+@router.get("/chapter/{book}/{chapter}")
+def get_chapter(
+    book: str,
+    chapter: int,
+    translations: Optional[str] = Query(
+        None,
+        description="Comma-separated translation abbreviations",
+    ),
+    include_original: bool = Query(
+        False,
+        description="Include original language data",
+    ),
+    db: Session = Depends(get_db),
+):
+    """Get an entire chapter with all verses.
+
+    Retrieve a complete chapter in multiple translations with optional
+    original language data.
+
+    Args:
+        book: Book name or abbreviation (e.g., 'John', '요한복음')
+        chapter: Chapter number
+        translations: Comma-separated translation abbreviations
+        include_original: Include Greek/Hebrew data
+
+    Returns:
+        Chapter data with all verses
+    """
+    # Parse translations
+    translation_list = None
+    if translations:
+        translation_list = [t.strip() for t in translations.split(",")]
+
+    result = get_chapter_by_reference(
+        db=db,
+        book=book,
+        chapter=chapter,
+        translations=translation_list,
+        include_original=include_original,
+    )
+
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "CHAPTER_NOT_FOUND",
+                "message": "Chapter not found",
+                "details": {
+                    "book": book,
+                    "chapter": chapter,
+                },
+            },
+        )
+
+    return result

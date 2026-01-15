@@ -295,6 +295,91 @@ def get_original_words(db: Session, verse_id: UUID) -> Optional[dict]:
     }
 
 
+def get_chapter_by_reference(
+    db: Session,
+    book: str,
+    chapter: int,
+    translations: Optional[list[str]] = None,
+    include_original: bool = False,
+) -> Optional[dict]:
+    """Get an entire chapter with all verses.
+
+    Args:
+        db: Database session
+        book: Book name or abbreviation
+        chapter: Chapter number
+        translations: List of translation abbreviations (all if None)
+        include_original: Include original language data
+
+    Returns:
+        Chapter data dictionary with all verses or None if not found
+    """
+    # Find the book
+    book_obj = (
+        db.query(Book)
+        .filter(
+            (Book.name.ilike(book))
+            | (Book.name_korean == book)
+            | (Book.abbreviation.ilike(book))
+        )
+        .first()
+    )
+
+    if not book_obj:
+        return None
+
+    # Build verse query for all verses in the chapter
+    query = (
+        db.query(Verse, Translation)
+        .join(Translation)
+        .filter(
+            Verse.book_id == book_obj.id,
+            Verse.chapter == chapter,
+        )
+        .order_by(Verse.verse)
+    )
+
+    if translations:
+        query = query.filter(Translation.abbreviation.in_(translations))
+
+    results = query.all()
+
+    if not results:
+        return None
+
+    # Group verses by verse number
+    verses_dict = {}
+    for verse_obj, translation in results:
+        verse_num = verse_obj.verse
+        if verse_num not in verses_dict:
+            verses_dict[verse_num] = {
+                "verse_id": str(verse_obj.id),
+                "verse": verse_num,
+                "translations": {},
+            }
+        verses_dict[verse_num]["translations"][translation.abbreviation] = verse_obj.text
+
+    # Convert to list and sort by verse number
+    verses_list = [verses_dict[v] for v in sorted(verses_dict.keys())]
+
+    # Add original language data if requested
+    if include_original:
+        for verse_data in verses_list:
+            original = get_original_words(db, verse_data["verse_id"])
+            if original:
+                verse_data["original"] = original
+
+    return {
+        "reference": {
+            "book": book_obj.name,
+            "book_korean": book_obj.name_korean,
+            "chapter": chapter,
+            "testament": book_obj.testament,
+        },
+        "verses": verses_list,
+    }
+
+
 def get_verse_by_reference(
     db: Session,
     book: str,

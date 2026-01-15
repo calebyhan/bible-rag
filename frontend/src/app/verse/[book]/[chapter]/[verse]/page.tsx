@@ -72,10 +72,10 @@ export default function VerseDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="spinner mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading verse...</p>
+          <p className="text-gray-700 dark:text-gray-300">Loading verse...</p>
         </div>
       </div>
     );
@@ -83,10 +83,10 @@ export default function VerseDetailPage() {
 
   if (error || !verseData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Verse Not Found</h2>
-          <p className="text-gray-600 mb-6">{error || 'The requested verse could not be found.'}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Verse Not Found</h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-6">{error || 'The requested verse could not be found.'}</p>
           <button
             onClick={() => router.push('/')}
             className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
@@ -101,21 +101,21 @@ export default function VerseDetailPage() {
   const { reference, translations, original, cross_references, context } = verseData;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-slate-800 shadow-sm border-b dark:border-slate-700">
         <div className="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <button
             onClick={() => router.back()}
-            className="text-primary-600 hover:text-primary-700 font-medium mb-2 inline-flex items-center"
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium mb-2 inline-flex items-center"
           >
             ← Back
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {reference.book} {reference.chapter}:{reference.verse}
           </h1>
           {reference.book_korean && (
-            <p className="text-lg text-gray-600 korean-text mt-1">
+            <p className="text-lg text-gray-700 dark:text-gray-300 korean-text mt-1">
               {reference.book_korean} {reference.chapter}:{reference.verse}
             </p>
           )}
@@ -124,8 +124,8 @@ export default function VerseDetailPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Translation Selector */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Translations</h3>
+        <div className="mb-6 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 border dark:border-slate-700">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Translations</h3>
           <div className="flex flex-wrap gap-2">
             {['NIV', 'ESV', 'KJV', '개역개정', '개역한글'].map((trans) => (
               <button
@@ -134,7 +134,7 @@ export default function VerseDetailPage() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedTranslations.includes(trans)
                     ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
                 }`}
               >
                 {trans}
@@ -148,10 +148,10 @@ export default function VerseDetailPage() {
           {Object.entries(translations).map(([lang, text]) => (
             <div key={lang} className="verse-card p-6">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-primary-600 uppercase">{lang}</span>
+                <span className="text-sm font-semibold text-primary-600 dark:text-primary-400 uppercase">{lang}</span>
               </div>
               <p
-                className={`text-lg leading-relaxed ${
+                className={`text-lg leading-relaxed text-gray-800 dark:text-gray-200 ${
                   lang.includes('ko') || lang.includes('개역') ? 'verse-text-korean' : 'verse-text'
                 }`}
               >
@@ -164,24 +164,24 @@ export default function VerseDetailPage() {
         {/* Original Language */}
         {original && (
           <div className="verse-card p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
               <span className="mr-2">📖</span>
               Original Language ({original.language === 'greek' ? 'Greek' : 'Hebrew'})
             </h3>
             <div className="space-y-4">
-              <p className="text-2xl font-serif text-gray-900 mb-4">{original.text}</p>
+              <p className="text-2xl font-serif text-gray-900 dark:text-gray-100 mb-4">{original.text}</p>
               {original.transliteration && (
                 <div>
-                  <span className="text-sm font-semibold text-gray-600">Transliteration:</span>
-                  <p className="text-lg text-gray-800 italic mt-1">{original.transliteration}</p>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Transliteration:</span>
+                  <p className="text-lg text-gray-800 dark:text-gray-200 italic mt-1">{original.transliteration}</p>
                 </div>
               )}
               {original.strongs && original.strongs.length > 0 && (
                 <div>
-                  <span className="text-sm font-semibold text-gray-600">Strong's Numbers:</span>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Strong's Numbers:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {original.strongs.map((num) => (
-                      <span key={num} className="badge bg-purple-100 text-purple-800">
+                      <span key={num} className="badge bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
                         {num}
                       </span>
                     ))}
@@ -195,36 +195,36 @@ export default function VerseDetailPage() {
         {/* Context (Previous/Next verses) */}
         {context && (context.previous || context.next) && (
           <div className="verse-card p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Context</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Context</h3>
             <div className="space-y-4">
               {context.previous && (
-                <div className="border-l-4 border-gray-300 pl-4">
+                <div className="border-l-4 border-gray-300 dark:border-slate-600 pl-4">
                   <button
                     onClick={() => navigateToVerse({
                       book_en: reference.book,
                       chapter: context.previous.chapter,
                       verse: context.previous.verse,
                     })}
-                    className="text-sm font-semibold text-gray-600 hover:text-primary-600 mb-1"
+                    className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 mb-1"
                   >
                     {reference.book} {context.previous.chapter}:{context.previous.verse}
                   </button>
-                  <p className="text-gray-700">{context.previous.text}</p>
+                  <p className="text-gray-800 dark:text-gray-200">{context.previous.text}</p>
                 </div>
               )}
               {context.next && (
-                <div className="border-l-4 border-gray-300 pl-4">
+                <div className="border-l-4 border-gray-300 dark:border-slate-600 pl-4">
                   <button
                     onClick={() => navigateToVerse({
                       book_en: reference.book,
                       chapter: context.next.chapter,
                       verse: context.next.verse,
                     })}
-                    className="text-sm font-semibold text-gray-600 hover:text-primary-600 mb-1"
+                    className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 mb-1"
                   >
                     {reference.book} {context.next.chapter}:{context.next.verse}
                   </button>
-                  <p className="text-gray-700">{context.next.text}</p>
+                  <p className="text-gray-800 dark:text-gray-200">{context.next.text}</p>
                 </div>
               )}
             </div>
@@ -234,25 +234,31 @@ export default function VerseDetailPage() {
         {/* Cross References */}
         {cross_references && cross_references.length > 0 && (
           <div className="verse-card p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Cross References</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Cross References</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {cross_references.map((ref, idx) => (
                 <button
                   key={idx}
-                  onClick={() => navigateToVerse(ref.reference)}
-                  className="text-left p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                  onClick={() => navigateToVerse({
+                    book_en: ref.book,
+                    chapter: ref.chapter,
+                    verse: ref.verse,
+                  })}
+                  className="text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-primary-700">
-                      {ref.reference.book} {ref.reference.chapter}:{ref.reference.verse}
+                    <span className="font-semibold text-primary-700 dark:text-primary-400">
+                      {ref.book} {ref.chapter}:{ref.verse}
                     </span>
-                    {ref.relationship_type && (
-                      <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600">
-                        {ref.relationship_type}
+                    {ref.relationship && (
+                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-slate-700 rounded text-gray-700 dark:text-gray-300">
+                        {ref.relationship}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-700 line-clamp-2">{ref.text}</p>
+                  {ref.book_korean && (
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 korean-text">{ref.book_korean}</p>
+                  )}
                 </button>
               ))}
             </div>
@@ -262,24 +268,24 @@ export default function VerseDetailPage() {
         {/* Related Verses */}
         {relatedVerses.length > 0 && (
           <div className="verse-card p-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Related Verses</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Related Verses</h3>
             <div className="space-y-4">
               {relatedVerses.map((verse, idx) => (
                 <button
                   key={idx}
                   onClick={() => navigateToVerse(verse.reference)}
-                  className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                  className="w-full text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-primary-700">
+                    <span className="font-semibold text-primary-700 dark:text-primary-400">
                       {verse.reference.book} {verse.reference.chapter}:{verse.reference.verse}
                     </span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {Math.round(verse.relevance_score * 100)}% relevant
                     </span>
                   </div>
                   {verse.translations.en && (
-                    <p className="text-sm text-gray-700">{verse.translations.en}</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200">{verse.translations.en}</p>
                   )}
                 </button>
               ))}

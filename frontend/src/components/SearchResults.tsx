@@ -16,7 +16,7 @@ export default function SearchResults({ results, isLoading = false, query }: Sea
       <div className="max-w-4xl mx-auto mt-8">
         <div className="flex flex-col items-center justify-center py-12">
           <div className="spinner w-8 h-8" />
-          <p className="mt-4 text-gray-500">Searching...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Searching...</p>
         </div>
       </div>
     );
@@ -29,7 +29,7 @@ export default function SearchResults({ results, isLoading = false, query }: Sea
   return (
     <div className="max-w-4xl mx-auto mt-8">
       {/* Search stats */}
-      <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
+      <div className="flex items-center justify-between mb-4 text-sm text-gray-600 dark:text-gray-400">
         <span>
           {search_metadata.total_results} result{search_metadata.total_results !== 1 ? 's' : ''} found
           {query && <span className="ml-1">for &quot;{query}&quot;</span>}
@@ -37,7 +37,7 @@ export default function SearchResults({ results, isLoading = false, query }: Sea
         <span>
           {query_time_ms}ms
           {search_metadata.cached && (
-            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">
+            <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs">
               cached
             </span>
           )}
@@ -56,7 +56,7 @@ export default function SearchResults({ results, isLoading = false, query }: Sea
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
+          <div className="text-gray-400 dark:text-gray-600 mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -66,8 +66,8 @@ export default function SearchResults({ results, isLoading = false, query }: Sea
               />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-700">No results found</h3>
-          <p className="text-gray-500 mt-1">Try a different search query or adjust your filters.</p>
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">No results found</h3>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Try a different search query or adjust your filters.</p>
         </div>
       )}
     </div>

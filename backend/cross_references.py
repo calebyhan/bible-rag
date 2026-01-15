@@ -23,8 +23,10 @@ logger = logging.getLogger(__name__)
 class CrossReferenceManager:
     """Manages cross-reference data for Bible verses."""
 
-    # OpenBible.info cross-reference data
-    OPENBIBLE_URL = "https://raw.githubusercontent.com/openbibleinfo/Bible-Cross-Reference-JSON/master/cross_references.json"
+    # Cross-reference data from scrollmapper/bible_databases (OpenBible.info source)
+    # Data is split into 7 files (0-6) for size management
+    CROSS_REF_BASE_URL = "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/sources/extras/cross_references_{}.json"
+    CROSS_REF_FILE_COUNT = 7  # Files numbered 0 through 6
 
     # Relationship type mapping from OpenBible data
     RELATIONSHIP_TYPES = {
@@ -49,7 +51,9 @@ class CrossReferenceManager:
             self.db.close()
 
     async def fetch_openbible_data(self) -> List[Dict]:
-        """Fetch cross-reference data from OpenBible.info.
+        """Fetch cross-reference data from scrollmapper/bible_databases.
+
+        The data is split into multiple files (0-6) for size management.
 
         Returns:
             List of cross-reference dictionaries.
@@ -57,15 +61,26 @@ class CrossReferenceManager:
         Raises:
             httpx.HTTPError: If fetching data fails.
         """
-        logger.info(f"Fetching cross-reference data from {self.OPENBIBLE_URL}")
+        logger.info("Fetching cross-reference data from scrollmapper/bible_databases...")
 
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.get(self.OPENBIBLE_URL)
-            response.raise_for_status()
-            data = response.json()
+        all_cross_refs = []
 
-        logger.info(f"Fetched {len(data)} cross-references from OpenBible.info")
-        return data
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            for i in range(self.CROSS_REF_FILE_COUNT):
+                url = self.CROSS_REF_BASE_URL.format(i)
+                logger.info(f"Fetching file {i+1}/{self.CROSS_REF_FILE_COUNT}: {url}")
+
+                response = await client.get(url)
+                response.raise_for_status()
+                data = response.json()
+
+                # Extract cross_references array from each file
+                cross_refs = data.get("cross_references", [])
+                all_cross_refs.extend(cross_refs)
+                logger.info(f"  Loaded {len(cross_refs)} entries from file {i}")
+
+        logger.info(f"Fetched {len(all_cross_refs)} total cross-references")
+        return all_cross_refs
 
     def parse_verse_reference(self, ref: str) -> Optional[tuple[str, int, int]]:
         """Parse a verse reference string into components.
@@ -128,16 +143,24 @@ class CrossReferenceManager:
             logger.debug(f"Book not found: {book_name}")
             return None
 
+        # Find the translation
+        from database import Translation
+        translation_query = select(Translation).where(
+            Translation.abbreviation == translation_abbrev
+        )
+        translation = self.db.execute(translation_query).scalar_one_or_none()
+
+        if not translation:
+            logger.debug(f"Translation not found: {translation_abbrev}")
+            return None
+
         # Find the verse
-        verse_query = (
-            select(Verse)
-            .join(Verse.translation)
-            .where(
-                and_(
-                    Verse.book_id == book.id,
-                    Verse.chapter == chapter,
-                    Verse.verse == verse,
-                )
+        verse_query = select(Verse).where(
+            and_(
+                Verse.translation_id == translation.id,
+                Verse.book_id == book.id,
+                Verse.chapter == chapter,
+                Verse.verse == verse,
             )
         )
 
@@ -196,14 +219,21 @@ class CrossReferenceManager:
         self,
         translation_abbrev: str = "NIV",
         relationship_type: str = "parallel",
-        confidence: float = 0.9,
     ) -> int:
-        """Populate cross-references from OpenBible.info data.
+        """Populate cross-references from scrollmapper/bible_databases (OpenBible.info source).
+
+        The new data format is:
+        {
+            "from_verse": {"book": "Genesis", "chapter": 1, "verse": 1},
+            "to_verse": [
+                {"book": "Proverbs", "chapter": 8, "verse_start": 22, "verse_end": 22}
+            ],
+            "votes": 59
+        }
 
         Args:
             translation_abbrev: Translation to use for verse lookup.
             relationship_type: Default relationship type.
-            confidence: Default confidence score.
 
         Returns:
             Number of cross-references created.
@@ -212,23 +242,36 @@ class CrossReferenceManager:
 
         created_count = 0
         skipped_count = 0
+        # Track added cross-references to avoid duplicates within the batch
+        added_refs = set()
 
         for entry in data:
             # Parse source verse
-            from_ref = entry.get("from")
-            to_refs = entry.get("to", [])
+            from_verse_data = entry.get("from_verse")
+            to_verse_list = entry.get("to_verse", [])
+            votes = entry.get("votes", 0)
 
-            if not from_ref or not to_refs:
+            if not from_verse_data or not to_verse_list:
                 continue
 
-            from_parsed = self.parse_verse_reference(from_ref)
-            if not from_parsed:
-                skipped_count += 1
-                continue
+            # Calculate confidence based on votes (normalize to 0-1 range)
+            # Positive votes indicate agreement/confidence
+            # Negative votes indicate disagreement/low confidence
+            # votes typically range from -31 to 100+
+            # Map to 0-1 range: negative votes → 0-0.5, positive votes → 0.5-1.0
+            if votes < 0:
+                # Negative votes: map -100 to 0, and -1 to ~0.49
+                confidence = max(0.0, 0.5 + (votes / 200.0))
+            else:
+                # Positive votes: map 0 to 0.5, 100+ to 1.0
+                confidence = min(0.5 + (votes / 200.0), 1.0)
 
-            from_book, from_chapter, from_verse_num = from_parsed
+            # Find source verse
             from_verse = self.find_verse_by_reference(
-                from_book, from_chapter, from_verse_num, translation_abbrev
+                from_verse_data["book"],
+                from_verse_data["chapter"],
+                from_verse_data["verse"],
+                translation_abbrev,
             )
 
             if not from_verse:
@@ -236,40 +279,59 @@ class CrossReferenceManager:
                 continue
 
             # Process each target verse
-            for to_ref in to_refs:
-                to_parsed = self.parse_verse_reference(to_ref)
-                if not to_parsed:
-                    continue
+            for to_verse_data in to_verse_list:
+                # Handle verse ranges (verse_start to verse_end)
+                verse_start = to_verse_data.get("verse_start")
+                verse_end = to_verse_data.get("verse_end", verse_start)
 
-                to_book, to_chapter, to_verse_num = to_parsed
+                # For now, just use the start verse (could expand to handle ranges)
                 to_verse = self.find_verse_by_reference(
-                    to_book, to_chapter, to_verse_num, translation_abbrev
+                    to_verse_data["book"],
+                    to_verse_data["chapter"],
+                    verse_start,
+                    translation_abbrev,
                 )
 
                 if not to_verse:
                     continue
 
-                # Create bidirectional cross-references
-                cross_ref = self.create_cross_reference(
-                    from_verse, to_verse, relationship_type, confidence
-                )
-                if cross_ref:
-                    created_count += 1
+                # Create unique key for tracking
+                forward_key = (from_verse.id, to_verse.id, relationship_type)
+                reverse_key = (to_verse.id, from_verse.id, relationship_type)
 
-                # Create reverse reference
-                reverse_ref = self.create_cross_reference(
-                    to_verse, from_verse, relationship_type, confidence
-                )
-                if reverse_ref:
-                    created_count += 1
+                # Create bidirectional cross-references (skip if already added)
+                if forward_key not in added_refs:
+                    cross_ref = self.create_cross_reference(
+                        from_verse, to_verse, relationship_type, confidence
+                    )
+                    if cross_ref:
+                        created_count += 1
+                        added_refs.add(forward_key)
 
-            # Commit in batches of 100
-            if created_count % 100 == 0 and created_count > 0:
-                self.db.commit()
-                logger.info(f"Created {created_count} cross-references so far...")
+                # Create reverse reference (skip if already added)
+                if reverse_key not in added_refs:
+                    reverse_ref = self.create_cross_reference(
+                        to_verse, from_verse, relationship_type, confidence
+                    )
+                    if reverse_ref:
+                        created_count += 1
+                        added_refs.add(reverse_key)
+
+            # Commit in batches of 1000
+            if created_count % 1000 == 0 and created_count > 0:
+                try:
+                    self.db.commit()
+                    logger.info(f"Created {created_count} cross-references so far...")
+                except Exception as e:
+                    logger.warning(f"Batch commit failed (likely duplicates), rolling back: {e}")
+                    self.db.rollback()
 
         # Final commit
-        self.db.commit()
+        try:
+            self.db.commit()
+        except Exception as e:
+            logger.warning(f"Final commit failed (likely duplicates), rolling back: {e}")
+            self.db.rollback()
 
         logger.info(
             f"Cross-reference population complete: {created_count} created, {skipped_count} skipped"
