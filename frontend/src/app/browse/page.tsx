@@ -20,7 +20,7 @@ export default function BrowsePage() {
         const testament = selectedTestament === 'all' ? undefined : selectedTestament;
         const genre = selectedGenre === 'all' ? undefined : selectedGenre;
         const data = await getBooks(testament, genre);
-        setBooks(data);
+        setBooks(data.books);
       } catch (err: any) {
         console.error('Error fetching books:', err);
         setError(err.message || 'Failed to load books');
@@ -83,12 +83,28 @@ export default function BrowsePage() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <button
-            onClick={() => router.push('/')}
-            className="text-primary-600 hover:text-primary-700 font-medium mb-2 inline-flex items-center"
-          >
-            ← Back to Search
-          </button>
+          <div className="flex justify-between items-center mb-2">
+            <button
+              onClick={() => router.push('/')}
+              className="text-primary-600 hover:text-primary-700 font-medium inline-flex items-center"
+            >
+              ← Back to Search
+            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => router.push('/themes')}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+              >
+                🔍 Themes
+              </button>
+              <button
+                onClick={() => router.push('/compare')}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+              >
+                ⚖️ Compare
+              </button>
+            </div>
+          </div>
           <h1 className="text-4xl font-bold text-gray-900">Browse Bible</h1>
           <p className="text-lg text-gray-600 mt-2">성경 둘러보기</p>
         </div>

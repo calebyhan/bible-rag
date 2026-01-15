@@ -228,11 +228,14 @@ def get_cross_references(db: Session, verse_id: UUID, limit: int = 5) -> list[di
     Returns:
         List of cross-reference dictionaries
     """
+    # Convert UUID to string for SQLite compatibility in tests
+    verse_id_value = str(verse_id) if isinstance(verse_id, UUID) else verse_id
+
     refs = (
         db.query(CrossReference, Verse, Book)
         .join(Verse, CrossReference.related_verse_id == Verse.id)
         .join(Book, Verse.book_id == Book.id)
-        .filter(CrossReference.verse_id == verse_id)
+        .filter(CrossReference.verse_id == verse_id_value)
         .order_by(CrossReference.confidence.desc())
         .limit(limit)
         .all()
@@ -261,9 +264,12 @@ def get_original_words(db: Session, verse_id: UUID) -> Optional[dict]:
     Returns:
         Dictionary with original language data or None
     """
+    # Convert UUID to string for SQLite compatibility in tests
+    verse_id_value = str(verse_id) if isinstance(verse_id, UUID) else verse_id
+
     words = (
         db.query(OriginalWord)
-        .filter(OriginalWord.verse_id == verse_id)
+        .filter(OriginalWord.verse_id == verse_id_value)
         .order_by(OriginalWord.word_order)
         .all()
     )
@@ -391,6 +397,9 @@ def get_verse_context(
     """
     context = {"previous": None, "next": None}
 
+    # Convert UUID to string for SQLite compatibility in tests
+    book_id_value = str(book_id) if isinstance(book_id, UUID) else book_id
+
     # Get one translation for context
     translation = db.query(Translation).first()
     if not translation:
@@ -400,7 +409,7 @@ def get_verse_context(
     prev_verse = (
         db.query(Verse)
         .filter(
-            Verse.book_id == book_id,
+            Verse.book_id == book_id_value,
             Verse.translation_id == translation.id,
             Verse.chapter == chapter,
             Verse.verse == verse - 1,
@@ -419,7 +428,7 @@ def get_verse_context(
     next_verse = (
         db.query(Verse)
         .filter(
-            Verse.book_id == book_id,
+            Verse.book_id == book_id_value,
             Verse.translation_id == translation.id,
             Verse.chapter == chapter,
             Verse.verse == verse + 1,

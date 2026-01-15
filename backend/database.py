@@ -21,19 +21,32 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
+from sqlalchemy.pool import StaticPool
+import os
 
 from config import get_settings
 
 settings = get_settings()
 
 # Database engine with connection pooling
-engine = create_engine(
-    settings.database_url,
-    pool_size=20,
-    max_overflow=10,
-    pool_pre_ping=True,
-    echo=settings.debug,
-)
+# Use SQLite for testing to avoid PostgreSQL dependency
+if os.getenv("DATABASE_URL", "").startswith("sqlite"):
+    # SQLite doesn't support pool_size/max_overflow parameters
+    engine = create_engine(
+        settings.database_url,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=settings.debug,
+    )
+else:
+    # PostgreSQL with connection pooling
+    engine = create_engine(
+        settings.database_url,
+        pool_size=20,
+        max_overflow=10,
+        pool_pre_ping=True,
+        echo=settings.debug,
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

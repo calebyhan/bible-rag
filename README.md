@@ -169,10 +169,8 @@ bible-rag/
 - [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment
 - [Features](docs/FEATURES.md) - Comprehensive feature documentation
 - [Development Guide](docs/DEVELOPMENT.md) - Contributing guidelines
-- [Free Bible APIs](docs/FREE_BIBLE_APIS.md) - **NEW!** How to access 100+ free translations
 - [Data Sources](docs/DATA_SOURCES.md) - Licensing and attribution
 - [Korean Documentation](docs/KOREAN.md) - 한국어 문서
-- [NKRV Integration](backend/README_NKRV.md) - 개역개정 setup guide
 
 ## API Endpoints
 

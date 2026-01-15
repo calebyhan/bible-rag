@@ -202,14 +202,14 @@ export default function VerseDetailPage() {
                   <button
                     onClick={() => navigateToVerse({
                       book_en: reference.book,
-                      chapter: reference.chapter,
-                      verse: reference.verse - 1,
+                      chapter: context.previous.chapter,
+                      verse: context.previous.verse,
                     })}
                     className="text-sm font-semibold text-gray-600 hover:text-primary-600 mb-1"
                   >
-                    {reference.book} {reference.chapter}:{reference.verse - 1}
+                    {reference.book} {context.previous.chapter}:{context.previous.verse}
                   </button>
-                  <p className="text-gray-700">{context.previous}</p>
+                  <p className="text-gray-700">{context.previous.text}</p>
                 </div>
               )}
               {context.next && (
@@ -217,14 +217,14 @@ export default function VerseDetailPage() {
                   <button
                     onClick={() => navigateToVerse({
                       book_en: reference.book,
-                      chapter: reference.chapter,
-                      verse: reference.verse + 1,
+                      chapter: context.next.chapter,
+                      verse: context.next.verse,
                     })}
                     className="text-sm font-semibold text-gray-600 hover:text-primary-600 mb-1"
                   >
-                    {reference.book} {reference.chapter}:{reference.verse + 1}
+                    {reference.book} {context.next.chapter}:{context.next.verse}
                   </button>
-                  <p className="text-gray-700">{context.next}</p>
+                  <p className="text-gray-700">{context.next.text}</p>
                 </div>
               )}
             </div>
