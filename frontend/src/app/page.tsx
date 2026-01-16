@@ -10,12 +10,14 @@ export default function Home() {
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentQuery, setCurrentQuery] = useState('');
+  const [defaultTranslation, setDefaultTranslation] = useState<string>('NIV');
   const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = async (query: string, translations: string[]) => {
+  const handleSearch = async (query: string, translations: string[], defaultTrans: string) => {
     setIsLoading(true);
     setError(null);
     setCurrentQuery(query);
+    setDefaultTranslation(defaultTrans);
 
     try {
       const response = await searchVerses({
@@ -89,7 +91,7 @@ export default function Home() {
           </div>
         )}
 
-        <SearchResults results={results} isLoading={isLoading} query={currentQuery} />
+        <SearchResults results={results} isLoading={isLoading} query={currentQuery} defaultTranslation={defaultTranslation} />
 
         {/* Initial state - no search yet */}
         {!results && !isLoading && !error && (

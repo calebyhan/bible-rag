@@ -4,12 +4,16 @@ Supports Google Gemini (primary) and Groq (fallback) for generating
 AI-powered contextual responses based on search results.
 """
 
+import logging
 import time
 from typing import Optional
 
 from config import get_settings
 
 settings = get_settings()
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Rate limiting state
 _rate_limit_state = {
@@ -37,6 +41,7 @@ def _check_rate_limit(provider: str, limit: int) -> bool:
         state["reset_time"] = current_time
 
     if state["count"] >= limit:
+        logger.warning(f"{provider.capitalize()} rate limit exceeded ({limit} RPM)")
         return False
 
     state["count"] += 1
@@ -54,41 +59,52 @@ def _build_prompt(query: str, verses: list[dict], language: str = "en") -> str:
     Returns:
         Formatted prompt string
     """
-    # Format verses for context
+    # Format verses for context (use top 8 for better context)
     verse_context = []
-    for v in verses[:5]:  # Limit to top 5 for context
+    for i, v in enumerate(verses[:8], 1):
         ref = v.get("reference", {})
         translations = v.get("translations", {})
 
         # Get first available translation text
         text = next(iter(translations.values()), "")
+        # Truncate very long verses for token efficiency
+        text_preview = text[:150] + "..." if len(text) > 150 else text
 
         verse_context.append(
-            f"- {ref.get('book', '')} {ref.get('chapter', '')}:{ref.get('verse', '')}: {text}"
+            f"{i}. {ref.get('book', '')} {ref.get('chapter', '')}:{ref.get('verse', '')} - \"{text_preview}\""
         )
 
     verses_text = "\n".join(verse_context)
+    verse_count = len(verses[:8])
 
     if language == "ko":
-        prompt = f"""다음 성경 구절들을 바탕으로 질문에 답변해 주세요.
+        prompt = f"""다음 성경 구절들을 바탕으로 질문에 대해 포괄적인 답변을 제공해 주세요.
 
 질문: {query}
 
-관련 성경 구절:
+관련 성경 구절 ({verse_count}개):
 {verses_text}
 
-위 구절들을 바탕으로 간결하고 명확한 답변을 한국어로 작성해 주세요.
-답변은 2-3문장으로 제한하고, 성경적 맥락을 설명해 주세요."""
+답변 지침:
+- 질문에 직접적으로 답하는 4-5문장의 답변을 작성해 주세요
+- 특정 구절을 인용할 때는 책 이름과 장:절을 명시해 주세요 (예: "로마서 12:9에 따르면...")
+- 성경적 맥락과 신학적 의미를 설명해 주세요
+- 실제 적용이나 핵심 교훈으로 마무리해 주세요
+- 답변이 완전한 문장으로 끝나도록 해 주세요"""
     else:
-        prompt = f"""Based on the following Bible verses, please answer the question.
+        prompt = f"""Based on the following Bible verses, please provide a comprehensive answer to the question.
 
 Question: {query}
 
-Relevant Bible verses:
+Relevant verses ({verse_count} total):
 {verses_text}
 
-Please provide a concise and clear answer based on these verses.
-Limit your response to 2-3 sentences and explain the biblical context."""
+Instructions:
+- Provide a 4-5 sentence answer that directly addresses the question
+- Cite specific verses by reference (e.g., 'According to Romans 12:9...')
+- Explain the biblical context and theological significance
+- Conclude with practical application or key takeaway
+- Ensure your response is complete and ends with proper punctuation"""
 
     return prompt
 
@@ -109,6 +125,7 @@ def generate_response_gemini(
         Generated response string or None if failed
     """
     if not settings.gemini_api_key:
+        logger.warning("Gemini API key not configured")
         return None
 
     if not _check_rate_limit("gemini", settings.gemini_rpm):
@@ -117,24 +134,48 @@ def generate_response_gemini(
     try:
         import google.generativeai as genai
 
+        start_time = time.time()
+
         genai.configure(api_key=settings.gemini_api_key)
 
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        # Configure model with system instruction
+        model = genai.GenerativeModel(
+            "gemini-2.5-flash",  # Using stable model instead of preview
+            system_instruction="You are a knowledgeable Bible study assistant. Provide thoughtful, contextual answers that help users understand biblical teachings. Always cite specific verse references and explain theological significance. Your responses should be complete, ending with proper punctuation."
+        )
 
         prompt = _build_prompt(query, verses, language)
+
+        logger.info(f"Calling Gemini API for query: {query[:50]}...")
 
         response = model.generate_content(
             prompt,
             generation_config=genai.GenerationConfig(
-                max_output_tokens=256,
+                max_output_tokens=1024,  # Sufficient for 4-5 sentence responses
                 temperature=0.7,
             ),
         )
 
-        return response.text
+        elapsed = time.time() - start_time
+
+        # Check finish reason for truncation
+        finish_reason = response.candidates[0].finish_reason if response.candidates else None
+        logger.info(f"Gemini finish_reason: {finish_reason}")
+
+        response_text = response.text
+
+        logger.info(f"Gemini response generated: {len(response_text)} chars in {elapsed:.2f}s")
+
+        # Validate response is complete
+        if finish_reason == 1:  # MAX_TOKENS
+            logger.warning(f"Gemini response truncated due to MAX_TOKENS limit")
+        elif not response_text.endswith((".", "!", "?")):
+            logger.warning(f"Gemini response may be truncated (no ending punctuation): {response_text[-50:]}")
+
+        return response_text
 
     except Exception as e:
-        print(f"Gemini error: {e}")
+        logger.error(f"Gemini API error: {e}", exc_info=True)
         return None
 
 
@@ -154,6 +195,7 @@ def generate_response_groq(
         Generated response string or None if failed
     """
     if not settings.groq_api_key:
+        logger.warning("Groq API key not configured")
         return None
 
     if not _check_rate_limit("groq", settings.groq_rpm):
@@ -162,27 +204,40 @@ def generate_response_groq(
     try:
         from groq import Groq
 
+        start_time = time.time()
+
         client = Groq(api_key=settings.groq_api_key)
 
         prompt = _build_prompt(query, verses, language)
+
+        logger.info(f"Calling Groq API for query: {query[:50]}...")
 
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful Bible study assistant. Provide concise, accurate responses based on the provided verses.",
+                    "content": "You are a knowledgeable Bible study assistant. Provide thoughtful, contextual answers that help users understand biblical teachings. Always cite specific verse references and explain theological significance. Your responses should be complete, ending with proper punctuation.",
                 },
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=256,
+            max_tokens=1024,  # Increased for complete responses
             temperature=0.7,
         )
 
-        return response.choices[0].message.content
+        elapsed = time.time() - start_time
+        response_text = response.choices[0].message.content
+
+        logger.info(f"Groq response generated: {len(response_text)} chars in {elapsed:.2f}s")
+
+        # Validate response is complete
+        if not response_text.endswith((".", "!", "?")):
+            logger.warning(f"Groq response may be truncated (no ending punctuation): {response_text[-50:]}")
+
+        return response_text
 
     except Exception as e:
-        print(f"Groq error: {e}")
+        logger.error(f"Groq API error: {e}", exc_info=True)
         return None
 
 
@@ -193,7 +248,7 @@ def generate_contextual_response(
 ) -> Optional[str]:
     """Generate a contextual response using available LLMs.
 
-    Tries Gemini first, falls back to Groq if rate limited or failed.
+    Tries Groq first (more reliable), falls back to Gemini if failed.
 
     Args:
         query: User's search query
@@ -206,13 +261,13 @@ def generate_contextual_response(
     if not verses:
         return None
 
-    # Try Gemini first
-    response = generate_response_gemini(query, verses, language)
+    # Try Groq first (more reliable complete responses)
+    response = generate_response_groq(query, verses, language)
     if response:
         return response
 
-    # Fall back to Groq
-    response = generate_response_groq(query, verses, language)
+    # Fall back to Gemini
+    response = generate_response_gemini(query, verses, language)
     if response:
         return response
 

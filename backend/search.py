@@ -91,15 +91,13 @@ def search_verses(
     db.execute(text("SET ivfflat.probes = 20"))
 
     # Build SQL query - embed vector directly, use bindparams for UUIDs/scalars
+    # Strategy: Find top N unique verse references, then fetch all translations
     sql_template = f"""
-        WITH verse_scores AS (
-            SELECT
-                v.id as verse_id,
+        WITH top_verses AS (
+            SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
                 v.book_id,
                 v.chapter,
                 v.verse,
-                v.text,
-                v.translation_id,
                 1 - (e.vector <=> '{query_vector_str}'::vector) as similarity
             FROM embeddings e
             JOIN verses v ON e.verse_id = v.id
@@ -129,28 +127,33 @@ def search_verses(
                 bindparam("book_abbrevs", value=filters["books"], type_=ARRAY(PGUUID))
             )
 
-    # Add similarity threshold and limit
+    # Add similarity threshold and get top N unique verses
     sql_template += f"""
             AND (1 - (e.vector <=> '{query_vector_str}'::vector)) > :similarity_threshold
-            ORDER BY e.vector <=> '{query_vector_str}'::vector
-            LIMIT :max_results
+            ORDER BY v.book_id, v.chapter, v.verse, similarity DESC
         )
         SELECT
-            vs.verse_id,
-            vs.book_id,
-            vs.chapter,
-            vs.verse,
-            vs.text,
-            vs.translation_id,
-            vs.similarity,
+            v.id as verse_id,
+            v.book_id,
+            v.chapter,
+            v.verse,
+            v.text,
+            v.translation_id,
+            tv.similarity,
             b.name as book_name,
             b.name_korean as book_name_korean,
             b.abbreviation as book_abbrev,
             b.testament,
             b.genre
-        FROM verse_scores vs
-        JOIN books b ON vs.book_id = b.id
-        ORDER BY vs.similarity DESC
+        FROM (
+            SELECT * FROM top_verses
+            ORDER BY similarity DESC
+            LIMIT :max_results
+        ) tv
+        JOIN verses v ON v.book_id = tv.book_id AND v.chapter = tv.chapter AND v.verse = tv.verse
+        JOIN books b ON v.book_id = b.id
+        WHERE v.translation_id = ANY(:translation_ids)
+        ORDER BY tv.similarity DESC, v.translation_id
     """
 
     # Execute query with bindparams

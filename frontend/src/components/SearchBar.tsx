@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 
 interface SearchBarProps {
-  onSearch: (query: string, translations: string[]) => void;
+  onSearch: (query: string, translations: string[], defaultTranslation: string) => void;
   isLoading?: boolean;
   placeholder?: string;
 }
@@ -11,8 +11,12 @@ interface SearchBarProps {
 const TRANSLATIONS = [
   { abbrev: 'NIV', name: 'NIV', language: 'en' },
   { abbrev: 'ESV', name: 'ESV', language: 'en' },
+  { abbrev: 'NASB', name: 'NASB', language: 'en' },
+  { abbrev: 'KJV', name: 'KJV', language: 'en' },
+  { abbrev: 'NLT', name: 'NLT', language: 'en' },
   { abbrev: 'RKV', name: '개역개정', language: 'ko' },
   { abbrev: 'KRV', name: '개역한글', language: 'ko' },
+  { abbrev: 'NKRV', name: '새번역', language: 'ko' },
 ];
 
 export default function SearchBar({
@@ -22,24 +26,44 @@ export default function SearchBar({
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'RKV']);
+  const [defaultTranslation, setDefaultTranslation] = useState<string>('NIV');
   const [showFilters, setShowFilters] = useState(false);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      onSearch(query.trim(), selectedTranslations);
+      onSearch(query.trim(), selectedTranslations, defaultTranslation);
     }
   };
 
-  const toggleTranslation = (abbrev: string) => {
-    setSelectedTranslations((prev) => {
-      if (prev.includes(abbrev)) {
-        // Don't allow deselecting all
-        if (prev.length === 1) return prev;
-        return prev.filter((t) => t !== abbrev);
+  const toggleTranslation = (abbrev: string, isDoubleClick: boolean = false) => {
+    const isSelected = selectedTranslations.includes(abbrev);
+    const isDefault = abbrev === defaultTranslation;
+
+    // Double-click: always set as default
+    if (isDoubleClick) {
+      setDefaultTranslation(abbrev);
+      // Ensure it's selected
+      if (!isSelected) {
+        setSelectedTranslations((prev) => [...prev, abbrev]);
       }
-      return [...prev, abbrev];
-    });
+      return;
+    }
+
+    // Single-click: toggle selection (but can't deselect the default)
+    if (isSelected) {
+      // Can't deselect if it's the only one
+      if (selectedTranslations.length === 1) return;
+
+      // Can't deselect if it's the default - must double-click another first
+      if (isDefault) return;
+
+      // Deselect it
+      setSelectedTranslations((prev) => prev.filter((t) => t !== abbrev));
+    } else {
+      // Select it
+      setSelectedTranslations((prev) => [...prev, abbrev]);
+    }
   };
 
   return (
@@ -88,21 +112,34 @@ export default function SearchBar({
 
         {/* Translation filters */}
         {showFilters && (
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            {TRANSLATIONS.map((trans) => (
-              <button
-                key={trans.abbrev}
-                type="button"
-                onClick={() => toggleTranslation(trans.abbrev)}
-                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                  selectedTranslations.includes(trans.abbrev)
-                    ? 'bg-primary-100 text-primary-700 border-2 border-primary-300'
-                    : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
-                }`}
-              >
-                {trans.name}
-              </button>
-            ))}
+          <div className="mt-3 space-y-2">
+            <div className="flex flex-wrap justify-center gap-2">
+              {TRANSLATIONS.map((trans) => {
+                const isSelected = selectedTranslations.includes(trans.abbrev);
+                const isDefault = trans.abbrev === defaultTranslation;
+
+                return (
+                  <button
+                    key={trans.abbrev}
+                    type="button"
+                    onClick={() => toggleTranslation(trans.abbrev, false)}
+                    onDoubleClick={() => toggleTranslation(trans.abbrev, true)}
+                    className={`px-3 py-1.5 rounded-full text-sm transition-colors flex items-center gap-1 ${
+                      isSelected
+                        ? 'bg-primary-100 text-primary-700 border-2 border-primary-300'
+                        : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                    } ${isDefault ? 'ring-2 ring-yellow-400' : ''}`}
+                    title={isDefault ? `${trans.name} (Default)` : trans.name}
+                  >
+                    {isDefault && <span className="text-yellow-500">★</span>}
+                    {trans.name}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-center text-gray-300">
+              Click to select/deselect • Double-click to set as default (★) • Default can't be deselected
+            </p>
           </div>
         )}
       </form>

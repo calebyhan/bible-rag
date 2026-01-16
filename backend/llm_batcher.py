@@ -5,6 +5,7 @@ Gemini's Batch API (50% cost savings) and higher rate limits.
 """
 
 import asyncio
+import logging
 import time
 from dataclasses import dataclass
 from typing import Optional
@@ -13,6 +14,7 @@ from uuid import UUID, uuid4
 from config import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -143,7 +145,10 @@ class LLMBatcher:
                 batch_contents.append({"contents": [{"parts": [{"text": prompt}]}]})
 
             # Make batch API call
-            model = genai.GenerativeModel("gemini-2.5-flash")
+            model = genai.GenerativeModel(
+                "gemini-2.5-flash",  # Using stable model instead of preview
+                system_instruction="You are a knowledgeable Bible study assistant. Provide thoughtful, contextual answers that help users understand biblical teachings. Always cite specific verse references and explain theological significance. Your responses should be complete, ending with proper punctuation."
+            )
 
             # Process requests individually but with better rate limiting
             # Note: Google's batch API is async/file-based, so for real-time
@@ -174,15 +179,33 @@ class LLMBatcher:
         """
         try:
             # Generate response
+            start_time = time.time()
             response = await asyncio.to_thread(
                 model.generate_content,
                 content["parts"][0]["text"],
-                generation_config={"max_output_tokens": 256, "temperature": 0.7},
+                generation_config={
+                    "max_output_tokens": 1024,  # Sufficient for 4-5 sentence responses
+                    "temperature": 0.7,
+                },
             )
 
+            elapsed = time.time() - start_time
+
+            # Check finish reason for truncation
+            finish_reason = response.candidates[0].finish_reason if response.candidates else None
+            logger.info(f"Batch request {request.id} finish_reason: {finish_reason}")
+
             request.result = response.text
+            logger.info(f"Batch request {request.id}: {len(response.text)} chars in {elapsed:.2f}s")
+
+            # Validate response is complete
+            if finish_reason == 1:  # MAX_TOKENS
+                logger.warning(f"Batch response truncated due to MAX_TOKENS limit")
+            elif not response.text.endswith((".", "!", "?")):
+                logger.warning(f"Batch response may be truncated: {response.text[-50:]}")
+
         except Exception as e:
-            print(f"Error processing request {request.id}: {e}")
+            logger.error(f"Error processing batch request {request.id}: {e}", exc_info=True)
             request.error = str(e)
         finally:
             request.completed.set()

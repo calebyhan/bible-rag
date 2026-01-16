@@ -1,5 +1,6 @@
 """Search API router."""
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -10,6 +11,7 @@ from schemas import SearchRequest, SearchResponse
 from search import search_verses
 
 router = APIRouter(prefix="/api", tags=["search"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/search", response_model=SearchResponse)
@@ -45,25 +47,40 @@ async def semantic_search(
             include_cross_refs=True,
         )
 
-        # Detect language for AI response
+        # Detect language for AI response from query text
         language = detect_language(request.query)
-        if "ko" in request.languages:
-            language = "ko"
 
         # Generate AI response if we have results (using batching)
         ai_response = None
+        ai_error = None
+
         if results.get("results"):
-            ai_response = await batched_generate_response(
-                query=request.query,
-                verses=results["results"],
-                language=language,
-            )
+            try:
+                ai_response = await batched_generate_response(
+                    query=request.query,
+                    verses=results["results"],
+                    language=language,
+                )
+
+                # If no response was generated, provide helpful error
+                if not ai_response:
+                    ai_error = "AI response service temporarily unavailable. Please try again in a moment."
+                    logger.warning(f"AI response generation returned None for query: {request.query[:50]}")
+
+            except Exception as e:
+                ai_error = "Failed to generate AI response. Please try again."
+                logger.error(f"AI generation failed: {e}", exc_info=True)
+        else:
+            # No verses found
+            ai_error = "No verses found matching your query. Try different keywords or check your spelling."
+            logger.info(f"No results found for query: {request.query}")
 
         # Build response
         return SearchResponse(
             query_time_ms=results["query_time_ms"],
             results=results["results"],
             ai_response=ai_response,
+            ai_error=ai_error,
             search_metadata={
                 "total_results": results["search_metadata"]["total_results"],
                 "embedding_model": results["search_metadata"].get("embedding_model"),

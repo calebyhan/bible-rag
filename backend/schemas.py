@@ -188,6 +188,10 @@ class SearchResponse(BaseModel):
     query_time_ms: int
     results: list[SearchResult]
     ai_response: Optional[str] = None
+    ai_error: Optional[str] = Field(
+        None,
+        description="Error message if AI response generation failed"
+    )
     search_metadata: SearchMetadata
 
 

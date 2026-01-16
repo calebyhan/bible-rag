@@ -80,6 +80,7 @@ export interface SearchResponse {
   query_time_ms: number;
   results: SearchResult[];
   ai_response?: string;
+  ai_error?: string;
   search_metadata: SearchMetadata;
 }
 

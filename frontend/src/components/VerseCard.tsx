@@ -6,12 +6,17 @@ import { SearchResult } from '@/types';
 interface VerseCardProps {
   result: SearchResult;
   showAllTranslations?: boolean;
+  defaultTranslation?: string;
 }
 
-export default function VerseCard({ result, showAllTranslations = false }: VerseCardProps) {
-  const [activeTranslation, setActiveTranslation] = useState<string>(
-    Object.keys(result.translations)[0] || ''
-  );
+export default function VerseCard({ result, showAllTranslations = false, defaultTranslation }: VerseCardProps) {
+  // Use defaultTranslation if available and exists in translations, otherwise first available
+  const initialTranslation =
+    defaultTranslation && result.translations[defaultTranslation]
+      ? defaultTranslation
+      : Object.keys(result.translations)[0] || '';
+
+  const [activeTranslation, setActiveTranslation] = useState<string>(initialTranslation);
   const [showCrossRefs, setShowCrossRefs] = useState(false);
 
   const { reference, translations, relevance_score, cross_references } = result;
