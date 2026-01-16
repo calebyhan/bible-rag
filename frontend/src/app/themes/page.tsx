@@ -20,14 +20,20 @@ const POPULAR_THEMES = [
 const TRANSLATIONS = [
   { abbrev: 'NIV', name: 'NIV', language: 'en' },
   { abbrev: 'ESV', name: 'ESV', language: 'en' },
+  { abbrev: 'NASB', name: 'NASB', language: 'en' },
+  { abbrev: 'KJV', name: 'KJV', language: 'en' },
+  { abbrev: 'NLT', name: 'NLT', language: 'en' },
   { abbrev: 'RKV', name: '개역개정', language: 'ko' },
   { abbrev: 'KRV', name: '개역한글', language: 'ko' },
+  { abbrev: 'NKRV', name: '새번역', language: 'ko' },
 ];
 
 export default function ThemesPage() {
   const [theme, setTheme] = useState('');
   const [testament, setTestament] = useState<'OT' | 'NT' | 'both'>('both');
   const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'RKV']);
+  const [defaultTranslation, setDefaultTranslation] = useState<string>('NIV');
+  const [showLanguage, setShowLanguage] = useState<'default' | 'all'>('default');
   const [results, setResults] = useState<ThemeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,14 +67,34 @@ export default function ThemesPage() {
     handleSearch(theme);
   };
 
-  const toggleTranslation = (abbrev: string) => {
-    setSelectedTranslations((prev) => {
-      if (prev.includes(abbrev)) {
-        if (prev.length === 1) return prev;
-        return prev.filter((t) => t !== abbrev);
+  const toggleTranslation = (abbrev: string, isDoubleClick: boolean = false) => {
+    const isSelected = selectedTranslations.includes(abbrev);
+    const isDefault = abbrev === defaultTranslation;
+
+    // Double-click: always set as default
+    if (isDoubleClick) {
+      setDefaultTranslation(abbrev);
+      // Ensure it's selected
+      if (!isSelected) {
+        setSelectedTranslations((prev) => [...prev, abbrev]);
       }
-      return [...prev, abbrev];
-    });
+      return;
+    }
+
+    // Single-click: toggle selection (but can't deselect the default)
+    if (isSelected) {
+      // Can't deselect if it's the only one
+      if (selectedTranslations.length === 1) return;
+
+      // Can't deselect if it's the default - must double-click another first
+      if (isDefault) return;
+
+      // Deselect it
+      setSelectedTranslations((prev) => prev.filter((t) => t !== abbrev));
+    } else {
+      // Select it
+      setSelectedTranslations((prev) => [...prev, abbrev]);
+    }
   };
 
   return (
@@ -77,33 +103,6 @@ export default function ThemesPage() {
       <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 text-white">
         <div className="container mx-auto px-4 py-12 md:py-16">
           <div className="max-w-4xl mx-auto">
-            {/* Navigation */}
-            <div className="flex justify-between items-center mb-6">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-purple-100 hover:text-white transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                <span>Back to Search</span>
-              </Link>
-              <div className="flex gap-2">
-                <Link
-                  href="/browse"
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
-                >
-                  📖 Browse
-                </Link>
-                <Link
-                  href="/compare"
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
-                >
-                  ⚖️ Compare
-                </Link>
-              </div>
-            </div>
-
             <div className="text-center mb-8">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">Thematic Search</h1>
               <p className="text-xl text-purple-100 max-w-2xl mx-auto">
@@ -158,21 +157,32 @@ export default function ThemesPage() {
               {/* Translation filter */}
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                 <span className="text-purple-100 text-sm font-medium">Translations:</span>
-                {TRANSLATIONS.map((trans) => (
-                  <button
-                    key={trans.abbrev}
-                    type="button"
-                    onClick={() => toggleTranslation(trans.abbrev)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                      selectedTranslations.includes(trans.abbrev)
-                        ? 'bg-white text-purple-700'
-                        : 'bg-purple-700/50 text-purple-100 hover:bg-purple-700/70'
-                    }`}
-                  >
-                    {trans.name}
-                  </button>
-                ))}
+                {TRANSLATIONS.map((trans) => {
+                  const isSelected = selectedTranslations.includes(trans.abbrev);
+                  const isDefault = trans.abbrev === defaultTranslation;
+
+                  return (
+                    <button
+                      key={trans.abbrev}
+                      type="button"
+                      onClick={() => toggleTranslation(trans.abbrev, false)}
+                      onDoubleClick={() => toggleTranslation(trans.abbrev, true)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
+                        isSelected
+                          ? 'bg-white text-purple-700 border-2 border-white'
+                          : 'bg-purple-700/50 text-purple-100 hover:bg-purple-700/70 border-2 border-transparent'
+                      } ${isDefault ? 'ring-2 ring-yellow-300' : ''}`}
+                      title={isDefault ? `${trans.name} (Default)` : trans.name}
+                    >
+                      {isDefault && <span className="text-yellow-500">★</span>}
+                      {trans.name}
+                    </button>
+                  );
+                })}
               </div>
+              <p className="mt-2 text-xs text-center text-purple-200">
+                Click to select/deselect • Double-click to set as default (★) • Default can't be deselected
+              </p>
             </form>
           </div>
         </div>
@@ -260,27 +270,54 @@ export default function ThemesPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             {/* Results header */}
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Results for "{results.theme}"
-                </h2>
-                <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                  {results.total_results} verses found
-                  {results.testament_filter && ` in ${results.testament_filter}`}
-                  {' · '}
-                  {results.query_time_ms}ms
-                </p>
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    Results for "{results.theme}"
+                  </h2>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                    {results.total_results} verses found
+                    {results.testament_filter && ` in ${results.testament_filter}`}
+                    {' · '}
+                    {results.query_time_ms}ms
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {/* Language toggle */}
+                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-800 rounded-full p-1">
+                    <button
+                      onClick={() => setShowLanguage('default')}
+                      className={`px-3 py-1 rounded-full text-xs transition-colors ${
+                        showLanguage === 'default'
+                          ? 'bg-purple-600 text-white'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      Default
+                    </button>
+                    <button
+                      onClick={() => setShowLanguage('all')}
+                      className={`px-3 py-1 rounded-full text-xs transition-colors ${
+                        showLanguage === 'all'
+                          ? 'bg-purple-600 text-white'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      All
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setResults(null);
+                      setTheme('');
+                    }}
+                    className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
+                  >
+                    New Search
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => {
-                  setResults(null);
-                  setTheme('');
-                }}
-                className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
-              >
-                New Search
-              </button>
             </div>
 
             {/* Verse cards */}
@@ -289,6 +326,8 @@ export default function ThemesPage() {
                 <VerseCard
                   key={`${result.reference.book}-${result.reference.chapter}-${result.reference.verse}-${idx}`}
                   result={result}
+                  showAllTranslations={showLanguage === 'all'}
+                  defaultTranslation={defaultTranslation}
                 />
               ))}
             </div>

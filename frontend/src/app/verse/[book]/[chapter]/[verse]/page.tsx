@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getVerse, searchVerses } from '@/lib/api';
 import { VerseDetailResponse, SearchResult } from '@/types';
+import InfoTooltip from '@/components/InfoTooltip';
 
 export default function VerseDetailPage() {
   const params = useParams();
@@ -12,9 +13,21 @@ export default function VerseDetailPage() {
   const [relatedVerses, setRelatedVerses] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', '개역개정']);
+  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'RKV']);
 
-  const book = params.book as string;
+  // Translation label mapping for display
+  const translationLabels: Record<string, string> = {
+    'NIV': 'NIV',
+    'ESV': 'ESV',
+    'KJV': 'KJV',
+    'RKV': '개역개정',
+    'KRV': '개역한글',
+    'NASB': 'NASB',
+    'NKJV': 'NKJV',
+    'NLT': 'NLT',
+  };
+
+  const book = decodeURIComponent(params.book as string);
   const chapter = parseInt(params.chapter as string);
   const verse = parseInt(params.verse as string);
 
@@ -41,7 +54,7 @@ export default function VerseDetailPage() {
           // Filter out the current verse
           const filtered = searchResults.results.filter(
             (r) =>
-              !(r.reference.book_en === book && r.reference.chapter === chapter && r.reference.verse === verse)
+              !(r.reference.book === book && r.reference.chapter === chapter && r.reference.verse === verse)
           );
           setRelatedVerses(filtered);
         }
@@ -66,8 +79,15 @@ export default function VerseDetailPage() {
     }
   };
 
-  const navigateToVerse = (ref: { book_en: string; chapter: number; verse: number }) => {
-    router.push(`/verse/${ref.book_en}/${ref.chapter}/${ref.verse}`);
+  const navigateToVerse = (ref: { book: string; chapter: number; verse: number }) => {
+    router.push(`/verse/${encodeURIComponent(ref.book)}/${ref.chapter}/${ref.verse}`);
+  };
+
+  const handleBack = () => {
+    // Use router.back() which Next.js handles properly
+    // If there's no previous page, Next.js will keep you on current page
+    // We add a home link as alternative
+    router.back();
   };
 
   if (loading) {
@@ -105,12 +125,17 @@ export default function VerseDetailPage() {
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 shadow-sm border-b dark:border-slate-700">
         <div className="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <button
-            onClick={() => router.back()}
-            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium mb-2 inline-flex items-center"
-          >
-            ← Back
-          </button>
+          <div className="flex items-center gap-4 mb-2">
+            <button
+              onClick={handleBack}
+              className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium inline-flex items-center text-sm"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back
+            </button>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {reference.book} {reference.chapter}:{reference.verse}
           </h1>
@@ -125,19 +150,27 @@ export default function VerseDetailPage() {
       <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Translation Selector */}
         <div className="mb-6 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 border dark:border-slate-700">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Translations</h3>
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            Translations ({Object.keys(translations).length} loaded)
+          </h3>
           <div className="flex flex-wrap gap-2">
-            {['NIV', 'ESV', 'KJV', '개역개정', '개역한글'].map((trans) => (
+            {[
+              { abbr: 'NIV', label: 'NIV' },
+              { abbr: 'ESV', label: 'ESV' },
+              { abbr: 'KJV', label: 'KJV' },
+              { abbr: 'RKV', label: '개역개정' },
+              { abbr: 'KRV', label: '개역한글' },
+            ].map(({ abbr, label }) => (
               <button
-                key={trans}
-                onClick={() => handleTranslationToggle(trans)}
+                key={abbr}
+                onClick={() => handleTranslationToggle(abbr)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedTranslations.includes(trans)
+                  selectedTranslations.includes(abbr)
                     ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
                 }`}
               >
-                {trans}
+                {label}
               </button>
             ))}
           </div>
@@ -145,14 +178,21 @@ export default function VerseDetailPage() {
 
         {/* Verse Translations */}
         <div className="space-y-4 mb-8">
+          {Object.keys(translations).length === 0 && (
+            <div className="verse-card p-6 text-center text-gray-500 dark:text-gray-400">
+              No translations available for the selected options.
+            </div>
+          )}
           {Object.entries(translations).map(([lang, text]) => (
             <div key={lang} className="verse-card p-6">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-primary-600 dark:text-primary-400 uppercase">{lang}</span>
+                <span className="text-sm font-semibold text-primary-600 dark:text-primary-400 uppercase">
+                  {translationLabels[lang] || lang}
+                </span>
               </div>
               <p
                 className={`text-lg leading-relaxed text-gray-800 dark:text-gray-200 ${
-                  lang.includes('ko') || lang.includes('개역') ? 'verse-text-korean' : 'verse-text'
+                  lang === 'RKV' || lang === 'KRV' || lang.includes('개역') ? 'verse-text-korean' : 'verse-text'
                 }`}
               >
                 {text}
@@ -195,13 +235,19 @@ export default function VerseDetailPage() {
         {/* Context (Previous/Next verses) */}
         {context && (context.previous || context.next) && (
           <div className="verse-card p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Context</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              Context
+              <InfoTooltip
+                title="Context"
+                description="Shows the verses immediately before and after this verse to help you understand the surrounding narrative and flow of thought."
+              />
+            </h3>
             <div className="space-y-4">
               {context.previous && (
                 <div className="border-l-4 border-gray-300 dark:border-slate-600 pl-4">
                   <button
                     onClick={() => navigateToVerse({
-                      book_en: reference.book,
+                      book: reference.book,
                       chapter: context.previous.chapter,
                       verse: context.previous.verse,
                     })}
@@ -216,7 +262,7 @@ export default function VerseDetailPage() {
                 <div className="border-l-4 border-gray-300 dark:border-slate-600 pl-4">
                   <button
                     onClick={() => navigateToVerse({
-                      book_en: reference.book,
+                      book: reference.book,
                       chapter: context.next.chapter,
                       verse: context.next.verse,
                     })}
@@ -234,13 +280,19 @@ export default function VerseDetailPage() {
         {/* Cross References */}
         {cross_references && cross_references.length > 0 && (
           <div className="verse-card p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Cross References</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              Cross References
+              <InfoTooltip
+                title="Cross References"
+                description="Biblically-linked verses that have explicit connections such as parallel passages, prophecy fulfillments, direct quotations, or thematic allusions referenced by biblical scholars."
+              />
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {cross_references.map((ref, idx) => (
                 <button
                   key={idx}
                   onClick={() => navigateToVerse({
-                    book_en: ref.book,
+                    book: ref.book,
                     chapter: ref.chapter,
                     verse: ref.verse,
                   })}
@@ -268,7 +320,13 @@ export default function VerseDetailPage() {
         {/* Related Verses */}
         {relatedVerses.length > 0 && (
           <div className="verse-card p-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Related Verses</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              Related Verses
+              <InfoTooltip
+                title="Related Verses"
+                description="Semantically similar verses discovered through AI-powered meaning analysis. These verses share similar themes, concepts, or messages even if they don't use the same words."
+              />
+            </h3>
             <div className="space-y-4">
               {relatedVerses.map((verse, idx) => (
                 <button

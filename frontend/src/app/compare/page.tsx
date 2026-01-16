@@ -121,30 +121,6 @@ export default function ComparePage() {
       {/* Header */}
       <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-blue-800 text-white">
         <div className="container mx-auto px-4 py-8">
-          {/* Navigation */}
-          <div className="flex justify-between items-center mb-6">
-            <a
-              href="/"
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
-            >
-              ← Back to Search
-            </a>
-            <div className="flex gap-2">
-              <a
-                href="/browse"
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
-              >
-                📖 Browse
-              </a>
-              <a
-                href="/themes"
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
-              >
-                🔍 Themes
-              </a>
-            </div>
-          </div>
-
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Verse Comparison</h1>
           <p className="text-primary-100">
             Compare Bible translations side-by-side • 성경 번역본 비교
@@ -153,7 +129,7 @@ export default function ComparePage() {
       </div>
 
       {/* Controls */}
-      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10 shadow-sm">
+      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-16 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           {/* Verse Selector */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">

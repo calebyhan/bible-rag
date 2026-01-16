@@ -461,7 +461,9 @@ def get_verse_by_reference(
         response["original"] = get_original_words(db, first_verse.id)
 
     # Get context (previous and next verses)
-    response["context"] = get_verse_context(db, book_obj.id, chapter, verse)
+    # Use first selected translation for context
+    context_translation = results[0][1].abbreviation if results else None
+    response["context"] = get_verse_context(db, book_obj.id, chapter, verse, context_translation)
 
     return response
 
@@ -471,6 +473,7 @@ def get_verse_context(
     book_id: UUID,
     chapter: int,
     verse: int,
+    translation_abbr: Optional[str] = None,
 ) -> dict:
     """Get surrounding context for a verse.
 
@@ -479,6 +482,7 @@ def get_verse_context(
         book_id: Book ID
         chapter: Chapter number
         verse: Verse number
+        translation_abbr: Translation abbreviation to use (uses first if None)
 
     Returns:
         Dictionary with previous and next verse info
@@ -488,8 +492,12 @@ def get_verse_context(
     # Convert UUID to string for SQLite compatibility in tests
     book_id_value = str(book_id) if isinstance(book_id, UUID) else book_id
 
-    # Get one translation for context
-    translation = db.query(Translation).first()
+    # Get translation for context
+    if translation_abbr:
+        translation = db.query(Translation).filter(Translation.abbreviation == translation_abbr).first()
+    else:
+        translation = db.query(Translation).first()
+
     if not translation:
         return context
 

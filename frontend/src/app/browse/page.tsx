@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getBooks, getChapter, getTranslations } from '@/lib/api';
 import { Book } from '@/types';
 import ChapterView from '@/components/ChapterView';
+import Toast from '@/components/Toast';
 
 interface ChapterData {
   reference: {
@@ -40,6 +41,9 @@ export default function BrowsePage() {
   // Chapter display state
   const [loadedChapters, setLoadedChapters] = useState<Map<string, ChapterData>>(new Map());
   const [visibleChapters, setVisibleChapters] = useState<string[]>([]);
+
+  // Toast notification
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' | 'warning' } | null>(null);
 
   const chapterRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const bookInputRef = useRef<HTMLDivElement>(null);
@@ -92,9 +96,20 @@ export default function BrowsePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const loadChapter = async (bookName: string, chapter: number) => {
-    const key = `${bookName}-${chapter}`;
-    if (loadedChapters.has(key)) {
+  // Reload chapters when translation changes
+  useEffect(() => {
+    if (selectedBook && selectedChapter && books.length > 0) {
+      // Clear all loaded chapters
+      setLoadedChapters(new Map());
+      setVisibleChapters([]);
+      // Reload current chapter with new translation
+      loadChapter(selectedBook, selectedChapter, true);
+    }
+  }, [selectedTranslation]);
+
+  const loadChapter = async (bookName: string, chapter: number, forceReload = false) => {
+    const key = `${bookName}-${chapter}-${selectedTranslation}`;
+    if (loadedChapters.has(key) && !forceReload) {
       // Already loaded, just scroll to it
       scrollToChapter(key);
       return;
@@ -103,19 +118,36 @@ export default function BrowsePage() {
     try {
       const chapterData = await getChapter(bookName, chapter, [selectedTranslation], false);
       setLoadedChapters((prev) => new Map(prev).set(key, chapterData));
-      setVisibleChapters((prev) => [...prev, key]);
+      setVisibleChapters((prev) => {
+        // Use functional update to avoid race conditions
+        if (prev.includes(key)) {
+          return prev;
+        }
+        return [...prev, key];
+      });
       // Scroll after a brief delay to ensure DOM is updated
       setTimeout(() => scrollToChapter(key), 100);
     } catch (err: any) {
       console.error('Error loading chapter:', err);
-      setError(`Failed to load ${bookName} ${chapter}`);
+      setToast({ message: `Failed to load ${bookName} ${chapter}`, type: 'error' });
     }
   };
 
   const scrollToChapter = (key: string) => {
     const element = chapterRefs.current.get(key);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Calculate offset for navbar (64px) + sticky header (~120px) + padding
+      const navbarHeight = 64; // h-16 = 4rem = 64px
+      const stickyHeaderHeight = 140; // approximate height of browse sticky header
+      const totalOffset = navbarHeight + stickyHeaderHeight + 16; // 16px extra padding
+
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - totalOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -127,27 +159,36 @@ export default function BrowsePage() {
   const handleJumpTo = async (bookName?: string, chapterNum?: number) => {
     // Use provided values or state values
     const targetBook = bookName || searchBook;
-    const targetChapter = chapterNum || (searchChapter ? parseInt(searchChapter) : null);
+    const targetChapter = chapterNum ?? (searchChapter ? parseInt(searchChapter) : null);
 
-    if (!targetBook || !targetChapter) {
-      alert('Please select a book and chapter');
+    // Validate inputs
+    if (!targetBook || typeof targetBook !== 'string' || targetBook.trim() === '') {
+      setToast({ message: 'Please select a book', type: 'warning' });
+      return;
+    }
+
+    if (!targetChapter || isNaN(targetChapter) || targetChapter < 1) {
+      setToast({ message: 'Please enter a valid chapter number', type: 'warning' });
       return;
     }
 
     const book = books.find(
       (b) =>
-        b.name.toLowerCase() === targetBook.toLowerCase() ||
-        b.name_korean === targetBook ||
-        b.abbreviation?.toLowerCase() === targetBook.toLowerCase()
+        b.name.toLowerCase() === targetBook.trim().toLowerCase() ||
+        b.name_korean === targetBook.trim() ||
+        b.abbreviation?.toLowerCase() === targetBook.trim().toLowerCase()
     );
 
     if (!book) {
-      alert('Book not found');
+      setToast({ message: `Book "${targetBook}" not found`, type: 'error' });
       return;
     }
 
-    if (isNaN(targetChapter) || targetChapter < 1 || targetChapter > book.total_chapters) {
-      alert(`Invalid chapter. ${book.name} has ${book.total_chapters} chapters.`);
+    if (targetChapter > book.total_chapters) {
+      setToast({
+        message: `Invalid chapter. ${book.name} has ${book.total_chapters} chapters.`,
+        type: 'warning'
+      });
       return;
     }
 
@@ -171,7 +212,19 @@ export default function BrowsePage() {
       setTimeout(() => {
         const verseElement = document.getElementById(`verse-${searchVerse}`);
         if (verseElement) {
-          verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Calculate offset for navbar + sticky header
+          const navbarHeight = 64;
+          const stickyHeaderHeight = 140;
+          const totalOffset = navbarHeight + stickyHeaderHeight + 16;
+
+          const elementPosition = verseElement.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - totalOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+
           verseElement.classList.add('bg-yellow-100', 'dark:bg-yellow-900/30');
           setTimeout(
             () =>
@@ -241,25 +294,26 @@ export default function BrowsePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Sticky Header with Navigation */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-slate-800 shadow-md border-b dark:border-slate-700">
+      <header className="sticky top-16 z-40 bg-white dark:bg-slate-800 shadow-md border-b dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4">
-            {/* Top row: Title and buttons */}
+            {/* Top row: Title */}
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   Browse Bible
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400">성경 둘러보기</p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => router.push('/')}
-                  className="px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-900 dark:text-gray-100 rounded-lg text-sm font-medium transition-colors"
-                >
-                  ← Home
-                </button>
               </div>
             </div>
 
@@ -278,6 +332,11 @@ export default function BrowsePage() {
                     setShowBookDropdown(true);
                   }}
                   onFocus={() => setShowBookDropdown(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleJumpTo();
+                    }
+                  }}
                   placeholder="Genesis, 창세기, Gen..."
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
@@ -352,6 +411,11 @@ export default function BrowsePage() {
                   type="number"
                   value={searchChapter}
                   onChange={(e) => setSearchChapter(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleJumpTo();
+                    }
+                  }}
                   placeholder="1"
                   min="1"
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -367,6 +431,11 @@ export default function BrowsePage() {
                   type="number"
                   value={searchVerse}
                   onChange={(e) => setSearchVerse(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleJumpTo();
+                    }
+                  }}
                   placeholder="1"
                   min="1"
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -393,7 +462,7 @@ export default function BrowsePage() {
 
               {/* Go Button */}
               <button
-                onClick={handleJumpTo}
+                onClick={() => handleJumpTo()}
                 className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium text-sm whitespace-nowrap"
               >
                 Go

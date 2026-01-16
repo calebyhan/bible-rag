@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
 import './globals.css';
+import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const notoSansKR = Noto_Sans_KR({
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={notoSansKR.variable}>
       <body className="min-h-screen font-sans antialiased flex flex-col">
+        <Navbar />
         <div className="flex-1">{children}</div>
         <Footer />
       </body>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { SearchResult } from '@/types';
 
 interface VerseCardProps {
@@ -27,18 +28,25 @@ export default function VerseCard({ result, showAllTranslations = false, default
   // Determine if text is Korean
   const isKorean = (text: string) => /[\uac00-\ud7a3]/.test(text);
 
+  // Build the verse URL using the English book name
+  const verseUrl = `/verse/${encodeURIComponent(reference.book)}/${reference.chapter}/${reference.verse}`;
+
   return (
     <div className="verse-card">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {reference.book} {reference.chapter}:{reference.verse}
-          </h3>
+          <Link href={verseUrl} className="group">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+              {reference.book} {reference.chapter}:{reference.verse}
+            </h3>
+          </Link>
           {reference.book_korean && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 korean-text">
-              {reference.book_korean} {reference.chapter}:{reference.verse}
-            </p>
+            <Link href={verseUrl} className="group">
+              <p className="text-sm text-gray-600 dark:text-gray-400 korean-text group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                {reference.book_korean} {reference.chapter}:{reference.verse}
+              </p>
+            </Link>
           )}
         </div>
 
@@ -117,15 +125,19 @@ export default function VerseCard({ result, showAllTranslations = false, default
 
           {showCrossRefs && (
             <div className="mt-2 flex flex-wrap gap-2">
-              {cross_references.map((ref, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 cursor-pointer"
-                >
-                  {ref.book} {ref.chapter}:{ref.verse}
-                  <span className="ml-1 text-gray-500 dark:text-gray-400">({ref.relationship})</span>
-                </span>
-              ))}
+              {cross_references.map((ref, idx) => {
+                const crossRefUrl = `/verse/${encodeURIComponent(ref.book)}/${ref.chapter}/${ref.verse}`;
+                return (
+                  <Link
+                    key={idx}
+                    href={crossRefUrl}
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 cursor-pointer transition-colors"
+                  >
+                    {ref.book} {ref.chapter}:{ref.verse}
+                    <span className="ml-1 text-gray-500 dark:text-gray-400">({ref.relationship})</span>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

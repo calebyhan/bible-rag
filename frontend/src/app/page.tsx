@@ -41,28 +41,6 @@ export default function Home() {
       {/* Hero section */}
       <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-blue-800 text-white">
         <div className="container mx-auto px-4 py-16 md:py-24">
-          {/* Navigation */}
-          <div className="flex justify-center gap-4 mb-8">
-            <a
-              href="/browse"
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
-            >
-              📖 Browse Books
-            </a>
-            <a
-              href="/themes"
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
-            >
-              🔍 Thematic Search
-            </a>
-            <a
-              href="/compare"
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
-            >
-              ⚖️ Compare Verses
-            </a>
-          </div>
-
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Bible RAG</h1>
             <p className="text-xl text-primary-100 max-w-2xl mx-auto">
