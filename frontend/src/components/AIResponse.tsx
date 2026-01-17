@@ -1,5 +1,7 @@
 'use client';
 
+import InfoTooltip from './InfoTooltip';
+
 interface AIResponseProps {
   response: string;
   isLoading?: boolean;
@@ -42,7 +44,13 @@ export default function AIResponse({ response, isLoading = false }: AIResponsePr
           </svg>
         </div>
         <div className="flex-1">
-          <h4 className="text-sm font-medium text-primary-700 dark:text-primary-300 mb-2">AI Insight</h4>
+          <div className="flex items-center mb-2">
+            <h4 className="text-sm font-medium text-primary-700 dark:text-primary-300">AI Insight</h4>
+            <InfoTooltip
+              title="AI-Generated Content"
+              description="This response is AI-generated and may contain inaccuracies. Always verify important theological or doctrinal information with trusted sources and Scripture."
+            />
+          </div>
           <p className={`text-gray-800 dark:text-gray-200 ${isKorean ? 'korean-text' : ''}`}>
             {response}
           </p>

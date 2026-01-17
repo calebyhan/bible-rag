@@ -119,14 +119,54 @@ export async function searchThemes(request: ThemeRequest): Promise<ThemeResponse
 
 /**
  * Get all available translations.
+ * Results are cached in memory to avoid repeated API calls.
  */
+let translationsCache: TranslationsResponse | null = null;
+let translationsCachePromise: Promise<TranslationsResponse> | null = null;
+
 export async function getTranslations(language?: string): Promise<TranslationsResponse> {
-  try {
-    const params = language ? `?language=${language}` : '';
-    const response = await api.get<TranslationsResponse>(`/api/translations${params}`);
-    return response.data;
-  } catch (error) {
-    handleError(error as AxiosError);
+  // If filtering by language, skip cache and fetch fresh
+  if (language) {
+    try {
+      const response = await api.get<TranslationsResponse>(`/api/translations?language=${language}`);
+      return response.data;
+    } catch (error) {
+      handleError(error as AxiosError);
+    }
+  }
+
+  // Return cached data if available
+  if (translationsCache) {
+    return translationsCache;
+  }
+
+  // If a fetch is already in progress, wait for it
+  if (translationsCachePromise) {
+    return translationsCachePromise;
+  }
+
+  // Fetch and cache
+  translationsCachePromise = (async () => {
+    try {
+      const response = await api.get<TranslationsResponse>('/api/translations');
+      translationsCache = response.data;
+      return response.data;
+    } catch (error) {
+      translationsCachePromise = null; // Clear on error to allow retry
+      handleError(error as AxiosError);
+    }
+  })();
+
+  return translationsCachePromise;
+}
+
+/**
+ * Preload translations into cache.
+ * Call this early (e.g., in layout) to have data ready before components need it.
+ */
+export function preloadTranslations(): void {
+  if (!translationsCache && !translationsCachePromise) {
+    getTranslations().catch(() => {}); // Fire and forget, errors handled in getTranslations
   }
 }
 

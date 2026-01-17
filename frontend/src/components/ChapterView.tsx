@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getVerse } from '@/lib/api';
+import OriginalLanguage from '@/components/OriginalLanguage';
+import { OriginalLanguageData, CrossReference } from '@/types';
 
 interface Verse {
   verse: number;
@@ -27,27 +29,12 @@ interface ChapterViewProps {
   };
   verses: Verse[];
   selectedTranslation: string;
+  showOriginal?: boolean;
 }
 
 interface VerseDetails {
-  original?: {
-    language: string;
-    text: string;
-    words: Array<{
-      word: string;
-      transliteration: string;
-      strongs: string;
-      morphology: string;
-      definition: string;
-    }>;
-  };
-  cross_references?: Array<{
-    book: string;
-    chapter: number;
-    verse: number;
-    text: string;
-    relationship: string;
-  }>;
+  original?: OriginalLanguageData;
+  cross_references?: CrossReference[];
   translations: Record<string, string>;
 }
 
@@ -55,6 +42,7 @@ export default function ChapterView({
   reference,
   verses,
   selectedTranslation,
+  showOriginal = true,
 }: ChapterViewProps) {
   const router = useRouter();
   const [expandedVerse, setExpandedVerse] = useState<number | null>(null);
@@ -79,7 +67,7 @@ export default function ChapterView({
           reference.chapter,
           verseNum,
           [selectedTranslation],
-          true
+          showOriginal
         );
         setVerseDetails((prev) => ({
           ...prev,
@@ -110,7 +98,7 @@ export default function ChapterView({
           </p>
         )}
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          Click any verse to see cross-references and original language
+          Click any verse to see {showOriginal ? 'original language, ' : ''}cross-references{showOriginal ? '' : ', and more'}
         </p>
       </div>
 
@@ -188,48 +176,15 @@ export default function ChapterView({
                       </div>
                       {/* Original Language */}
                       {details.original && (
-                        <div>
-                          <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                            <span>📜</span>
-                            Original Language ({details.original.language === 'greek' ? 'Greek' : 'Hebrew'})
-                          </h4>
-                          <div className="text-lg mb-3 font-serif text-gray-900 dark:text-gray-100">
-                            {details.original.text}
-                          </div>
-                          <div className="space-y-2">
-                            {details.original.words.map((word, idx) => (
-                              <div
-                                key={idx}
-                                className="p-2 bg-white dark:bg-slate-700 rounded text-sm"
-                              >
-                                <div className="flex items-start gap-2">
-                                  <span className="font-bold text-primary-600 dark:text-primary-400">
-                                    {word.word}
-                                  </span>
-                                  {word.transliteration && (
-                                    <span className="text-gray-600 dark:text-gray-400 italic">
-                                      {word.transliteration}
-                                    </span>
-                                  )}
-                                  {word.strongs && (
-                                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
-                                      {word.strongs}
-                                    </span>
-                                  )}
-                                </div>
-                                {word.definition && (
-                                  <p className="text-gray-700 dark:text-gray-300 mt-1">
-                                    {word.definition}
-                                  </p>
-                                )}
-                                {word.morphology && (
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    {word.morphology}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                        <div className="mb-4">
+                          <OriginalLanguage
+                            language={details.original.language as 'greek' | 'hebrew' | 'aramaic'}
+                            text={details.original.words?.map(w => w.word).join(' ') || ''}
+                            transliteration={details.original.words?.map(w => w.transliteration).filter(Boolean).join(' ')}
+                            words={details.original.words}
+                            strongs={details.original.words?.map(w => w.strongs).filter(Boolean) as string[]}
+                            showInterlinear={true}
+                          />
                         </div>
                       )}
 
@@ -250,7 +205,7 @@ export default function ChapterView({
                                 }}
                                 className="w-full text-left p-3 bg-white dark:bg-slate-700 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors cursor-pointer"
                               >
-                                <div className="flex items-start justify-between gap-2 mb-1">
+                                <div className="flex items-start justify-between gap-2">
                                   <span className="font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
                                     {ref.book} {ref.chapter}:{ref.verse} →
                                   </span>
@@ -260,9 +215,6 @@ export default function ChapterView({
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-sm text-gray-700 dark:text-gray-300">
-                                  {ref.text}
-                                </p>
                               </button>
                             ))}
                           </div>

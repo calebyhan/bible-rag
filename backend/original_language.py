@@ -12,11 +12,18 @@ import re
 from typing import Dict, List, Optional
 from uuid import UUID
 
-import httpx
+import requests
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from database import Book, OriginalWord, SessionLocal, Verse
+
+# httpx is optional - only needed for async version
+try:
+    import httpx
+    HTTPX_AVAILABLE = True
+except ImportError:
+    HTTPX_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +34,10 @@ class OriginalLanguageManager:
     # Strong's concordance data sources (JavaScript format, not JSON)
     STRONGS_HEBREW_URL = "https://raw.githubusercontent.com/openscriptures/strongs/master/hebrew/strongs-hebrew-dictionary.js"
     STRONGS_GREEK_URL = "https://raw.githubusercontent.com/openscriptures/strongs/master/greek/strongs-greek-dictionary.js"
+
+    # Fallback: .dat file format (simple text-based)
+    STRONGS_GREEK_DAT_URL = "https://raw.githubusercontent.com/openscriptures/strongs/master/greek/strongsgreek.dat"
+    STRONGS_HEBREW_DAT_URL = "https://raw.githubusercontent.com/openscriptures/strongs/master/hebrew/strongshebrew.dat"
 
     def __init__(self, db: Optional[Session] = None):
         """Initialize the original language manager.
@@ -87,10 +98,100 @@ class OriginalLanguageManager:
             logger.error(f"Error near line {len(lines)}: {lines[-1] if lines else 'unknown'}")
             return {}
 
-    async def fetch_strongs_data(self) -> tuple[Dict, Dict]:
-        """Fetch Strong's concordance data from GitHub.
+    def _parse_dat_format(self, dat_text: str, language: str) -> Dict:
+        """Parse Strong's .dat file format to dictionary.
 
-        The data is in JavaScript format, not JSON, so requires parsing.
+        The format is:
+        $$T0005598
+        \\05598\\
+         5598  omega  o'-meg-ah
+
+         the last letter of the Greek alphabet, i.e. (figuratively) the
+         finality:--Omega.
+
+        Args:
+            dat_text: .dat file content
+            language: "greek" or "hebrew" for prefix
+
+        Returns:
+            Dictionary mapping Strong's numbers to definitions
+        """
+        prefix = "G" if language == "greek" else "H"
+        strongs_dict = {}
+
+        # Split into entries using $$T marker
+        entries = re.split(r'\$\$T0+', dat_text)
+
+        for entry in entries:
+            if not entry.strip():
+                continue
+
+            lines = entry.strip().split('\n')
+            if not lines:
+                continue
+
+            # First line after $$T is the number
+            first_line = lines[0]
+
+            # Look for number pattern like \05598\ or just 5598
+            number_match = re.search(r'\\?0*(\d{1,5})\\?', first_line)
+            if not number_match:
+                continue
+
+            strongs_number = prefix + number_match.group(1)
+
+            # Parse the definition line (format: " 5598  lemma  transliteration")
+            lemma = ""
+            translit = ""
+            definition_lines = []
+
+            found_lemma_line = False
+            for i, line in enumerate(lines):
+                # Skip the number line
+                if i == 0:
+                    continue
+
+                stripped = line.strip()
+                if not stripped:
+                    continue
+
+                # Look for line with: number lemma transliteration
+                # Example: " 8600  tphowtsah  tef-o-tsaw'"
+                if not found_lemma_line and re.match(r'^\s*\d+\s+\S+\s+\S', line):
+                    parts = stripped.split(None, 2)  # Split on whitespace, max 3 parts
+                    if len(parts) >= 3:
+                        # parts[0] is number, parts[1] is lemma, parts[2] is transliteration
+                        lemma = parts[1]
+                        translit = parts[2]
+                        found_lemma_line = True
+                    continue
+
+                # Skip "see GREEK" / "see HEBREW" references
+                if stripped.startswith('see GREEK') or stripped.startswith('see HEBREW'):
+                    continue
+
+                # Everything else is definition
+                definition_lines.append(stripped)
+
+            # Combine definition lines
+            definition = ' '.join(definition_lines).strip()
+
+            # Only add if we have a definition
+            if definition:
+                strongs_dict[strongs_number] = {
+                    "lemma": lemma,
+                    "translit": translit,
+                    "strongs_def": definition,
+                    "kjv_def": definition  # Same as definition for .dat format
+                }
+
+        logger.info(f"Parsed {len(strongs_dict)} entries from .dat file")
+        return strongs_dict
+
+    async def fetch_strongs_data(self) -> tuple[Dict, Dict]:
+        """Fetch Strong's concordance data from GitHub (async version).
+
+        Tries JavaScript format first, falls back to .dat format if unavailable.
 
         Returns:
             Tuple of (hebrew_data, greek_data) dictionaries.
@@ -98,20 +199,84 @@ class OriginalLanguageManager:
         Raises:
             httpx.HTTPError: If fetching data fails.
         """
+        if not HTTPX_AVAILABLE:
+            raise ImportError("httpx is required for async operations. Use fetch_strongs_data_sync() instead.")
+
         logger.info("Fetching Strong's concordance data...")
 
         async with httpx.AsyncClient(timeout=60.0) as client:
-            # Fetch Hebrew data
-            logger.info(f"Fetching Hebrew data from {self.STRONGS_HEBREW_URL}")
-            hebrew_response = await client.get(self.STRONGS_HEBREW_URL)
-            hebrew_response.raise_for_status()
-            hebrew_data = self._parse_js_dictionary(hebrew_response.text)
+            # Try Hebrew data - JavaScript first, then .dat
+            hebrew_data = {}
+            try:
+                logger.info(f"Fetching Hebrew data from {self.STRONGS_HEBREW_URL}")
+                hebrew_response = await client.get(self.STRONGS_HEBREW_URL)
+                hebrew_response.raise_for_status()
+                hebrew_data = self._parse_js_dictionary(hebrew_response.text)
+            except Exception as e:
+                logger.warning(f"Failed to fetch Hebrew JS format: {e}")
+                logger.info(f"Trying .dat format: {self.STRONGS_HEBREW_DAT_URL}")
+                try:
+                    hebrew_dat_response = await client.get(self.STRONGS_HEBREW_DAT_URL)
+                    hebrew_dat_response.raise_for_status()
+                    hebrew_data = self._parse_dat_format(hebrew_dat_response.text, "hebrew")
+                except Exception as dat_error:
+                    logger.error(f"Failed to fetch Hebrew .dat format: {dat_error}")
 
-            # Fetch Greek data
-            logger.info(f"Fetching Greek data from {self.STRONGS_GREEK_URL}")
-            greek_response = await client.get(self.STRONGS_GREEK_URL)
+            # Try Greek data - JavaScript first, then .dat
+            greek_data = {}
+            try:
+                logger.info(f"Fetching Greek data from {self.STRONGS_GREEK_URL}")
+                greek_response = await client.get(self.STRONGS_GREEK_URL)
+                greek_response.raise_for_status()
+                greek_data = self._parse_js_dictionary(greek_response.text)
+            except Exception as e:
+                logger.warning(f"Failed to fetch Greek JS format: {e}")
+                logger.info(f"Trying .dat format: {self.STRONGS_GREEK_DAT_URL}")
+                try:
+                    greek_dat_response = await client.get(self.STRONGS_GREEK_DAT_URL)
+                    greek_dat_response.raise_for_status()
+                    greek_data = self._parse_dat_format(greek_dat_response.text, "greek")
+                except Exception as dat_error:
+                    logger.error(f"Failed to fetch Greek .dat format: {dat_error}")
+
+        logger.info(
+            f"Fetched {len(hebrew_data)} Hebrew entries and {len(greek_data)} Greek entries"
+        )
+
+        self.strongs_hebrew_data = hebrew_data
+        self.strongs_greek_data = greek_data
+
+        return hebrew_data, greek_data
+
+    def fetch_strongs_data_sync(self) -> tuple[Dict, Dict]:
+        """Fetch Strong's concordance data synchronously (for use in scripts).
+
+        Tries JavaScript format first, falls back to .dat format if unavailable.
+
+        Returns:
+            Tuple of (hebrew_data, greek_data) dictionaries.
+        """
+        logger.info("Fetching Strong's concordance data (synchronous)...")
+
+        # Try Hebrew data - .dat format
+        hebrew_data = {}
+        try:
+            logger.info(f"Fetching Hebrew .dat from {self.STRONGS_HEBREW_DAT_URL}")
+            hebrew_response = requests.get(self.STRONGS_HEBREW_DAT_URL, timeout=60)
+            hebrew_response.raise_for_status()
+            hebrew_data = self._parse_dat_format(hebrew_response.text, "hebrew")
+        except Exception as e:
+            logger.error(f"Failed to fetch Hebrew .dat format: {e}")
+
+        # Try Greek data - .dat format
+        greek_data = {}
+        try:
+            logger.info(f"Fetching Greek .dat from {self.STRONGS_GREEK_DAT_URL}")
+            greek_response = requests.get(self.STRONGS_GREEK_DAT_URL, timeout=60)
             greek_response.raise_for_status()
-            greek_data = self._parse_js_dictionary(greek_response.text)
+            greek_data = self._parse_dat_format(greek_response.text, "greek")
+        except Exception as e:
+            logger.error(f"Failed to fetch Greek .dat format: {e}")
 
         logger.info(
             f"Fetched {len(hebrew_data)} Hebrew entries and {len(greek_data)} Greek entries"
@@ -242,6 +407,188 @@ class OriginalLanguageManager:
             "Full original text population requires specialized parsing - not yet implemented"
         )
         return 0
+
+    def populate_greek_nt(self, verses_data: list[dict], batch_size: int = 100) -> int:
+        """Populate Greek New Testament original words from OpenGNT data.
+
+        Args:
+            verses_data: List of verse dictionaries from fetch_opengnt()
+            batch_size: Number of verses to commit at once
+
+        Returns:
+            Number of words created
+        """
+        from tqdm import tqdm
+
+        logger.info(f"Populating Greek NT with {len(verses_data)} verses...")
+
+        # Load Strong's definitions if not already loaded
+        if not self.strongs_greek_data:
+            logger.info("Loading Strong's Greek definitions...")
+            self.fetch_strongs_data_sync()
+
+        total_words = 0
+        batch = []
+
+        for verse_data in tqdm(verses_data, desc="Populating Greek NT"):
+            # Find the verse in the database
+            book_query = select(Book).where(Book.book_number == verse_data["book_number"])
+            book = self.db.execute(book_query).scalar_one_or_none()
+
+            if not book:
+                logger.warning(f"Book {verse_data['book_number']} not found")
+                continue
+
+            verse_query = (
+                select(Verse)
+                .where(Verse.book_id == book.id)
+                .where(Verse.chapter == verse_data["chapter"])
+                .where(Verse.verse == verse_data["verse"])
+                .limit(1)  # Get first matching verse (works across all translations)
+            )
+            verse = self.db.execute(verse_query).scalars().first()
+
+            if not verse:
+                logger.warning(
+                    f"Verse not found: Book {verse_data['book_number']}, "
+                    f"Chapter {verse_data['chapter']}, Verse {verse_data['verse']}"
+                )
+                continue
+
+            # Add each word from this verse
+            for word_data in verse_data["words"]:
+                # Get Strong's definition if available
+                definition = None
+                if word_data.get("strongs"):
+                    strongs_data = self.get_strongs_definition(word_data["strongs"], "greek")
+                    if strongs_data:
+                        definition = strongs_data.get("strongs_def") or strongs_data.get("kjv_def")
+
+                original_word = OriginalWord(
+                    verse_id=verse.id,
+                    word=word_data["text"],
+                    language="greek",
+                    strongs_number=word_data.get("strongs"),
+                    transliteration=word_data.get("transliteration"),
+                    morphology=word_data.get("morphology"),
+                    definition=definition,
+                    word_order=word_data.get("word_order", 0),
+                )
+
+                batch.append(original_word)
+                total_words += 1
+
+                # Commit in batches
+                if len(batch) >= batch_size:
+                    self.db.add_all(batch)
+                    self.db.commit()
+                    batch = []
+
+        # Commit remaining words
+        if batch:
+            self.db.add_all(batch)
+            self.db.commit()
+
+        logger.info(f"✅ Created {total_words} Greek words")
+        return total_words
+
+    def populate_hebrew_ot(self, verses_data: list[dict], batch_size: int = 100) -> int:
+        """Populate Hebrew Old Testament original words from WLC/OSHB data.
+
+        Args:
+            verses_data: List of verse dictionaries from fetch_wlc_hebrew()
+            batch_size: Number of verses to commit at once
+
+        Returns:
+            Number of words created
+        """
+        from tqdm import tqdm
+
+        logger.info(f"Populating Hebrew OT with {len(verses_data)} verses...")
+
+        # Load Strong's definitions if not already loaded
+        if not self.strongs_hebrew_data:
+            logger.info("Loading Strong's Hebrew definitions...")
+            self.fetch_strongs_data_sync()
+
+        total_words = 0
+        batch = []
+
+        for verse_data in tqdm(verses_data, desc="Populating Hebrew OT"):
+            # Find the verse in the database using book name
+            book_name = verse_data.get("book")
+            if not book_name:
+                logger.warning(f"Missing book name in verse data")
+                continue
+
+            book_query = select(Book).where(Book.name == book_name)
+            book = self.db.execute(book_query).scalar_one_or_none()
+
+            if not book:
+                logger.warning(f"Book '{book_name}' not found in database")
+                continue
+
+            verse_query = (
+                select(Verse)
+                .where(Verse.book_id == book.id)
+                .where(Verse.chapter == verse_data["chapter"])
+                .where(Verse.verse == verse_data["verse"])
+                .limit(1)  # Get first matching verse (works across all translations)
+            )
+            verse = self.db.execute(verse_query).scalars().first()
+
+            if not verse:
+                logger.warning(
+                    f"Verse not found: {book_name} {verse_data['chapter']}:{verse_data['verse']}"
+                )
+                continue
+
+            # Determine language (Hebrew or Aramaic)
+            # Note: Daniel and Ezra have some Aramaic portions
+            language = verse_data.get("language", "hebrew")
+
+            # Add each word from this verse
+            for word_data in verse_data["words"]:
+                # Get Strong's definition and transliteration if available
+                definition = None
+                transliteration = word_data.get("transliteration")  # From WLC if available
+                strongs_num = word_data.get("strongs")
+
+                if strongs_num:
+                    strongs_data = self.get_strongs_definition(strongs_num, "hebrew")
+                    if strongs_data:
+                        definition = strongs_data.get("strongs_def") or strongs_data.get("kjv_def")
+                        # Use Strong's transliteration if WLC doesn't provide one
+                        if not transliteration:
+                            transliteration = strongs_data.get("translit")
+
+                original_word = OriginalWord(
+                    verse_id=verse.id,
+                    word=word_data.get("word"),
+                    language=language,
+                    strongs_number=strongs_num,
+                    transliteration=transliteration,
+                    morphology=word_data.get("morphology"),
+                    definition=definition,
+                    word_order=word_data.get("word_order", 0),
+                )
+
+                batch.append(original_word)
+                total_words += 1
+
+                # Commit in batches
+                if len(batch) >= batch_size:
+                    self.db.add_all(batch)
+                    self.db.commit()
+                    batch = []
+
+        # Commit remaining words
+        if batch:
+            self.db.add_all(batch)
+            self.db.commit()
+
+        logger.info(f"✅ Created {total_words} Hebrew/Aramaic words")
+        return total_words
 
     def add_sample_original_words(self) -> int:
         """Add sample original language words for demonstration.

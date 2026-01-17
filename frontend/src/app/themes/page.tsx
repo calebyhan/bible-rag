@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { searchThemes } from '@/lib/api';
+import { searchThemes, getTranslations } from '@/lib/api';
 import { ThemeResponse, SearchResult } from '@/types';
 import VerseCard from '@/components/VerseCard';
 
@@ -17,26 +17,53 @@ const POPULAR_THEMES = [
   { theme: 'peace', label: 'Peace', emoji: '🕊️' },
 ];
 
-const TRANSLATIONS = [
-  { abbrev: 'NIV', name: 'NIV', language: 'en' },
-  { abbrev: 'ESV', name: 'ESV', language: 'en' },
-  { abbrev: 'NASB', name: 'NASB', language: 'en' },
-  { abbrev: 'KJV', name: 'KJV', language: 'en' },
-  { abbrev: 'NLT', name: 'NLT', language: 'en' },
-  { abbrev: 'RKV', name: '개역개정', language: 'ko' },
-  { abbrev: 'KRV', name: '개역한글', language: 'ko' },
-  { abbrev: 'NKRV', name: '새번역', language: 'ko' },
-];
+interface Translation {
+  abbrev: string;
+  name: string;
+  language: string;
+}
 
 export default function ThemesPage() {
   const [theme, setTheme] = useState('');
   const [testament, setTestament] = useState<'OT' | 'NT' | 'both'>('both');
-  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'RKV']);
+  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'NKRV']);
   const [defaultTranslation, setDefaultTranslation] = useState<string>('NIV');
   const [showLanguage, setShowLanguage] = useState<'default' | 'all'>('default');
   const [results, setResults] = useState<ThemeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [translations, setTranslations] = useState<Translation[]>([]);
+  const [translationsLoading, setTranslationsLoading] = useState(true);
+
+  // Fetch translations from API on mount
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      try {
+        const response = await getTranslations();
+        const mappedTranslations = response.translations
+          .filter(t => !t.is_original_language)
+          .map(t => ({
+            abbrev: t.abbreviation,
+            name: t.name,
+            language: t.language_code,
+          }));
+        setTranslations(mappedTranslations);
+      } catch (error) {
+        console.error('Failed to fetch translations:', error);
+        setTranslations([
+          { abbrev: 'NIV', name: 'New International Version', language: 'en' },
+          { abbrev: 'ESV', name: 'English Standard Version', language: 'en' },
+          { abbrev: 'KJV', name: 'King James Version', language: 'en' },
+          { abbrev: 'NKRV', name: '개역개정', language: 'ko' },
+          { abbrev: 'KRV', name: '개역한글', language: 'ko' },
+        ]);
+      } finally {
+        setTranslationsLoading(false);
+      }
+    };
+
+    fetchTranslations();
+  }, []);
 
   const handleSearch = async (themeQuery: string) => {
     if (!themeQuery.trim()) return;
@@ -157,7 +184,10 @@ export default function ThemesPage() {
               {/* Translation filter */}
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                 <span className="text-purple-100 text-sm font-medium">Translations:</span>
-                {TRANSLATIONS.map((trans) => {
+                {translationsLoading ? (
+                  <span className="text-purple-200 text-xs">Loading...</span>
+                ) : (
+                  translations.map((trans) => {
                   const isSelected = selectedTranslations.includes(trans.abbrev);
                   const isDefault = trans.abbrev === defaultTranslation;
 
@@ -178,7 +208,8 @@ export default function ThemesPage() {
                       {trans.name}
                     </button>
                   );
-                })}
+                })
+                )}
               </div>
               <p className="mt-2 text-xs text-center text-purple-200">
                 Click to select/deselect • Double-click to set as default (★) • Default can't be deselected

@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getVerse, searchVerses } from '@/lib/api';
+import { getVerse, searchVerses, getTranslations } from '@/lib/api';
 import { VerseDetailResponse, SearchResult } from '@/types';
 import InfoTooltip from '@/components/InfoTooltip';
+import OriginalLanguage from '@/components/OriginalLanguage';
 
 export default function VerseDetailPage() {
   const params = useParams();
@@ -12,36 +13,98 @@ export default function VerseDetailPage() {
   const [verseData, setVerseData] = useState<VerseDetailResponse | null>(null);
   const [relatedVerses, setRelatedVerses] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingRelated, setLoadingRelated] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'RKV']);
+  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'KRV']);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [availableTranslations, setAvailableTranslations] = useState<Array<{abbreviation: string; name: string}>>([]);
+  const [translationsLoading, setTranslationsLoading] = useState(true);
 
   // Translation label mapping for display
   const translationLabels: Record<string, string> = {
     'NIV': 'NIV',
     'ESV': 'ESV',
     'KJV': 'KJV',
-    'RKV': '개역개정',
+    'NKRV': '개역개정',
     'KRV': '개역한글',
+    'RKV': '개역성경',
+    'RNKSV': '새번역',
     'NASB': 'NASB',
     'NKJV': 'NKJV',
     'NLT': 'NLT',
+    'WEB': 'WEB',
+    'KCBS': '공동번역',
   };
 
   const book = decodeURIComponent(params.book as string);
   const chapter = parseInt(params.chapter as string);
   const verse = parseInt(params.verse as string);
 
+  // Fetch available translations on mount
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      try {
+        const response = await getTranslations();
+        const nonOriginalTranslations = response.translations
+          .filter(t => !t.is_original_language)
+          .map(t => ({
+            abbreviation: t.abbreviation,
+            name: t.name,
+          }));
+
+        // Remove duplicates based on abbreviation
+        const uniqueTranslations = nonOriginalTranslations.filter(
+          (trans, index, self) =>
+            index === self.findIndex(t => t.abbreviation === trans.abbreviation)
+        );
+
+        setAvailableTranslations(uniqueTranslations);
+      } catch (error) {
+        console.error('Failed to fetch translations:', error);
+        // Fallback to common translations
+        setAvailableTranslations([
+          { abbreviation: 'NIV', name: 'New International Version' },
+          { abbreviation: 'ESV', name: 'English Standard Version' },
+          { abbreviation: 'KJV', name: 'King James Version' },
+          { abbreviation: 'KRV', name: '개역한글' },
+          { abbreviation: 'NKRV', name: '개역개정' },
+        ]);
+      } finally {
+        setTranslationsLoading(false);
+      }
+    };
+
+    fetchTranslations();
+  }, []);
+
+  // Fetch main verse data (fast - loads immediately)
   useEffect(() => {
     const fetchVerseData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch verse in multiple translations
-        const data = await getVerse(book, chapter, verse, selectedTranslations, true);
+        // Fetch verse WITHOUT cross-references (faster initial load)
+        const data = await getVerse(book, chapter, verse, selectedTranslations, showOriginal);
         setVerseData(data);
+      } catch (err: any) {
+        console.error('Error fetching verse:', err);
+        setError(err.message || 'Failed to load verse');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        // Fetch semantically related verses
+    fetchVerseData();
+  }, [book, chapter, verse, selectedTranslations, showOriginal]);
+
+  // Fetch related verses after main verse loads (lazy hydration)
+  useEffect(() => {
+    if (!verseData) return;
+
+    const fetchRelatedVerses = async () => {
+      try {
+        setLoadingRelated(true);
         const reference = `${book} ${chapter}:${verse}`;
         const searchResults = await searchVerses({
           query: reference,
@@ -59,15 +122,14 @@ export default function VerseDetailPage() {
           setRelatedVerses(filtered);
         }
       } catch (err: any) {
-        console.error('Error fetching verse:', err);
-        setError(err.message || 'Failed to load verse');
+        console.error('Error fetching related verses:', err);
       } finally {
-        setLoading(false);
+        setLoadingRelated(false);
       }
     };
 
-    fetchVerseData();
-  }, [book, chapter, verse, selectedTranslations]);
+    fetchRelatedVerses();
+  }, [verseData, book, chapter, verse, selectedTranslations]);
 
   const handleTranslationToggle = (translation: string) => {
     if (selectedTranslations.includes(translation)) {
@@ -150,29 +212,49 @@ export default function VerseDetailPage() {
       <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Translation Selector */}
         <div className="mb-6 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 border dark:border-slate-700">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">
-            Translations ({Object.keys(translations).length} loaded)
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { abbr: 'NIV', label: 'NIV' },
-              { abbr: 'ESV', label: 'ESV' },
-              { abbr: 'KJV', label: 'KJV' },
-              { abbr: 'RKV', label: '개역개정' },
-              { abbr: 'KRV', label: '개역한글' },
-            ].map(({ abbr, label }) => (
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              Translations ({Object.keys(translations).length} loaded)
+            </h3>
+
+            {/* Original Language Toggle */}
+            <div className="inline-flex items-center gap-1">
               <button
-                key={abbr}
-                onClick={() => handleTranslationToggle(abbr)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedTranslations.includes(abbr)
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
+                onClick={() => setShowOriginal(!showOriginal)}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  showOriginal
+                    ? 'bg-amber-500 text-white hover:bg-amber-600'
+                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50'
                 }`}
               >
-                {label}
+                <span className="text-base">📖</span>
+                <span>{showOriginal ? 'Hide' : 'Show'} Original</span>
               </button>
-            ))}
+              <InfoTooltip
+                title="Original Language"
+                description="View the original Greek (NT) or Hebrew (OT) text with transliteration, Strong's concordance numbers, and word-by-word definitions."
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {translationsLoading ? (
+              <div className="text-sm text-gray-500 dark:text-gray-400">Loading translations...</div>
+            ) : (
+              availableTranslations.map(({ abbreviation, name }) => (
+                <button
+                  key={abbreviation}
+                  onClick={() => handleTranslationToggle(abbreviation)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    selectedTranslations.includes(abbreviation)
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
+                  }`}
+                >
+                  {name}
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -192,7 +274,7 @@ export default function VerseDetailPage() {
               </div>
               <p
                 className={`text-lg leading-relaxed text-gray-800 dark:text-gray-200 ${
-                  lang === 'RKV' || lang === 'KRV' || lang.includes('개역') ? 'verse-text-korean' : 'verse-text'
+                  lang === 'NKRV' || lang === 'KRV' || lang === 'RKV' || lang === 'RNKSV' || lang === 'KCBS' || lang.includes('개역') ? 'verse-text-korean' : 'verse-text'
                 }`}
               >
                 {text}
@@ -202,33 +284,16 @@ export default function VerseDetailPage() {
         </div>
 
         {/* Original Language */}
-        {original && (
-          <div className="verse-card p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-              <span className="mr-2">📖</span>
-              Original Language ({original.language === 'greek' ? 'Greek' : 'Hebrew'})
-            </h3>
-            <div className="space-y-4">
-              <p className="text-2xl font-serif text-gray-900 dark:text-gray-100 mb-4">{original.text}</p>
-              {original.transliteration && (
-                <div>
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Transliteration:</span>
-                  <p className="text-lg text-gray-800 dark:text-gray-200 italic mt-1">{original.transliteration}</p>
-                </div>
-              )}
-              {original.strongs && original.strongs.length > 0 && (
-                <div>
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Strong's Numbers:</span>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {original.strongs.map((num) => (
-                      <span key={num} className="badge bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
-                        {num}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+        {original && showOriginal && (
+          <div className="mb-8">
+            <OriginalLanguage
+              language={original.language as 'greek' | 'hebrew' | 'aramaic'}
+              text={original.words?.map(w => w.word).join(' ') || ''}
+              transliteration={original.words?.map(w => w.transliteration).filter(Boolean).join(' ') || ''}
+              words={original.words || []}
+              strongs={original.words?.map(w => w.strongs).filter(Boolean) as string[] || []}
+              showInterlinear={true}
+            />
           </div>
         )}
 
@@ -248,8 +313,8 @@ export default function VerseDetailPage() {
                   <button
                     onClick={() => navigateToVerse({
                       book: reference.book,
-                      chapter: context.previous.chapter,
-                      verse: context.previous.verse,
+                      chapter: context.previous!.chapter,
+                      verse: context.previous!.verse,
                     })}
                     className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 mb-1"
                   >
@@ -263,8 +328,8 @@ export default function VerseDetailPage() {
                   <button
                     onClick={() => navigateToVerse({
                       book: reference.book,
-                      chapter: context.next.chapter,
-                      verse: context.next.verse,
+                      chapter: context.next!.chapter,
+                      verse: context.next!.verse,
                     })}
                     className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 mb-1"
                   >
@@ -281,7 +346,7 @@ export default function VerseDetailPage() {
         {cross_references && cross_references.length > 0 && (
           <div className="verse-card p-6 mb-8">
             <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-              Cross References
+              Cross References ({cross_references.length})
               <InfoTooltip
                 title="Cross References"
                 description="Biblically-linked verses that have explicit connections such as parallel passages, prophecy fulfillments, direct quotations, or thematic allusions referenced by biblical scholars."
@@ -317,16 +382,21 @@ export default function VerseDetailPage() {
           </div>
         )}
 
-        {/* Related Verses */}
-        {relatedVerses.length > 0 && (
-          <div className="verse-card p-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-              Related Verses
-              <InfoTooltip
-                title="Related Verses"
-                description="Semantically similar verses discovered through AI-powered meaning analysis. These verses share similar themes, concepts, or messages even if they don't use the same words."
-              />
-            </h3>
+        {/* Related Verses - Lazy Hydrated */}
+        <div className="verse-card p-6">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+            Related Verses {relatedVerses.length > 0 && `(${relatedVerses.length})`}
+            <InfoTooltip
+              title="Related Verses"
+              description="Semantically similar verses discovered through AI-powered meaning analysis. These verses share similar themes, concepts, or messages even if they don't use the same words."
+            />
+          </h3>
+          {loadingRelated ? (
+            <div className="text-center py-8">
+              <div className="spinner mx-auto mb-2"></div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Finding related verses...</p>
+            </div>
+          ) : relatedVerses.length > 0 ? (
             <div className="space-y-4">
               {relatedVerses.map((verse, idx) => (
                 <button
@@ -348,8 +418,12 @@ export default function VerseDetailPage() {
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-center text-gray-600 dark:text-gray-400 py-4">
+              No related verses found.
+            </p>
+          )}
+        </div>
       </main>
     </div>
   );

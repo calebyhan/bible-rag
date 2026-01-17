@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import ParallelView from '@/components/ParallelView';
 import KoreanToggle, { KoreanDisplayMode } from '@/components/KoreanToggle';
+import OriginalLanguage from '@/components/OriginalLanguage';
 import { getVerse, getTranslations, getBooks } from '@/lib/api';
 import { VerseDetailResponse, Translation, Book } from '@/types';
 
@@ -22,7 +23,7 @@ export default function ComparePage() {
 
   // State for translations
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
-  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'ESV', 'KJV']);
+  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'ESV', 'NKRV']);
 
   // State for books
   const [books, setBooks] = useState<Book[]>([]);
@@ -38,6 +39,9 @@ export default function ComparePage() {
   // State for Korean display mode
   const [koreanMode, setKoreanMode] = useState<KoreanDisplayMode>('hangul');
 
+  // State for original language display
+  const [showOriginal, setShowOriginal] = useState(false);
+
   // Load translations and books on mount
   useEffect(() => {
     loadTranslationsAndBooks();
@@ -46,7 +50,7 @@ export default function ComparePage() {
   // Load verse when selection changes
   useEffect(() => {
     loadVerse();
-  }, [verseSelection, selectedTranslations]);
+  }, [verseSelection, selectedTranslations, showOriginal]);
 
   const loadTranslationsAndBooks = async () => {
     try {
@@ -82,7 +86,7 @@ export default function ComparePage() {
         verseSelection.chapter,
         verseSelection.verse,
         selectedTranslations,
-        false // Don't need original language for comparison
+        showOriginal
       );
       setVerseData(data);
     } catch (err) {
@@ -235,28 +239,43 @@ export default function ComparePage() {
 
           {/* Layout and display controls */}
           <div className="flex flex-wrap items-center justify-between gap-4">
-            {/* Layout selector */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Layout:</label>
-              <div className="inline-flex rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 p-1">
-                {(['grid', 'vertical', 'horizontal'] as const).map(l => (
-                  <button
-                    key={l}
-                    onClick={() => setLayout(l)}
-                    className={`
-                      px-3 py-1 text-sm rounded-md transition-all
-                      ${layout === l
-                        ? 'bg-white dark:bg-slate-600 text-primary-600 dark:text-primary-400 shadow-sm'
-                        : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
-                      }
-                    `}
-                  >
-                    {l === 'grid' && '📱 Grid'}
-                    {l === 'vertical' && '📄 Vertical'}
-                    {l === 'horizontal' && '↔️ Horizontal'}
-                  </button>
-                ))}
+            <div className="flex items-center gap-4 flex-wrap">
+              {/* Layout selector */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Layout:</label>
+                <div className="inline-flex rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 p-1">
+                  {(['grid', 'vertical', 'horizontal'] as const).map(l => (
+                    <button
+                      key={l}
+                      onClick={() => setLayout(l)}
+                      className={`
+                        px-3 py-1 text-sm rounded-md transition-all
+                        ${layout === l
+                          ? 'bg-white dark:bg-slate-600 text-primary-600 dark:text-primary-400 shadow-sm'
+                          : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                        }
+                      `}
+                    >
+                      {l === 'grid' && '📱 Grid'}
+                      {l === 'vertical' && '📄 Vertical'}
+                      {l === 'horizontal' && '↔️ Horizontal'}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* Original Language Toggle */}
+              <button
+                onClick={() => setShowOriginal(!showOriginal)}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  showOriginal
+                    ? 'bg-amber-500 text-white hover:bg-amber-600'
+                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50'
+                }`}
+              >
+                <span className="text-base">📖</span>
+                <span>{showOriginal ? 'Hide' : 'Show'} Original</span>
+              </button>
             </div>
 
             {/* Korean toggle */}
@@ -282,18 +301,42 @@ export default function ComparePage() {
         )}
 
         {!isLoading && !error && verseData && selectedTranslations.length > 0 && (
-          <ParallelView
-            reference={verseData.reference}
-            translations={selectedTranslations
-              .map(abbrev => ({
-                abbreviation: abbrev,
-                text: verseData.translations[abbrev] || 'Translation not available',
-                language: availableTranslations.find(t => t.abbreviation === abbrev)?.language_code || 'en'
-              }))
-              .filter(t => verseData.translations[t.abbreviation])
-            }
-            layout={layout}
-          />
+          <>
+            {/* Original Language Display (if enabled) */}
+            {verseData.original && showOriginal && (
+              <div className="mb-8 max-w-6xl mx-auto">
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800 mb-4">
+                  <p className="text-sm text-amber-900 dark:text-amber-200 mb-2">
+                    <strong>💡 Original Text Context:</strong> The translations below are all derived from this original{' '}
+                    {verseData.original.language === 'greek' ? 'Greek' : verseData.original.language === 'hebrew' ? 'Hebrew' : 'Aramaic'}{' '}
+                    text. Notice how different translators interpret and convey the same source material.
+                  </p>
+                </div>
+                <OriginalLanguage
+                  language={verseData.original.language as 'greek' | 'hebrew' | 'aramaic'}
+                  text={verseData.original.words?.map(w => w.word).join(' ') || ''}
+                  transliteration={verseData.original.words?.map(w => w.transliteration).filter(Boolean).join(' ') || ''}
+                  words={verseData.original.words || []}
+                  strongs={verseData.original.words?.map(w => w.strongs).filter(Boolean) as string[] || []}
+                  showInterlinear={true}
+                />
+              </div>
+            )}
+
+            {/* Parallel Translation View */}
+            <ParallelView
+              reference={verseData.reference}
+              translations={selectedTranslations
+                .map(abbrev => ({
+                  abbreviation: abbrev,
+                  text: verseData.translations[abbrev] || 'Translation not available',
+                  language: availableTranslations.find(t => t.abbreviation === abbrev)?.language_code || 'en'
+                }))
+                .filter(t => verseData.translations[t.abbreviation])
+              }
+              layout={layout}
+            />
+          </>
         )}
 
         {!isLoading && !error && selectedTranslations.length === 0 && (
@@ -349,11 +392,12 @@ export default function ComparePage() {
 
         {/* Tips */}
         <div className="mt-8 max-w-4xl mx-auto">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-blue-900 mb-2">💡 Comparison Tips</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">💡 Comparison Tips</h4>
+            <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
               <li>• Compare word choices and emphasis across different translations</li>
               <li>• Notice how translators handle the same original text differently</li>
+              <li>• Enable "Show Original" to see the Greek/Hebrew source text with Strong's numbers</li>
               <li>• Use the layout toggle to find your preferred viewing style</li>
               <li>• Try comparing English and Korean translations together</li>
             </ul>

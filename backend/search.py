@@ -16,7 +16,7 @@ from sqlalchemy import bindparam, Integer, Float
 from cache import get_cache
 from config import get_settings
 from database import Book, CrossReference, Embedding, OriginalWord, Translation, Verse
-from embeddings import embed_query
+from scripts.embeddings import embed_query
 
 settings = get_settings()
 
@@ -270,6 +270,7 @@ def get_original_words(db: Session, verse_id: UUID) -> Optional[dict]:
     # Convert UUID to string for SQLite compatibility in tests
     verse_id_value = str(verse_id) if isinstance(verse_id, UUID) else verse_id
 
+    # First try direct lookup
     words = (
         db.query(OriginalWord)
         .filter(OriginalWord.verse_id == verse_id_value)
@@ -277,14 +278,52 @@ def get_original_words(db: Session, verse_id: UUID) -> Optional[dict]:
         .all()
     )
 
+    # If no words found, look up by book/chapter/verse reference
+    # Original words are linked to one verse_id but we need them for all translations
+    if not words:
+        # Get the verse reference
+        verse = db.query(Verse).filter(Verse.id == verse_id_value).first()
+        if verse:
+            # Find any verse with the same book/chapter/verse that has original words
+            sibling_verses = (
+                db.query(Verse)
+                .filter(
+                    Verse.book_id == verse.book_id,
+                    Verse.chapter == verse.chapter,
+                    Verse.verse == verse.verse,
+                )
+                .all()
+            )
+            for sibling in sibling_verses:
+                words = (
+                    db.query(OriginalWord)
+                    .filter(OriginalWord.verse_id == sibling.id)
+                    .order_by(OriginalWord.word_order)
+                    .all()
+                )
+                if words:
+                    break
+
     if not words:
         return None
 
     # Determine language from first word
     language = words[0].language if words else None
 
+    # Build full text from words
+    text = " ".join([w.word for w in words])
+
+    # Build full transliteration from words
+    transliteration = " ".join([w.transliteration for w in words if w.transliteration])
+
+    # Collect unique Strong's numbers
+    strongs = list(set([w.strongs_number for w in words if w.strongs_number]))
+
     return {
         "language": language,
+        "text": text,
+        "transliteration": transliteration if transliteration else None,
+        "strongs": strongs,
         "words": [
             {
                 "word": w.word,
@@ -292,6 +331,7 @@ def get_original_words(db: Session, verse_id: UUID) -> Optional[dict]:
                 "strongs": w.strongs_number,
                 "morphology": w.morphology,
                 "definition": w.definition,
+                "word_order": w.word_order,
             }
             for w in words
         ],
@@ -391,6 +431,7 @@ def get_verse_by_reference(
     translations: Optional[list[str]] = None,
     include_original: bool = False,
     include_cross_refs: bool = True,
+    use_cache: bool = True,
 ) -> Optional[dict]:
     """Get a specific verse by reference.
 
@@ -402,10 +443,29 @@ def get_verse_by_reference(
         translations: List of translation abbreviations (all if None)
         include_original: Include original language data
         include_cross_refs: Include cross-references
+        use_cache: Whether to use caching
 
     Returns:
         Verse data dictionary or None if not found
     """
+    cache = get_cache()
+
+    # Generate cache key
+    cache_key = cache.generate_verse_cache_key(
+        book=book,
+        chapter=chapter,
+        verse=verse,
+        translations=translations,
+        include_original=include_original,
+        include_cross_refs=include_cross_refs,
+    )
+
+    # Check cache
+    if use_cache:
+        cached = cache.get_cached_verse(cache_key)
+        if cached:
+            return cached
+
     # Find the book
     book_obj = (
         db.query(Book)
@@ -465,6 +525,10 @@ def get_verse_by_reference(
     context_translation = results[0][1].abbreviation if results else None
     response["context"] = get_verse_context(db, book_obj.id, chapter, verse, context_translation)
 
+    # Cache the result
+    if use_cache:
+        cache.cache_verse(cache_key, response)
+
     return response
 
 
@@ -501,43 +565,30 @@ def get_verse_context(
     if not translation:
         return context
 
-    # Previous verse
-    prev_verse = (
+    # Fetch both previous and next verses in a single query
+    # This is more efficient than two separate queries
+    context_verses = (
         db.query(Verse)
         .filter(
             Verse.book_id == book_id_value,
             Verse.translation_id == translation.id,
             Verse.chapter == chapter,
-            Verse.verse == verse - 1,
+            Verse.verse.in_([verse - 1, verse + 1]),
         )
-        .first()
+        .all()
     )
 
-    if prev_verse:
-        context["previous"] = {
-            "chapter": prev_verse.chapter,
-            "verse": prev_verse.verse,
-            "text": prev_verse.text[:100] + "..." if len(prev_verse.text) > 100 else prev_verse.text,
+    for v in context_verses:
+        verse_data = {
+            "chapter": v.chapter,
+            "verse": v.verse,
+            "text": v.text[:100] + "..." if len(v.text) > 100 else v.text,
         }
 
-    # Next verse
-    next_verse = (
-        db.query(Verse)
-        .filter(
-            Verse.book_id == book_id_value,
-            Verse.translation_id == translation.id,
-            Verse.chapter == chapter,
-            Verse.verse == verse + 1,
-        )
-        .first()
-    )
-
-    if next_verse:
-        context["next"] = {
-            "chapter": next_verse.chapter,
-            "verse": next_verse.verse,
-            "text": next_verse.text[:100] + "..." if len(next_verse.text) > 100 else next_verse.text,
-        }
+        if v.verse == verse - 1:
+            context["previous"] = verse_data
+        elif v.verse == verse + 1:
+            context["next"] = verse_data
 
     return context
 

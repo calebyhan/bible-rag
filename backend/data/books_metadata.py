@@ -224,10 +224,31 @@ TRANSLATIONS = [
         "is_original_language": True,
     },
     {
+        "name": "Greek New Testament (OpenGNT)",
+        "abbreviation": "GNT",
+        "language_code": "gr",
+        "description": "Open Greek New Testament - NA28 equivalent with Strong's numbers",
+        "is_original_language": True,
+    },
+    {
         "name": "Westminster Leningrad Codex",
         "abbreviation": "WLC",
         "language_code": "he",
         "description": "Hebrew Old Testament based on Leningrad Codex",
+        "is_original_language": True,
+    },
+    {
+        "name": "Hebrew Old Testament (WLC)",
+        "abbreviation": "HEB",
+        "language_code": "he",
+        "description": "Hebrew Old Testament - Westminster Leningrad Codex",
+        "is_original_language": True,
+    },
+    {
+        "name": "Aramaic Portions (WLC)",
+        "abbreviation": "ARA",
+        "language_code": "arc",
+        "description": "Aramaic portions of Daniel and Ezra from WLC",
         "is_original_language": True,
     },
 ]

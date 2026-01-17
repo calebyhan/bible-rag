@@ -168,6 +168,7 @@ class Verse(Base):
         Index("idx_verses_translation", "translation_id"),
         Index("idx_verses_book", "book_id"),
         Index("idx_verses_book_chapter", "book_id", "chapter"),
+        Index("idx_verses_book_chapter_verse", "book_id", "chapter", "verse"),
     )
 
 

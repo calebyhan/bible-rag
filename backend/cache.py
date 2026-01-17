@@ -232,6 +232,103 @@ class CacheClient:
         except (redis.ConnectionError, redis.TimeoutError):
             return 0
 
+    def generate_verse_cache_key(
+        self,
+        book: str,
+        chapter: int,
+        verse: int,
+        translations: Optional[list[str]] = None,
+        include_original: bool = False,
+        include_cross_refs: bool = True,
+    ) -> str:
+        """Generate a cache key for verse lookups.
+
+        Args:
+            book: Book name or abbreviation
+            chapter: Chapter number
+            verse: Verse number
+            translations: List of translation abbreviations
+            include_original: Include original language data
+            include_cross_refs: Include cross-references
+
+        Returns:
+            MD5 hash string for use as cache key
+        """
+        # Normalize inputs
+        book_normalized = book.strip().lower()
+        translations_sorted = sorted(translations) if translations else []
+
+        # Create hash input
+        hash_input = (
+            f"verse:{book_normalized}:{chapter}:{verse}:"
+            f"{','.join(translations_sorted)}:{include_original}:{include_cross_refs}"
+        )
+
+        # Generate MD5 hash
+        return hashlib.md5(hash_input.encode()).hexdigest()
+
+    def get_cached_verse(self, cache_key: str) -> Optional[dict]:
+        """Get cached verse data.
+
+        Args:
+            cache_key: Cache key (MD5 hash)
+
+        Returns:
+            Cached verse dictionary or None if not found
+        """
+        try:
+            cached = self.client.get(f"verse:{cache_key}")
+            if cached:
+                # Update hit count
+                self.client.hincrby(f"verse_stats:{cache_key}", "hits", 1)
+                return json.loads(cached)
+        except (redis.ConnectionError, redis.TimeoutError, json.JSONDecodeError):
+            pass
+        return None
+
+    def cache_verse(
+        self,
+        cache_key: str,
+        verse_data: dict,
+        ttl: Optional[int] = None,
+    ) -> bool:
+        """Cache verse data.
+
+        Args:
+            cache_key: Cache key (MD5 hash)
+            verse_data: Verse data dictionary to cache
+            ttl: Time-to-live in seconds. Uses settings default if not provided.
+
+        Returns:
+            True if cached successfully, False otherwise
+        """
+        try:
+            ttl = ttl or settings.cache_ttl
+
+            # Store verse data
+            self.client.setex(
+                f"verse:{cache_key}",
+                ttl,
+                json.dumps(verse_data),
+            )
+
+            # Store metadata for analytics
+            self.client.hset(
+                f"verse_stats:{cache_key}",
+                mapping={
+                    "reference": f"{verse_data.get('reference', {}).get('book', '')} "
+                                f"{verse_data.get('reference', {}).get('chapter', '')}:"
+                                f"{verse_data.get('reference', {}).get('verse', '')}",
+                    "created_at": datetime.utcnow().isoformat(),
+                    "hits": 0,
+                },
+            )
+            self.client.expire(f"verse_stats:{cache_key}", ttl)
+
+            return True
+        except (redis.ConnectionError, redis.TimeoutError):
+            return False
+
 
 # Global cache client instance
 _cache_client: Optional[CacheClient] = None

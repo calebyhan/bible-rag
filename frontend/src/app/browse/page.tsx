@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getBooks, getChapter, getTranslations } from '@/lib/api';
-import { Book } from '@/types';
+import { Book, Translation } from '@/types';
 import ChapterView from '@/components/ChapterView';
 import Toast from '@/components/Toast';
 
@@ -21,12 +21,15 @@ interface ChapterData {
   }>;
 }
 
-export default function BrowsePage() {
+export const dynamic = 'force-dynamic';
+
+function BrowsePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [books, setBooks] = useState<Book[]>([]);
-  const [translations, setTranslations] = useState<any[]>([]);
+  const [translations, setTranslations] = useState<Translation[]>([]);
   const [selectedTranslation, setSelectedTranslation] = useState<string>('NIV');
+  const [showTranslationDropdown, setShowTranslationDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,11 +45,15 @@ export default function BrowsePage() {
   const [loadedChapters, setLoadedChapters] = useState<Map<string, ChapterData>>(new Map());
   const [visibleChapters, setVisibleChapters] = useState<string[]>([]);
 
+  // Original language display toggle
+  const [showOriginal, setShowOriginal] = useState(true);
+
   // Toast notification
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' | 'warning' } | null>(null);
 
   const chapterRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const bookInputRef = useRef<HTMLDivElement>(null);
+  const translationInputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,11 +91,14 @@ export default function BrowsePage() {
     fetchData();
   }, []);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (bookInputRef.current && !bookInputRef.current.contains(event.target as Node)) {
         setShowBookDropdown(false);
+      }
+      if (translationInputRef.current && !translationInputRef.current.contains(event.target as Node)) {
+        setShowTranslationDropdown(false);
       }
     };
 
@@ -110,21 +120,17 @@ export default function BrowsePage() {
   const loadChapter = async (bookName: string, chapter: number, forceReload = false) => {
     const key = `${bookName}-${chapter}-${selectedTranslation}`;
     if (loadedChapters.has(key) && !forceReload) {
-      // Already loaded, just scroll to it
-      scrollToChapter(key);
+      // Already loaded, just show it (replace current view)
+      setVisibleChapters([key]);
+      setTimeout(() => scrollToChapter(key), 100);
       return;
     }
 
     try {
       const chapterData = await getChapter(bookName, chapter, [selectedTranslation], false);
       setLoadedChapters((prev) => new Map(prev).set(key, chapterData));
-      setVisibleChapters((prev) => {
-        // Use functional update to avoid race conditions
-        if (prev.includes(key)) {
-          return prev;
-        }
-        return [...prev, key];
-      });
+      // Replace visible chapters with just this one
+      setVisibleChapters([key]);
       // Scroll after a brief delay to ensure DOM is updated
       setTimeout(() => scrollToChapter(key), 100);
     } catch (err: any) {
@@ -443,22 +449,96 @@ export default function BrowsePage() {
               </div>
 
               {/* Translation Selector */}
-              <div className="w-32">
+              <div className="relative" ref={translationInputRef}>
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Translation
                 </label>
-                <select
-                  value={selectedTranslation}
-                  onChange={(e) => setSelectedTranslation(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                <button
+                  onClick={() => setShowTranslationDropdown(!showTranslationDropdown)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent text-left flex items-center justify-between gap-2"
                 >
-                  {translations.map((t) => (
-                    <option key={t.id} value={t.abbreviation}>
-                      {t.abbreviation}
-                    </option>
-                  ))}
-                </select>
+                  <span className="font-medium">{selectedTranslation}</span>
+                  <svg
+                    className={`w-4 h-4 transition-transform ${showTranslationDropdown ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Translation Dropdown */}
+                {showTranslationDropdown && (
+                  <div className="absolute z-50 mt-1 right-0 min-w-64 bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-600 max-h-80 overflow-y-auto">
+                    {/* Group translations by language */}
+                    {(() => {
+                      const grouped = translations.reduce((acc, t) => {
+                        const lang = t.language_code === 'ko' ? 'Korean' : t.language_code === 'en' ? 'English' : t.language_code === 'he' ? 'Hebrew' : t.language_code === 'el' ? 'Greek' : 'Other';
+                        if (!acc[lang]) acc[lang] = [];
+                        acc[lang].push(t);
+                        return acc;
+                      }, {} as Record<string, Translation[]>);
+
+                      const languageOrder = ['English', 'Korean', 'Hebrew', 'Greek', 'Other'];
+
+                      return languageOrder.map((lang) => {
+                        const langTranslations = grouped[lang];
+                        if (!langTranslations?.length) return null;
+
+                        return (
+                          <div key={lang} className="p-2">
+                            <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 px-2">
+                              {lang}
+                            </h3>
+                            {langTranslations.map((t) => (
+                              <button
+                                key={t.id}
+                                onClick={() => {
+                                  setSelectedTranslation(t.abbreviation);
+                                  setShowTranslationDropdown(false);
+                                }}
+                                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                                  selectedTranslation === t.abbreviation
+                                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                                    : 'hover:bg-gray-100 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                                    {t.abbreviation}
+                                  </span>
+                                  {selectedTranslation === t.abbreviation && (
+                                    <svg className="w-4 h-4 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                  )}
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                  {t.name}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                )}
               </div>
+
+              {/* Original Language Toggle */}
+              <button
+                onClick={() => setShowOriginal(!showOriginal)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  showOriginal
+                    ? 'bg-amber-500 text-white hover:bg-amber-600'
+                    : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
+                }`}
+                title="Toggle original language display"
+              >
+                📖 {showOriginal ? 'Hide' : 'Show'} Original
+              </button>
 
               {/* Go Button */}
               <button
@@ -519,6 +599,7 @@ export default function BrowsePage() {
                     reference={chapterData.reference}
                     verses={chapterData.verses}
                     selectedTranslation={selectedTranslation}
+                    showOriginal={showOriginal}
                   />
 
                   {/* Navigation Buttons */}
@@ -557,5 +638,19 @@ export default function BrowsePage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-gray-600 dark:text-gray-400">Loading...</div>
+        </div>
+      </div>
+    }>
+      <BrowsePageContent />
+    </Suspense>
   );
 }

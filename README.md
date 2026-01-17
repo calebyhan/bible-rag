@@ -16,15 +16,20 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
 - **Multi-Translation Support** (10+ translations)
   - **English**: NIV, ESV, NASB, KJV, NKJV, NLT, WEB
   - **Korean**: 개역한글 (KRV), 새번역 (RNKSV), 개역개정 (NKRV - optional)
-  - **Original Languages**: Hebrew (OT), Greek (NT), Aramaic
+  - **Original Languages**: Hebrew (OT), Greek (NT), Aramaic (Daniel, Ezra portions)
   - All via free APIs - no API keys required!
 
 - **Parallel Translation View**: Compare verses side-by-side across translations
 
-- **Original Language Integration**
-  - Strong's Concordance numbers (G1-G5624, H1-H8674)
-  - Morphological parsing (tense, voice, mood, case)
+- **Original Language Integration** (442,413 words ingested)
+  - **Greek New Testament**: OpenGNT (~137,500 words, 99.9% Strong's coverage)
+  - **Hebrew Old Testament**: OSHB/WLC (~299,487 words, 98.1% Strong's coverage)
+  - **Aramaic Portions**: Daniel 2-7, Ezra 4-7, Jeremiah 10:11, Genesis 31:47 (~4,913 words, 98.0% coverage)
+  - Strong's Concordance numbers (G1-G5624 Greek, H1-H8674 Hebrew/Aramaic)
+  - Morphological parsing (tense, voice, mood, case, gender, number)
   - Transliteration and pronunciation guides
+  - Interlinear word-by-word analysis
+  - Clickable Strong's links to Blue Letter Bible
 
 - **Cross-Reference Discovery**: Automatically surface related passages, prophecy-fulfillment connections, and quotations
 
@@ -74,7 +79,7 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/bible-rag.git
+   git clone https://github.com/calebyhan/bible-rag.git
    cd bible-rag
    ```
 
@@ -86,16 +91,19 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
 3. **Backend setup**
    ```bash
    cd backend
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    cp .env.example .env  # Configure your environment variables
 
    # Ingest Bible data (fetches 9 translations automatically - ~90 min)
-   python data_ingestion.py
+   python scripts/data_ingestion.py
+
+   # Ingest original languages (Hebrew, Greek, Aramaic - ~1 min)
+   python scripts/original_ingestion.py
 
    # Generate embeddings (15-30 min one-time)
-   python embeddings.py
+   python scripts/embeddings.py
 
    # Start API server
    uvicorn main:app --reload  # http://localhost:8000
@@ -138,26 +146,65 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
 
 ```
 bible-rag/
-├── backend/              # FastAPI backend
-│   ├── main.py          # API entry point
-│   ├── database.py      # SQLAlchemy models
-│   ├── embeddings.py    # Embedding generation
-│   ├── search.py        # Search logic
-│   ├── cache.py         # Redis caching
-│   └── data_ingestion.py # Bible data ingestion
-├── frontend/            # Next.js frontend
+├── backend/                      # FastAPI backend
+│   ├── main.py                  # API entry point
+│   ├── database.py              # SQLAlchemy models
+│   ├── search.py                # Vector search logic
+│   ├── cache.py                 # Redis caching layer
+│   ├── llm.py                   # LLM integration (Gemini/Groq)
+│   ├── llm_batcher.py           # Batch LLM processing
+│   ├── original_language.py     # Strong's concordance integration
+│   ├── cross_references.py      # Verse reference linking
+│   ├── data_fetchers.py         # Bible data fetchers (Hebrew/Greek)
+│   ├── schemas.py               # Pydantic response models
+│   ├── config.py                # Environment configuration
+│   ├── routers/                 # API route modules
+│   │   ├── search.py           # Search endpoints
+│   │   ├── verses.py           # Verse lookup endpoints
+│   │   ├── themes.py           # Thematic search endpoints
+│   │   ├── metadata.py         # Translation/book metadata
+│   │   └── health.py           # Health check endpoints
+│   ├── scripts/                 # Data ingestion and utilities
+│   │   ├── data_ingestion.py   # Bible text ingestion (9 translations)
+│   │   ├── embeddings.py       # Embedding generation
+│   │   ├── original_ingestion.py  # Original language ingestion
+│   │   ├── ingest_aramaic.py   # Aramaic-specific ingestion
+│   │   ├── fetch_nkrv.py       # Korean NKRV fetcher
+│   │   └── verify_*.py         # Verification utilities
+│   ├── data/                    # Static data
+│   │   └── books_metadata.py   # Bible book metadata
+│   ├── migrations/              # Database migrations
+│   └── tests/                   # Test suite
+│       ├── test_search.py
+│       ├── test_cache.py
+│       ├── test_llm.py
+│       └── test_api_endpoints.py
+├── frontend/                     # Next.js frontend
 │   └── src/
-│       ├── app/         # Next.js pages
-│       └── components/  # React components
-├── docs/                # Comprehensive documentation
-│   ├── ARCHITECTURE.md  # System design
-│   ├── DATABASE.md      # Database schema
-│   ├── API.md          # API reference
-│   ├── SETUP.md        # Detailed setup guide
-│   └── DEPLOYMENT.md   # Production deployment
-├── docker-compose.yml   # Local development environment
-├── README.md           # This file
-└── CLAUDE.md           # AI assistant context
+│       ├── app/                 # Next.js pages (App Router)
+│       │   ├── page.tsx        # Home/search page
+│       │   ├── search/page.tsx # Search results
+│       │   ├── verse/[book]/[chapter]/[verse]/page.tsx  # Verse detail
+│       │   ├── browse/page.tsx # Browse by book
+│       │   └── compare/page.tsx # Parallel translation comparison
+│       └── components/          # React components
+│           ├── SearchBar.tsx
+│           ├── VerseCard.tsx
+│           ├── ParallelView.tsx
+│           ├── OriginalLanguage.tsx
+│           └── ChapterView.tsx
+├── docs/                        # Comprehensive documentation
+│   ├── ARCHITECTURE.md         # System design
+│   ├── DATABASE.md             # Database schema
+│   ├── API.md                  # API reference
+│   ├── SETUP.md                # Detailed setup guide
+│   ├── DEPLOYMENT.md           # Production deployment
+│   ├── FEATURES.md             # Feature documentation
+│   ├── DEVELOPMENT.md          # Contributing guide
+│   ├── KOREAN.md               # Korean-specific docs
+│   └── DATA_SOURCES.md         # Licensing and attribution
+├── docker-compose.yml           # Local development environment
+└── README.md                    # This file
 ```
 
 ## Documentation
@@ -210,13 +257,26 @@ See [API Documentation](docs/API.md) for complete reference.
 - **Vector Search**: Uses pgvector with ivfflat indexes for efficient similarity search
 - **Caching**: Redis-based multi-layer caching for common queries
 
-## Contributing
+## Original Language Data Statistics
 
-We welcome contributions! Please see our [Development Guide](docs/DEVELOPMENT.md) for:
-- Code style and conventions
-- How to add new features
-- Testing guidelines
-- Git workflow
+The project includes comprehensive original language coverage for the entire Bible:
+
+| Language | Words Ingested | Verses Covered | Strong's Coverage | Source |
+|----------|----------------|----------------|-------------------|--------|
+| Greek (NT) | 137,500 | 7,957 | 99.9% | OpenGNT |
+| Hebrew (OT) | 299,487 | ~23,145 | 98.1% | OSHB/WLC |
+| Aramaic | 4,913 | ~68 | 98.0% | OSHB/WLC |
+| **Total** | **442,413** | **~31,170** | **98.3%** | — |
+
+**Aramaic Portions Covered**:
+- Daniel 2:4-7:28 (Aramaic chapters)
+- Ezra 4:8-6:18, 7:12-26 (official correspondence)
+- Jeremiah 10:11 (single verse)
+- Genesis 31:47 (two Aramaic words)
+
+**Data Processing Speed**: ~8,043 words/second during ingestion
+
+**Known Issues**: ~0.17% of Hebrew verses have numbering discrepancies between Hebrew and English versification systems (e.g., Joel 3 vs Joel 4, Daniel 3:31-33 vs Daniel 4:1-3). These verses are documented but not critical for overall functionality.
 
 ## License
 
@@ -229,12 +289,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   - [GetBible API](https://get.bible) - Public domain translations (KJV, WEB, RKV)
   - [SIR.kr Community](https://sir.kr) - 개역개정 (NKRV) MySQL database
   - 대한성서공회 (Korean Bible Society) - Korean translations copyright holder
-- **Original Languages**: Open Scripture Hebrew Bible, SBL Greek New Testament
-- **Strong's Concordance**: Public domain lexical data
+- **Original Languages**:
+  - [OpenGNT](https://github.com/eliranwong/OpenGNT) - Greek New Testament with Strong's numbers (CC BY 4.0)
+  - [OSHB](https://github.com/openscriptures/morphhb) - Open Scriptures Hebrew Bible/Westminster Leningrad Codex (CC BY 4.0)
+  - [OpenScriptures Strong's](https://github.com/openscriptures/strongs) - Strong's Concordance data (Public Domain)
+  - Aramaic portions integrated via OSHB/WLC with manual detection
 - **Cross-References**: [OpenBible.info](https://openbible.info) - 63,779+ verse connections (CC BY 4.0)
 - **Embedding Model**: [intfloat/multilingual-e5-large](https://huggingface.co/intfloat/multilingual-e5-large)
 - **LLM**: Google Gemini 2.5 Flash, Groq Llama 3.3 70B
 
----
-
-Made with dedication to multilingual Bible study | [Documentation](docs/) | [API Reference](docs/API.md)

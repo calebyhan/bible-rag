@@ -4,7 +4,6 @@ This module provides functions to download complete Bible translations
 from public domain and free API sources.
 """
 
-import json
 import re
 import time
 from typing import Optional
@@ -107,51 +106,6 @@ def fetch_from_getbible(translation_code: str) -> list[dict]:
 
     print(f"Fetched {len(verses_data)} verses from GetBible")
     return verses_data
-
-
-def fetch_from_bible_supesearch(filename: str) -> list[dict]:
-    """Fetch Bible data from Bible SuperSearch JSON files.
-
-    Downloads complete Bible from SourceForge.
-
-    Args:
-        filename: Filename like 'kjv.json' or 'korean.json'
-
-    Returns:
-        List of verse dictionaries
-    """
-    # Determine language folder
-    if 'korean' in filename.lower():
-        lang_folder = 'KO-Korean'
-    else:
-        lang_folder = 'EN-English'
-
-    url = f"https://sourceforge.net/projects/biblesuper/files/All%20Bibles%20-%20JSON/{lang_folder}/{filename}/download"
-
-    print(f"Fetching {filename} from Bible SuperSearch...")
-    print(f"URL: {url}")
-
-    try:
-        response = requests.get(url, timeout=60, allow_redirects=True)
-        response.raise_for_status()
-
-        bible_data = response.json()
-        verses_data = []
-
-        # Parse Bible SuperSearch format
-        # Format varies - implement based on actual structure
-        # This is a placeholder - adjust based on actual file structure
-
-        print(f"Downloaded {filename}, parsing...")
-
-        # TODO: Implement parsing based on actual Bible SuperSearch JSON structure
-        # This will depend on the format they use
-
-        return verses_data
-
-    except requests.RequestException as e:
-        print(f"Error fetching from Bible SuperSearch: {e}")
-        return []
 
 
 def fetch_kjv() -> list[dict]:
@@ -324,87 +278,6 @@ def fetch_from_bolls(translation_code: str) -> list[dict]:
     return verses_data
 
 
-def fetch_from_api_bible(api_key: str, bible_id: str) -> list[dict]:
-    """Fetch Bible from scripture.api.bible (API.Bible).
-
-    Requires API key from https://scripture.api.bible
-    NOTE: Consider using Bolls.life API instead for free access to NIV, ESV, NASB.
-
-    Args:
-        api_key: API.Bible API key
-        bible_id: Bible ID (e.g., 'de4e12af7f28f599-02' for NIV)
-
-    Returns:
-        List of verse dictionaries
-    """
-    base_url = "https://api.scripture.api.bible/v1"
-    headers = {"api-key": api_key}
-    verses_data = []
-
-    print(f"Fetching Bible {bible_id} from API.Bible...")
-
-    try:
-        # Get books list
-        books_url = f"{base_url}/bibles/{bible_id}/books"
-        response = requests.get(books_url, headers=headers, timeout=30)
-        response.raise_for_status()
-        books = response.json()["data"]
-
-        for book in tqdm(books, desc="Downloading"):
-            book_id = book["id"]
-
-            # Get chapters for this book
-            chapters_url = f"{base_url}/bibles/{bible_id}/books/{book_id}/chapters"
-            time.sleep(0.2)  # Rate limiting
-
-            chapters_response = requests.get(chapters_url, headers=headers, timeout=30)
-            chapters_response.raise_for_status()
-            chapters = chapters_response.json()["data"]
-
-            for chapter in chapters:
-                chapter_id = chapter["id"]
-
-                # Get verses for this chapter
-                verses_url = f"{base_url}/bibles/{bible_id}/chapters/{chapter_id}/verses"
-                time.sleep(0.2)  # Rate limiting
-
-                verses_response = requests.get(verses_url, headers=headers, timeout=30)
-                verses_response.raise_for_status()
-                verses = verses_response.json()["data"]
-
-                for verse in verses:
-                    # Parse verse reference
-                    reference = verse["reference"]
-                    text = verse["text"]
-
-                    # Extract book number, chapter, verse from reference
-                    # This is simplified - you'd need better parsing
-                    parts = reference.split()
-                    if len(parts) >= 2:
-                        verse_ref = parts[-1].split(":")
-                        if len(verse_ref) == 2:
-                            chapter_nr = int(verse_ref[0])
-                            verse_nr = int(verse_ref[1])
-
-                            # Find book number from book_id
-                            # This requires mapping - simplified here
-                            book_number = 1  # TODO: Implement proper mapping
-
-                            verses_data.append({
-                                "book_number": book_number,
-                                "chapter": chapter_nr,
-                                "verse": verse_nr,
-                                "text": text.strip(),
-                            })
-
-    except requests.RequestException as e:
-        print(f"Error fetching from API.Bible: {e}")
-        return []
-
-    print(f"Fetched {len(verses_data)} verses")
-    return verses_data
-
-
 # Translation mappings for public domain sources (GetBible)
 GETBIBLE_FETCHERS = {
     "KJV": fetch_kjv,
@@ -433,18 +306,16 @@ BOLLS_TRANSLATIONS = {
 }
 
 
-def fetch_translation(abbreviation: str, api_key: Optional[str] = None) -> list[dict]:
+def fetch_translation(abbreviation: str) -> list[dict]:
     """Fetch a Bible translation by abbreviation.
 
     Tries multiple sources in order:
     1. GetBible API (public domain only: KJV, WEB, RKV)
     2. Bolls.life API (free, 100+ translations including NIV, ESV, NASB, Korean)
     3. Manual fetchers (NKRV - requires SQL file)
-    4. API.Bible (requires API key - not recommended due to rate limits)
 
     Args:
         abbreviation: Translation abbreviation (e.g., 'KJV', 'NIV', 'ESV', 'KRV', 'NKRV')
-        api_key: Optional API key for API.Bible (not needed for Bolls.life)
 
     Returns:
         List of verse dictionaries
@@ -465,18 +336,6 @@ def fetch_translation(abbreviation: str, api_key: Optional[str] = None) -> list[
         print(f"Using manual fetcher for {abbreviation}")
         print("⚠️  Educational/non-commercial use only")
         return MANUAL_FETCHERS[abbreviation]()
-
-    # Fallback to API.Bible if API key provided
-    if api_key and abbreviation in ["NIV", "ESV", "NASB"]:
-        print(f"Using API.Bible for {abbreviation} (requires API key)")
-        bible_ids = {
-            "NIV": "de4e12af7f28f599-02",  # NIV 2011
-            "ESV": "f421fe261da7624f-01",  # ESV
-            "NASB": "65eec8e0b60e656b-01",  # NASB
-        }
-        bible_id = bible_ids.get(abbreviation)
-        if bible_id:
-            return fetch_from_api_bible(api_key, bible_id)
 
     print(f"No fetcher available for {abbreviation}")
     available = list(GETBIBLE_FETCHERS.keys()) + list(BOLLS_TRANSLATIONS.keys()) + list(MANUAL_FETCHERS.keys())

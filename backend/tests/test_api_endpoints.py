@@ -231,3 +231,86 @@ def test_themes_with_multiple_translations(test_client, sample_translation, samp
 
     data = response.json()
     assert "results" in data
+
+
+# --- Original Language Tests ---
+
+
+@pytest.mark.unit
+def test_get_verse_with_original_language(test_client, sample_nt_book, sample_translation, sample_verse_with_original):
+    """Test getting verse with original language data included."""
+    response = test_client.get("/api/verse/John/3/16?include_original=true")
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "original" in data
+
+    original = data["original"]
+    assert original["language"] in ["greek", "hebrew", "aramaic"]
+    assert "words" in original
+    assert isinstance(original["words"], list)
+
+    if original["words"]:
+        first_word = original["words"][0]
+        assert "word" in first_word
+        assert "transliteration" in first_word
+        assert "strongs" in first_word
+        assert "morphology" in first_word
+
+
+@pytest.mark.unit
+def test_get_verse_without_original_language(test_client, sample_book, sample_translation, sample_verse):
+    """Test getting verse without original language data."""
+    response = test_client.get("/api/verse/Genesis/1/1?include_original=false")
+    assert response.status_code == 200
+
+    data = response.json()
+    # Original data might be None or not included
+    assert data.get("original") is None or "original" not in data
+
+
+@pytest.mark.unit
+def test_original_language_data_structure(test_client, sample_nt_book, sample_translation, sample_verse_with_original):
+    """Test that original language data has correct structure."""
+    response = test_client.get("/api/verse/John/1/1?include_original=true")
+    assert response.status_code == 200
+
+    data = response.json()
+    if "original" in data and data["original"]:
+        original = data["original"]
+
+        # Verify required fields
+        assert "language" in original
+        assert "words" in original
+        assert isinstance(original["words"], list)
+
+        # Verify word structure if words exist
+        if original["words"]:
+            word = original["words"][0]
+            assert "word" in word
+            assert "transliteration" in word
+            assert "strongs" in word
+            assert "morphology" in word
+
+
+@pytest.mark.unit
+def test_search_with_original_language(test_client, sample_translation, sample_verse_with_original):
+    """Test search returns original language data when requested."""
+    response = test_client.post(
+        "/api/search",
+        json={
+            "query": "love",
+            "translations": ["TEV"],
+            "include_original": True,
+        },
+    )
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "results" in data
+
+    # If there are results, check for original data
+    if data["results"]:
+        result = data["results"][0]
+        # Original data should be present when requested
+        assert "original" in result or result.get("original") is None

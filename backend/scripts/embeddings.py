@@ -5,9 +5,14 @@ vector embeddings for all verses in the database.
 """
 
 import argparse
+import sys
 from functools import lru_cache
+from pathlib import Path
 from typing import Optional
 from uuid import UUID
+
+# Add parent directory (backend) to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
 from sentence_transformers import SentenceTransformer

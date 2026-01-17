@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
+import { getTranslations } from '@/lib/api';
 
 interface SearchBarProps {
   onSearch: (query: string, translations: string[], defaultTranslation: string) => void;
@@ -8,16 +9,11 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-const TRANSLATIONS = [
-  { abbrev: 'NIV', name: 'NIV', language: 'en' },
-  { abbrev: 'ESV', name: 'ESV', language: 'en' },
-  { abbrev: 'NASB', name: 'NASB', language: 'en' },
-  { abbrev: 'KJV', name: 'KJV', language: 'en' },
-  { abbrev: 'NLT', name: 'NLT', language: 'en' },
-  { abbrev: 'RKV', name: '개역개정', language: 'ko' },
-  { abbrev: 'KRV', name: '개역한글', language: 'ko' },
-  { abbrev: 'NKRV', name: '새번역', language: 'ko' },
-];
+interface Translation {
+  abbrev: string;
+  name: string;
+  language: string;
+}
 
 export default function SearchBar({
   onSearch,
@@ -25,9 +21,50 @@ export default function SearchBar({
   placeholder = 'Search the Bible...',
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
-  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'RKV']);
+  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'KRV']);
   const [defaultTranslation, setDefaultTranslation] = useState<string>('NIV');
   const [showFilters, setShowFilters] = useState(false);
+  const [translations, setTranslations] = useState<Translation[]>([]);
+  const [translationsLoading, setTranslationsLoading] = useState(true);
+
+  // Fetch translations from API on mount
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      try {
+        const response = await getTranslations();
+        // Filter to non-original language translations and map to component format
+        const mappedTranslations = response.translations
+          .filter(t => !t.is_original_language)
+          .map(t => ({
+            abbrev: t.abbreviation,
+            name: t.name,
+            language: t.language_code,
+          }));
+
+        // Remove duplicates based on abbreviation
+        const uniqueTranslations = mappedTranslations.filter(
+          (trans, index, self) =>
+            index === self.findIndex(t => t.abbrev === trans.abbrev)
+        );
+
+        setTranslations(uniqueTranslations);
+      } catch (error) {
+        console.error('Failed to fetch translations:', error);
+        // Fallback to common translations if API fails
+        setTranslations([
+          { abbrev: 'NIV', name: 'New International Version', language: 'en' },
+          { abbrev: 'ESV', name: 'English Standard Version', language: 'en' },
+          { abbrev: 'KJV', name: 'King James Version', language: 'en' },
+          { abbrev: 'KRV', name: '개역한글', language: 'ko' },
+          { abbrev: 'NKRV', name: '개역개정', language: 'ko' },
+        ]);
+      } finally {
+        setTranslationsLoading(false);
+      }
+    };
+
+    fetchTranslations();
+  }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -113,8 +150,11 @@ export default function SearchBar({
         {/* Translation filters */}
         {showFilters && (
           <div className="mt-3 space-y-2">
-            <div className="flex flex-wrap justify-center gap-2">
-              {TRANSLATIONS.map((trans) => {
+            {translationsLoading ? (
+              <div className="text-center text-gray-300 text-sm">Loading translations...</div>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-2">
+                {translations.map((trans) => {
                 const isSelected = selectedTranslations.includes(trans.abbrev);
                 const isDefault = trans.abbrev === defaultTranslation;
 
@@ -136,7 +176,8 @@ export default function SearchBar({
                   </button>
                 );
               })}
-            </div>
+              </div>
+            )}
             <p className="text-xs text-center text-gray-300">
               Click to select/deselect • Double-click to set as default (★) • Default can't be deselected
             </p>

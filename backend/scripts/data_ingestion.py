@@ -4,8 +4,13 @@ This module handles fetching Bible data from various sources and populating
 the database with translations, books, and verses.
 """
 
+import sys
 import unicodedata
+from pathlib import Path
 from typing import Optional
+
+# Add parent directory (backend) to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy.orm import Session
 from tqdm import tqdm
@@ -157,12 +162,11 @@ def insert_verses_batch(
     return count
 
 
-def load_bible_data(translation_abbrev: str, api_key: Optional[str] = None) -> list[dict]:
+def load_bible_data(translation_abbrev: str) -> list[dict]:
     """Load complete Bible data from online sources.
 
     Args:
         translation_abbrev: Translation abbreviation (e.g., 'KJV', 'NIV', 'RKV')
-        api_key: Optional API key for API.Bible (required for NIV, ESV, etc.)
 
     Returns:
         List of verse dictionaries
@@ -170,7 +174,7 @@ def load_bible_data(translation_abbrev: str, api_key: Optional[str] = None) -> l
     from data_fetchers import fetch_translation
 
     # Try to fetch from online source
-    verses_data = fetch_translation(translation_abbrev, api_key)
+    verses_data = fetch_translation(translation_abbrev)
 
     if verses_data:
         return verses_data
@@ -278,7 +282,6 @@ def ingest_translation(
     translation: Translation,
     books_map: dict[int, Book],
     verses_data: Optional[list[dict]] = None,
-    api_key: Optional[str] = None,
 ) -> int:
     """Ingest a complete Bible translation.
 
@@ -288,13 +291,12 @@ def ingest_translation(
         books_map: Mapping of book_number -> Book object
         verses_data: Optional list of verse data. If not provided,
                      will try to load from online source.
-        api_key: Optional API key for API.Bible
 
     Returns:
         Number of verses inserted
     """
     if verses_data is None:
-        verses_data = load_bible_data(translation.abbreviation, api_key)
+        verses_data = load_bible_data(translation.abbreviation)
 
     if not verses_data:
         print(f"No verse data available for {translation.abbreviation}")
@@ -307,7 +309,6 @@ def ingest_translation(
 
 def run_ingestion(
     translations_to_load: Optional[list[str]] = None,
-    api_key: Optional[str] = None,
     reset_database: bool = True,
 ):
     """Run the complete data ingestion process.
@@ -315,8 +316,11 @@ def run_ingestion(
     Args:
         translations_to_load: List of translation abbreviations to load.
                              If None, loads all available public domain translations.
-        api_key: Optional API.Bible API key for licensed translations (NIV, ESV)
         reset_database: If True, clears all verses before ingestion (default: True)
+
+    Note:
+        For original language ingestion (Greek, Hebrew, Aramaic), use
+        scripts/original_ingestion.py instead.
     """
     if translations_to_load is None:
         # Default: All free translations from Bolls.life + GetBible APIs
@@ -343,10 +347,6 @@ def run_ingestion(
             # ⚠️ OPTIONAL: Uncomment to include 개역개정 (educational use only)
             # Requires bible2_1.sql file from https://sir.kr/g5_tip/4160
             # "NKRV",     # 개역개정 (New Korean Revised Version, 1998)
-
-            # Original languages (when available)
-            # "WLC",      # Westminster Leningrad Codex (Hebrew OT) - TODO: add fetcher
-            # "SBLGNT",   # SBL Greek New Testament (Greek NT) - TODO: add fetcher
         ]
 
     db = SessionLocal()
@@ -376,12 +376,12 @@ def run_ingestion(
         for abbrev in translations_to_load:
             translation = translations_map.get(abbrev)
             if translation:
-                count = ingest_translation(db, translation, books_map, api_key=api_key)
+                count = ingest_translation(db, translation, books_map)
                 total_verses += count
             else:
                 print(f"Translation {abbrev} not found")
 
-        print(f"\nIngestion complete! Total verses: {total_verses}")
+        print(f"\n🎉 Ingestion complete! Total verses: {total_verses}")
 
     finally:
         db.close()
