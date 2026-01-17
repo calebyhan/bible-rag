@@ -64,7 +64,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         {error && (
           <div className="max-w-4xl mx-auto mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            <p className="font-medium">Error</p>
+            <p className="font-medium">Error / 오류</p>
             <p className="text-sm">{error}</p>
           </div>
         )}
@@ -84,10 +84,13 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-medium text-gray-700 dark:text-gray-200 mb-2">Search the Bible</h2>
+            <h2 className="text-xl font-medium text-gray-700 dark:text-gray-200 mb-2">Search the Bible / 성경 검색</h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto">
               Enter a question or topic to find relevant verses using AI-powered semantic search.
               Supports both English and Korean.
+            </p>
+            <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto mt-2 text-sm">
+              질문이나 주제를 입력하여 AI 기반 의미 검색으로 관련 구절을 찾으세요. 영어와 한국어를 모두 지원합니다.
             </p>
 
             {/* Features */}
@@ -98,9 +101,12 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Semantic Search</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Semantic Search / 의미 검색</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Find verses by meaning, not just keywords. Ask questions in natural language.
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  키워드가 아닌 의미로 구절을 찾으세요. 자연어로 질문하세요.
                 </p>
               </div>
 
@@ -110,9 +116,12 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Multilingual</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Multilingual / 다국어</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Search in English or Korean. Compare translations side by side.
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  영어 또는 한국어로 검색하세요. 번역본을 나란히 비교하세요.
                 </p>
               </div>
 
@@ -122,9 +131,12 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">AI Insights</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">AI Insights / AI 통찰</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Get contextual explanations powered by AI to deepen your understanding.
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  AI 기반 맥락 설명으로 이해를 깊게 하세요.
                 </p>
               </div>
             </div>

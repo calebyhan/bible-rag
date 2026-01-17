@@ -162,7 +162,7 @@ export default function ThemesPage() {
 
               {/* Testament filter */}
               <div className="mt-4 flex items-center justify-center gap-4">
-                <span className="text-purple-100 text-sm font-medium">Testament:</span>
+                <span className="text-purple-100 text-sm font-medium">Testament / 성경:</span>
                 <div className="flex gap-2">
                   {(['both', 'OT', 'NT'] as const).map((t) => (
                     <button
@@ -183,7 +183,7 @@ export default function ThemesPage() {
 
               {/* Translation filter */}
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                <span className="text-purple-100 text-sm font-medium">Translations:</span>
+                <span className="text-purple-100 text-sm font-medium">Translations / 번역본:</span>
                 {translationsLoading ? (
                   <span className="text-purple-200 text-xs">Loading...</span>
                 ) : (
@@ -214,6 +214,9 @@ export default function ThemesPage() {
               <p className="mt-2 text-xs text-center text-purple-200">
                 Click to select/deselect • Double-click to set as default (★) • Default can't be deselected
               </p>
+              <p className="text-xs text-center text-purple-200">
+                클릭하여 선택/해제 • 더블클릭으로 기본값 설정 (★) • 기본값은 해제 불가
+              </p>
             </form>
           </div>
         </div>
@@ -224,7 +227,7 @@ export default function ThemesPage() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">
-              Popular Themes
+              Popular Themes / 인기 주제
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {POPULAR_THEMES.map((t) => (
@@ -244,12 +247,16 @@ export default function ThemesPage() {
             {/* Info section */}
             <div className="mt-12 bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-slate-700">
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                What is Thematic Search?
+                What is Thematic Search? / 주제별 검색이란?
               </h3>
               <p className="text-gray-700 dark:text-gray-300 mb-4">
                 Thematic search helps you explore specific topics or concepts throughout the Bible.
                 Unlike keyword search, it understands the meaning and context of themes, finding
                 relevant passages even when they use different words.
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                주제별 검색은 성경 전체에서 특정 주제나 개념을 탐색하는 데 도움을 줍니다.
+                키워드 검색과 달리 주제의 의미와 맥락을 이해하여 다른 단어를 사용하더라도 관련 구절을 찾습니다.
               </p>
               <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <div className="flex items-start gap-2">
@@ -280,7 +287,7 @@ export default function ThemesPage() {
       {error && (
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            <p className="font-medium">Error</p>
+            <p className="font-medium">Error / 오류</p>
             <p className="text-sm">{error}</p>
           </div>
         </div>
@@ -345,7 +352,7 @@ export default function ThemesPage() {
                     }}
                     className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
                   >
-                    New Search
+                    New Search / 새 검색
                   </button>
                 </div>
               </div>
@@ -367,7 +374,7 @@ export default function ThemesPage() {
             {results.related_themes && results.related_themes.length > 0 && (
               <div className="mt-8 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                  Related Themes
+                  Related Themes / 관련 주제
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {results.related_themes.map((relatedTheme) => (

@@ -135,7 +135,7 @@ function BrowsePageContent() {
       setTimeout(() => scrollToChapter(key), 100);
     } catch (err: any) {
       console.error('Error loading chapter:', err);
-      setToast({ message: `Failed to load ${bookName} ${chapter}`, type: 'error' });
+      setToast({ message: `Failed to load ${bookName} ${chapter} / ${bookName} ${chapter}장을 불러오는데 실패했습니다`, type: 'error' });
     }
   };
 
@@ -169,12 +169,12 @@ function BrowsePageContent() {
 
     // Validate inputs
     if (!targetBook || typeof targetBook !== 'string' || targetBook.trim() === '') {
-      setToast({ message: 'Please select a book', type: 'warning' });
+      setToast({ message: 'Please select a book / 책을 선택하세요', type: 'warning' });
       return;
     }
 
     if (!targetChapter || isNaN(targetChapter) || targetChapter < 1) {
-      setToast({ message: 'Please enter a valid chapter number', type: 'warning' });
+      setToast({ message: 'Please enter a valid chapter number / 유효한 장 번호를 입력하세요', type: 'warning' });
       return;
     }
 
@@ -186,13 +186,13 @@ function BrowsePageContent() {
     );
 
     if (!book) {
-      setToast({ message: `Book "${targetBook}" not found`, type: 'error' });
+      setToast({ message: `Book "${targetBook}" not found / 책을 찾을 수 없습니다`, type: 'error' });
       return;
     }
 
     if (targetChapter > book.total_chapters) {
       setToast({
-        message: `Invalid chapter. ${book.name} has ${book.total_chapters} chapters.`,
+        message: `Invalid chapter. ${book.name} has ${book.total_chapters} chapters. / 잘못된 장입니다. ${book.name_korean || book.name}은(는) ${book.total_chapters}장까지 있습니다.`,
         type: 'warning'
       });
       return;
@@ -275,7 +275,7 @@ function BrowsePageContent() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="spinner mx-auto mb-4"></div>
-          <p className="text-gray-700 dark:text-gray-300">Loading...</p>
+          <p className="text-gray-700 dark:text-gray-300">Loading... / 로딩 중...</p>
         </div>
       </div>
     );
@@ -285,13 +285,13 @@ function BrowsePageContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Error</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Error / 오류</h2>
           <p className="text-gray-700 dark:text-gray-300 mb-6">{error}</p>
           <button
             onClick={() => router.push('/')}
             className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
           >
-            Return Home
+            Return Home / 홈으로
           </button>
         </div>
       </div>
@@ -328,7 +328,7 @@ function BrowsePageContent() {
               {/* Book Input */}
               <div className="flex-1 relative" ref={bookInputRef}>
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Book
+                  Book / 책
                 </label>
                 <input
                   type="text"
@@ -354,7 +354,7 @@ function BrowsePageContent() {
                     {filteredOTBooks.length > 0 && (
                       <div className="p-3">
                         <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 px-2">
-                          Old Testament
+                          Old Testament / 구약
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
                           {filteredOTBooks.map((book) => (
@@ -384,7 +384,7 @@ function BrowsePageContent() {
                     {filteredNTBooks.length > 0 && (
                       <div className="p-3">
                         <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 px-2">
-                          New Testament
+                          New Testament / 신약
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
                           {filteredNTBooks.map((book) => (
@@ -411,7 +411,7 @@ function BrowsePageContent() {
               {/* Chapter Input */}
               <div className="w-24">
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Chapter
+                  Chapter / 장
                 </label>
                 <input
                   type="number"
@@ -431,7 +431,7 @@ function BrowsePageContent() {
               {/* Verse Input (Optional) */}
               <div className="w-24">
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Verse (opt)
+                  Verse / 절 (opt)
                 </label>
                 <input
                   type="number"
@@ -451,7 +451,7 @@ function BrowsePageContent() {
               {/* Translation Selector */}
               <div className="relative" ref={translationInputRef}>
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Translation
+                  Translation / 번역
                 </label>
                 <button
                   onClick={() => setShowTranslationDropdown(!showTranslationDropdown)}
@@ -535,9 +535,9 @@ function BrowsePageContent() {
                     ? 'bg-amber-500 text-white hover:bg-amber-600'
                     : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
                 }`}
-                title="Toggle original language display"
+                title="Toggle original language display / 원어 표시 전환"
               >
-                📖 {showOriginal ? 'Hide' : 'Show'} Original
+                📖 원어 {showOriginal ? 'Hide' : 'Show'}
               </button>
 
               {/* Go Button */}
@@ -545,7 +545,7 @@ function BrowsePageContent() {
                 onClick={() => handleJumpTo()}
                 className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium text-sm whitespace-nowrap"
               >
-                Go
+                Go / 이동
               </button>
             </div>
           </div>
@@ -564,7 +564,7 @@ function BrowsePageContent() {
             </p>
             <div className="mt-8">
               <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                Quick Start:
+                Quick Start / 빠른 시작:
               </h3>
               <div className="flex flex-wrap justify-center gap-2">
                 {['Genesis', 'Psalms', 'John', 'Romans'].map((bookName) => (
@@ -614,7 +614,7 @@ function BrowsePageContent() {
                       disabled={chapterData.reference.chapter === 1}
                       className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      ← Previous Chapter
+                      ← 이전 장 / Previous
                     </button>
                     <button
                       onClick={() =>
@@ -628,7 +628,7 @@ function BrowsePageContent() {
                       }
                       className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Next Chapter →
+                      다음 장 / Next →
                     </button>
                   </div>
                 </div>
@@ -646,7 +646,7 @@ export default function BrowsePage() {
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-gray-600 dark:text-gray-400">Loading...</div>
+          <div className="text-center text-gray-600 dark:text-gray-400">Loading... / 로딩 중...</div>
         </div>
       </div>
     }>

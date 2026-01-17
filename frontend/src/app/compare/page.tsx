@@ -139,7 +139,7 @@ export default function ComparePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             {/* Book selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Book</label>
+              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Book / 책</label>
               <select
                 value={verseSelection.book}
                 onChange={(e) => handleBookChange(e.target.value)}
@@ -155,7 +155,7 @@ export default function ComparePage() {
 
             {/* Chapter selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Chapter</label>
+              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Chapter / 장</label>
               <input
                 type="number"
                 min="1"
@@ -171,7 +171,7 @@ export default function ComparePage() {
 
             {/* Verse selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Verse</label>
+              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Verse / 절</label>
               <input
                 type="number"
                 min="1"
@@ -187,7 +187,7 @@ export default function ComparePage() {
 
             {/* Quick reference input */}
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Quick Reference</label>
+              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Quick Reference / 빠른 참조</label>
               <input
                 type="text"
                 placeholder="e.g., John 3:16"
@@ -213,7 +213,7 @@ export default function ComparePage() {
           {/* Translation selector */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-              Select Translations ({selectedTranslations.length} selected)
+              Select Translations / 번역본 선택 ({selectedTranslations.length} selected)
             </label>
             <div className="flex flex-wrap gap-2">
               {availableTranslations.map(trans => (
@@ -242,7 +242,7 @@ export default function ComparePage() {
             <div className="flex items-center gap-4 flex-wrap">
               {/* Layout selector */}
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Layout:</label>
+                <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Layout / 레이아웃:</label>
                 <div className="inline-flex rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 p-1">
                   {(['grid', 'vertical', 'horizontal'] as const).map(l => (
                     <button
@@ -274,7 +274,7 @@ export default function ComparePage() {
                 }`}
               >
                 <span className="text-base">📖</span>
-                <span>{showOriginal ? 'Hide' : 'Show'} Original</span>
+                <span>원어 {showOriginal ? 'Hide' : 'Show'}</span>
               </button>
             </div>
 
@@ -288,7 +288,7 @@ export default function ComparePage() {
       <div className="container mx-auto px-4 py-8">
         {error && (
           <div className="max-w-4xl mx-auto mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            <p className="font-medium">Error</p>
+            <p className="font-medium">Error / 오류</p>
             <p className="text-sm">{error}</p>
           </div>
         )}
@@ -296,7 +296,7 @@ export default function ComparePage() {
         {isLoading && (
           <div className="text-center py-12">
             <div className="spinner mx-auto mb-4"></div>
-            <p className="text-gray-700 dark:text-gray-300">Loading verse...</p>
+            <p className="text-gray-700 dark:text-gray-300">Loading verse... / 구절 로딩 중...</p>
           </div>
         )}
 
@@ -342,6 +342,7 @@ export default function ComparePage() {
         {!isLoading && !error && selectedTranslations.length === 0 && (
           <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
             <p className="text-gray-700 dark:text-gray-300">Please select at least one translation to compare.</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm">비교할 번역본을 하나 이상 선택하세요.</p>
           </div>
         )}
 
@@ -349,7 +350,7 @@ export default function ComparePage() {
         {verseData?.context && (
           <div className="mt-8 max-w-4xl mx-auto">
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Context Navigation</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Context Navigation / 맥락 탐색</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {verseData.context.previous && (
                   <button
@@ -359,7 +360,7 @@ export default function ComparePage() {
                     }))}
                     className="text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                   >
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">← Previous Verse</div>
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">← 이전 절 / Previous Verse</div>
                     <div className="text-sm text-gray-800 dark:text-gray-200">
                       {verseSelection.chapter}:{verseSelection.verse - 1}
                     </div>
@@ -376,7 +377,7 @@ export default function ComparePage() {
                     }))}
                     className="text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                   >
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Next Verse →</div>
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">다음 절 / Next Verse →</div>
                     <div className="text-sm text-gray-800 dark:text-gray-200">
                       {verseSelection.chapter}:{verseSelection.verse + 1}
                     </div>
@@ -393,7 +394,7 @@ export default function ComparePage() {
         {/* Tips */}
         <div className="mt-8 max-w-4xl mx-auto">
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">💡 Comparison Tips</h4>
+            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">💡 Comparison Tips / 비교 팁</h4>
             <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
               <li>• Compare word choices and emphasis across different translations</li>
               <li>• Notice how translators handle the same original text differently</li>
