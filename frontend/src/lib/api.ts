@@ -71,9 +71,8 @@ export async function getVerse(
     }
     params.set('include_original', String(includeOriginal));
 
-    const response = await api.get<VerseDetailResponse>(
-      `/api/verse/${encodeURIComponent(book)}/${chapter}/${verse}?${params.toString()}`
-    );
+    const url = `/api/verse/${encodeURIComponent(book)}/${chapter}/${verse}?${params.toString()}`;
+    const response = await api.get<VerseDetailResponse>(url);
     return response.data;
   } catch (error) {
     handleError(error as AxiosError);

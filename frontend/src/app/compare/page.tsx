@@ -335,6 +335,7 @@ export default function ComparePage() {
                 .filter(t => verseData.translations[t.abbreviation])
               }
               layout={layout}
+              koreanMode={koreanMode}
             />
           </>
         )}

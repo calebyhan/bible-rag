@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+const Aromanize = require('aromanize/base');
 
-export type KoreanDisplayMode = 'hangul' | 'hanja' | 'romanization';
+export type KoreanDisplayMode = 'hangul' | 'romanization';
 
 interface KoreanToggleProps {
   onModeChange?: (mode: KoreanDisplayMode) => void;
@@ -33,7 +34,6 @@ export default function KoreanToggle({
 
   const modes: { value: KoreanDisplayMode; label: string; icon: string }[] = [
     { value: 'hangul', label: '한글', icon: '가' },
-    { value: 'hanja', label: '漢字', icon: '漢' },
     { value: 'romanization', label: 'ABC', icon: 'A' },
   ];
 
@@ -65,7 +65,6 @@ export default function KoreanToggle({
       {/* Optional: Display current mode description */}
       <div className="mt-2 text-xs text-gray-500 text-center">
         {mode === 'hangul' && 'Standard Korean script'}
-        {mode === 'hanja' && 'Chinese characters with Korean pronunciation'}
         {mode === 'romanization' && 'Latin alphabet transliteration'}
       </div>
     </div>
@@ -91,7 +90,6 @@ export function CompactKoreanToggle({
 
   const modes: { value: KoreanDisplayMode; icon: string; tooltip: string }[] = [
     { value: 'hangul', icon: '가', tooltip: 'Hangul (한글)' },
-    { value: 'hanja', icon: '漢', tooltip: 'Hanja (漢字)' },
     { value: 'romanization', icon: 'A', tooltip: 'Romanization' },
   ];
 
@@ -129,9 +127,6 @@ export function useKoreanText() {
 
   /**
    * Transform Korean text based on the current display mode
-   * Note: This is a placeholder. Real implementation would require:
-   * - Hanja dictionary API for Hangul → Hanja conversion
-   * - Romanization library for Hangul → Latin conversion
    */
   const transformText = (text: string): string => {
     if (!text) return text;
@@ -140,19 +135,14 @@ export function useKoreanText() {
       case 'hangul':
         return text; // Original Korean text
 
-      case 'hanja':
-        // TODO: Implement Hangul → Hanja conversion
-        // Would use a dictionary API or library like:
-        // - korean-hanja-converter
-        // - Unicode Unihan database
-        return text; // Placeholder - return original for now
-
       case 'romanization':
-        // TODO: Implement Hangul → Romanization
-        // Would use a library like:
-        // - hangul-romanization
-        // - korean-romanizer
-        return text; // Placeholder - return original for now
+        // Use aromanize library for Revised Romanization
+        try {
+          return Aromanize.romanize(text);
+        } catch (error) {
+          console.error('Romanization error:', error);
+          return text; // Fallback to original on error
+        }
 
       default:
         return text;

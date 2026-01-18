@@ -1,4 +1,5 @@
 import React from 'react';
+const Aromanize = require('aromanize/base');
 
 interface Translation {
   abbreviation: string;
@@ -15,6 +16,7 @@ interface ParallelViewProps {
   };
   translations: Translation[];
   layout?: 'vertical' | 'horizontal' | 'grid';
+  koreanMode?: 'hangul' | 'romanization';
 }
 
 /**
@@ -25,8 +27,25 @@ export default function ParallelView({
   reference,
   translations,
   layout = 'grid',
+  koreanMode = 'hangul',
 }: ParallelViewProps) {
   const { book, book_korean, chapter, verse } = reference;
+
+  const transformKoreanText = (text: string, isKorean: boolean): string => {
+    if (!isKorean || koreanMode === 'hangul') return text;
+
+    if (koreanMode === 'romanization') {
+      try {
+        const romanized = Aromanize.romanize(text);
+        return romanized;
+      } catch (error) {
+        console.error('Romanization failed:', error);
+        return text;
+      }
+    }
+
+    return text;
+  };
 
   const getLayoutClasses = () => {
     switch (layout) {
@@ -41,7 +60,8 @@ export default function ParallelView({
   };
 
   const isKoreanTranslation = (abbrev: string) => {
-    return abbrev.includes('개역') || abbrev.includes('KRV') || abbrev.includes('NKRV') || abbrev.includes('공동');
+    const koreanAbbrevs = ['RNKSV', 'NKRV', 'RKV', 'KRV', 'KCBS'];
+    return koreanAbbrevs.includes(abbrev);
   };
 
   return (
@@ -86,7 +106,10 @@ export default function ParallelView({
                   : 'verse-text text-base'
               }`}
             >
-              {translation.text}
+              {transformKoreanText(
+                translation.text,
+                isKoreanTranslation(translation.abbreviation)
+              )}
             </p>
 
             {/* Word Count */}
@@ -127,9 +150,27 @@ export default function ParallelView({
 export function CompactParallelView({
   reference,
   translations,
+  koreanMode = 'hangul',
 }: Omit<ParallelViewProps, 'layout'>) {
   const isKoreanTranslation = (abbrev: string) => {
-    return abbrev.includes('개역') || abbrev.includes('KRV') || abbrev.includes('NKRV') || abbrev.includes('공동');
+    const koreanAbbrevs = ['RNKSV', 'NKRV', 'RKV', 'KRV', 'KCBS'];
+    return koreanAbbrevs.includes(abbrev);
+  };
+
+  const transformKoreanText = (text: string, isKorean: boolean): string => {
+    if (!isKorean || koreanMode === 'hangul') return text;
+
+    if (koreanMode === 'romanization') {
+      try {
+        const romanized = Aromanize.romanize(text);
+        return romanized;
+      } catch (error) {
+        console.error('Romanization failed:', error);
+        return text;
+      }
+    }
+
+    return text;
   };
 
   return (
@@ -148,7 +189,10 @@ export function CompactParallelView({
                 : ''
             }`}
           >
-            {translation.text}
+            {transformKoreanText(
+              translation.text,
+              isKoreanTranslation(translation.abbreviation)
+            )}
           </p>
         </div>
       ))}
