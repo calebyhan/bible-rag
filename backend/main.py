@@ -52,17 +52,27 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Configure CORS
+# Configure CORS - use ALLOWED_ORIGINS env var for production
+allowed_origins = [
+    "http://localhost:3000",  # Next.js dev server
+    "http://127.0.0.1:3000",
+]
+
+# Add production origins from environment (comma-separated)
+import os
+
+if os.getenv("ALLOWED_ORIGINS"):
+    allowed_origins.extend(os.getenv("ALLOWED_ORIGINS").split(","))
+else:
+    # Default production origins
+    allowed_origins.append("https://bible-rag.vercel.app")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Next.js dev server
-        "http://127.0.0.1:3000",
-        "https://bible-rag.vercel.app",  # Production frontend
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "X-Gemini-API-Key", "X-Groq-API-Key"],
 )
 
 # Include routers

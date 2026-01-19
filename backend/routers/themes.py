@@ -1,6 +1,6 @@
 """Themes API router."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -14,6 +14,7 @@ router = APIRouter(prefix="/api", tags=["themes"])
 def thematic_search(
     request: ThemeRequest,
     db: Session = Depends(get_db),
+    x_gemini_api_key: str | None = Header(None, alias="X-Gemini-API-Key"),
 ):
     """Search for verses by theme.
 
@@ -33,6 +34,7 @@ def thematic_search(
             translations=request.translations,
             testament=request.testament if request.testament != "both" else None,
             max_results=request.max_results,
+            api_key=x_gemini_api_key,
         )
 
         return ThemeResponse(

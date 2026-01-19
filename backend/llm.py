@@ -113,6 +113,7 @@ def generate_response_gemini(
     query: str,
     verses: list[dict],
     language: str = "en",
+    api_key: str | None = None,
 ) -> Optional[str]:
     """Generate a response using Google Gemini.
 
@@ -120,11 +121,14 @@ def generate_response_gemini(
         query: User's search query
         verses: List of verse result dictionaries
         language: Response language
+        api_key: Gemini API key (uses settings if not provided)
 
     Returns:
         Generated response string or None if failed
     """
-    if not settings.gemini_api_key:
+    # Use provided key or fall back to settings
+    gemini_key = api_key or settings.gemini_api_key
+    if not gemini_key:
         logger.warning("Gemini API key not configured")
         return None
 
@@ -136,7 +140,7 @@ def generate_response_gemini(
 
         start_time = time.time()
 
-        genai.configure(api_key=settings.gemini_api_key)
+        genai.configure(api_key=gemini_key)
 
         # Configure model with system instruction
         model = genai.GenerativeModel(
@@ -183,6 +187,7 @@ def generate_response_groq(
     query: str,
     verses: list[dict],
     language: str = "en",
+    api_key: str | None = None,
 ) -> Optional[str]:
     """Generate a response using Groq.
 
@@ -190,11 +195,14 @@ def generate_response_groq(
         query: User's search query
         verses: List of verse result dictionaries
         language: Response language
+        api_key: Groq API key (uses settings if not provided)
 
     Returns:
         Generated response string or None if failed
     """
-    if not settings.groq_api_key:
+    # Use provided key or fall back to settings
+    groq_key = api_key or settings.groq_api_key
+    if not groq_key:
         logger.warning("Groq API key not configured")
         return None
 
@@ -206,7 +214,7 @@ def generate_response_groq(
 
         start_time = time.time()
 
-        client = Groq(api_key=settings.groq_api_key)
+        client = Groq(api_key=groq_key)
 
         prompt = _build_prompt(query, verses, language)
 
@@ -245,6 +253,8 @@ def generate_contextual_response(
     query: str,
     verses: list[dict],
     language: str = "en",
+    gemini_api_key: str | None = None,
+    groq_api_key: str | None = None,
 ) -> Optional[str]:
     """Generate a contextual response using available LLMs.
 
@@ -254,6 +264,8 @@ def generate_contextual_response(
         query: User's search query
         verses: List of verse result dictionaries
         language: Response language ('en' or 'ko')
+        gemini_api_key: Optional Gemini API key (user-provided)
+        groq_api_key: Optional Groq API key (user-provided)
 
     Returns:
         Generated response string or None if all providers failed
@@ -262,12 +274,12 @@ def generate_contextual_response(
         return None
 
     # Try Groq first (more reliable complete responses)
-    response = generate_response_groq(query, verses, language)
+    response = generate_response_groq(query, verses, language, api_key=groq_api_key)
     if response:
         return response
 
     # Fall back to Gemini
-    response = generate_response_gemini(query, verses, language)
+    response = generate_response_gemini(query, verses, language, api_key=gemini_api_key)
     if response:
         return response
 

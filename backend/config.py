@@ -25,8 +25,9 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     groq_api_key: str = ""
 
-    # Embedding Model
-    embedding_model: str = "intfloat/multilingual-e5-large"
+    # Embedding Configuration
+    embedding_mode: str = "local"  # "local" (sentence-transformers) or "gemini" (API)
+    embedding_model: str = "intfloat/multilingual-e5-large"  # Used when mode=local
     embedding_dimension: int = 1024
 
     # Cache

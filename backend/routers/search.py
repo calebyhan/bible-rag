@@ -1,7 +1,7 @@
 """Search API router."""
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 async def semantic_search(
     request: SearchRequest,
     db: Session = Depends(get_db),
+    x_gemini_api_key: str | None = Header(None, alias="X-Gemini-API-Key"),
+    x_groq_api_key: str | None = Header(None, alias="X-Groq-API-Key"),
 ):
     """Perform semantic search across Bible translations.
 
@@ -45,6 +47,7 @@ async def semantic_search(
             filters=filters if filters else None,
             include_original=request.include_original,
             include_cross_refs=True,
+            api_key=x_gemini_api_key,
         )
 
         # Detect language for AI response from query text
@@ -60,6 +63,8 @@ async def semantic_search(
                     query=request.query,
                     verses=results["results"],
                     language=language,
+                    gemini_api_key=x_gemini_api_key,
+                    groq_api_key=x_groq_api_key,
                 )
 
                 # If no response was generated, provide helpful error

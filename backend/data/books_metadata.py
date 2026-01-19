@@ -210,13 +210,6 @@ TRANSLATIONS = [
         "is_original_language": False,
     },
     {
-        "name": "공동번역",
-        "abbreviation": "KCBS",
-        "language_code": "ko",
-        "description": "Korean Common Bible - ecumenical translation",
-        "is_original_language": False,
-    },
-    {
         "name": "SBL Greek New Testament",
         "abbreviation": "SBLGNT",
         "language_code": "gr",

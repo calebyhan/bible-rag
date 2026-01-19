@@ -16,7 +16,7 @@ from sqlalchemy import bindparam, Integer, Float
 from cache import get_cache
 from config import get_settings
 from database import Book, CrossReference, Embedding, OriginalWord, Translation, Verse
-from scripts.embeddings import embed_query
+from embeddings import embed_query
 
 settings = get_settings()
 
@@ -30,6 +30,7 @@ def search_verses(
     include_original: bool = False,
     include_cross_refs: bool = True,
     use_cache: bool = True,
+    api_key: str | None = None,
 ) -> dict:
     """Perform semantic search across Bible verses.
 
@@ -42,6 +43,7 @@ def search_verses(
         include_original: Include original language data
         include_cross_refs: Include cross-references
         use_cache: Whether to use caching
+        api_key: Gemini API key (required if EMBEDDING_MODE=gemini)
 
     Returns:
         Dictionary with search results and metadata
@@ -79,7 +81,7 @@ def search_verses(
         }
 
     # Generate query embedding
-    query_embedding = embed_query(query)
+    query_embedding = embed_query(query, api_key=api_key)
 
     # Build the SQL query for vector similarity search
     # Using raw SQL for pgvector operations
@@ -599,6 +601,7 @@ def search_by_theme(
     translations: list[str],
     testament: Optional[str] = None,
     max_results: int = 20,
+    api_key: str | None = None,
 ) -> dict:
     """Search for verses by theme.
 
@@ -610,6 +613,7 @@ def search_by_theme(
         translations: List of translation abbreviations
         testament: Optional testament filter ('OT' or 'NT')
         max_results: Maximum results
+        api_key: Gemini API key (required if EMBEDDING_MODE=gemini)
 
     Returns:
         Search results dictionary
@@ -626,6 +630,7 @@ def search_by_theme(
         filters=filters,
         include_original=False,
         include_cross_refs=True,
+        api_key=api_key,
     )
 
     # Add theme-specific metadata

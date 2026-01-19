@@ -18,6 +18,49 @@ import {
 // API base URL from environment
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+// API key storage keys
+const GEMINI_API_KEY_STORAGE = 'bible-rag-gemini-api-key';
+const GROQ_API_KEY_STORAGE = 'bible-rag-groq-api-key';
+
+// API key management
+export function setGeminiApiKey(apiKey: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(GEMINI_API_KEY_STORAGE, apiKey);
+  }
+}
+
+export function getGeminiApiKey(): string | null {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(GEMINI_API_KEY_STORAGE);
+  }
+  return null;
+}
+
+export function removeGeminiApiKey(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(GEMINI_API_KEY_STORAGE);
+  }
+}
+
+export function setGroqApiKey(apiKey: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(GROQ_API_KEY_STORAGE, apiKey);
+  }
+}
+
+export function getGroqApiKey(): string | null {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(GROQ_API_KEY_STORAGE);
+  }
+  return null;
+}
+
+export function removeGroqApiKey(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(GROQ_API_KEY_STORAGE);
+  }
+}
+
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -26,6 +69,26 @@ const api: AxiosInstance = axios.create({
   },
   timeout: 30000, // 30 seconds
 });
+
+// Add request interceptor to include API keys from localStorage
+api.interceptors.request.use(
+  (config) => {
+    const geminiKey = getGeminiApiKey();
+    const groqKey = getGroqApiKey();
+
+    if (geminiKey) {
+      config.headers['X-Gemini-API-Key'] = geminiKey;
+    }
+    if (groqKey) {
+      config.headers['X-Groq-API-Key'] = groqKey;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Error handler
 function handleError(error: AxiosError): never {

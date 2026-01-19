@@ -26,6 +26,8 @@ class BatchRequest:
     verses: list[dict]
     language: str
     timestamp: float
+    gemini_api_key: Optional[str] = None
+    groq_api_key: Optional[str] = None
     result: Optional[str] = None
     error: Optional[str] = None
     completed: asyncio.Event = None
@@ -59,7 +61,12 @@ class LLMBatcher:
                 pass
 
     async def submit_request(
-        self, query: str, verses: list[dict], language: str = "en"
+        self,
+        query: str,
+        verses: list[dict],
+        language: str = "en",
+        gemini_api_key: str | None = None,
+        groq_api_key: str | None = None,
     ) -> str:
         """Submit a request for batched processing.
 
@@ -67,6 +74,8 @@ class LLMBatcher:
             query: User's search query
             verses: List of verse result dictionaries
             language: Response language ('en' or 'ko')
+            gemini_api_key: Optional user-provided Gemini API key
+            groq_api_key: Optional user-provided Groq API key
 
         Returns:
             Generated response string or None if failed
@@ -75,7 +84,11 @@ class LLMBatcher:
             # Fall back to direct processing
             from llm import generate_contextual_response
 
-            return generate_contextual_response(query, verses, language)
+            return generate_contextual_response(
+                query, verses, language,
+                gemini_api_key=gemini_api_key,
+                groq_api_key=groq_api_key,
+            )
 
         # Create request
         request = BatchRequest(
@@ -84,6 +97,8 @@ class LLMBatcher:
             verses=verses,
             language=language,
             timestamp=time.time(),
+            gemini_api_key=gemini_api_key,
+            groq_api_key=groq_api_key,
         )
 
         # Add to queue
@@ -97,7 +112,11 @@ class LLMBatcher:
             # Fall back to direct processing on error
             from llm import generate_contextual_response
 
-            return generate_contextual_response(query, verses, language)
+            return generate_contextual_response(
+                query, verses, language,
+                gemini_api_key=gemini_api_key,
+                groq_api_key=groq_api_key,
+            )
 
         return request.result
 
@@ -224,7 +243,11 @@ def get_batcher() -> LLMBatcher:
 
 
 async def batched_generate_response(
-    query: str, verses: list[dict], language: str = "en"
+    query: str,
+    verses: list[dict],
+    language: str = "en",
+    gemini_api_key: str | None = None,
+    groq_api_key: str | None = None,
 ) -> Optional[str]:
     """Generate a response using the batching system.
 
@@ -232,6 +255,8 @@ async def batched_generate_response(
         query: User's search query
         verses: List of verse result dictionaries
         language: Response language ('en' or 'ko')
+        gemini_api_key: Optional user-provided Gemini API key
+        groq_api_key: Optional user-provided Groq API key
 
     Returns:
         Generated response string or None if failed
@@ -243,10 +268,18 @@ async def batched_generate_response(
     await batcher.start()
 
     try:
-        return await batcher.submit_request(query, verses, language)
+        return await batcher.submit_request(
+            query, verses, language,
+            gemini_api_key=gemini_api_key,
+            groq_api_key=groq_api_key,
+        )
     except Exception as e:
         print(f"Batched generation error: {e}")
         # Fall back to direct processing
         from llm import generate_contextual_response
 
-        return generate_contextual_response(query, verses, language)
+        return generate_contextual_response(
+            query, verses, language,
+            gemini_api_key=gemini_api_key,
+            groq_api_key=groq_api_key,
+        )

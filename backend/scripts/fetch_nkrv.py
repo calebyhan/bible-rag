@@ -20,7 +20,6 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import requests
-from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 from data.books_metadata import BOOKS_METADATA
@@ -31,17 +30,18 @@ def fetch_nkrv_from_mysql_dump(sql_file_path: str) -> list[dict]:
 
     The SQL file from sir.kr contains INSERT statements with Bible verses.
     Expected format:
-        INSERT INTO bible VALUES (book_id, chapter, verse, text);
+        INSERT INTO `bible2` VALUES
+        (idx, cate, book, chapter, paragraph, 'sentence', 'testament', 'long_label', 'short_label');
 
     Args:
-        sql_file_path: Path to bible2_1.sql file
+        sql_file_path: Path to bible2_1.sql or bible2 1.sql file
 
     Returns:
         List of verse dictionaries with keys:
             - book_number: int (1-66)
             - chapter: int
-            - verse: int
-            - text: str
+            - verse: int (paragraph number)
+            - text: str (sentence)
     """
     verses_data = []
 
@@ -51,39 +51,76 @@ def fetch_nkrv_from_mysql_dump(sql_file_path: str) -> list[dict]:
         with open(sql_file_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # Find all INSERT statements
-        # Pattern: INSERT INTO `bible` VALUES (book, chapter, verse, 'text');
-        insert_pattern = r"INSERT INTO .+? VALUES\s*\((.+?)\);"
+        # Find all INSERT statements for bible2 table
+        # Pattern matches INSERT statements with column names
+        # Each INSERT may contain multiple value tuples
+        # More flexible pattern to handle various whitespace/newline combinations
+        insert_pattern = r"INSERT INTO `bible2`[^V]*VALUES\s*([^;]+);"
 
-        matches = re.findall(insert_pattern, content, re.DOTALL)
+        matches = re.findall(insert_pattern, content, re.MULTILINE | re.DOTALL)
 
-        for match in tqdm(matches, desc="Parsing SQL"):
-            # Parse individual values
-            # Format: book_number, chapter, verse, 'text'
-            values = match.split(',', 3)  # Split into max 4 parts
+        print(f"Found {len(matches)} INSERT statement blocks")
 
-            if len(values) >= 4:
-                try:
-                    book_number = int(values[0].strip())
-                    chapter = int(values[1].strip())
-                    verse = int(values[2].strip())
+        all_tuples = []
+        for match_block in matches:
+            # Split individual value tuples
+            # Pattern: (idx, cate, book, chapter, paragraph, 'sentence', 'testament', 'long_label', 'short_label')
+            # Note: sentence can contain single quotes (escaped as '')
+            tuple_pattern = r"\((\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*'([^']*(?:''[^']*)*)',\s*'([^']*)',\s*'([^']*)',\s*'([^']*)'\)"
 
-                    # Extract text (remove quotes)
-                    text = values[3].strip()
-                    # Remove leading/trailing quotes
-                    text = re.sub(r"^['\"]|['\"]$", '', text)
-                    # Unescape quotes
-                    text = text.replace("\\'", "'").replace('\\"', '"')
+            tuples = re.findall(tuple_pattern, match_block)
+            all_tuples.extend(tuples)
 
-                    verses_data.append({
-                        "book_number": book_number,
-                        "chapter": chapter,
-                        "verse": verse,
-                        "text": text.strip(),
-                    })
-                except (ValueError, IndexError) as e:
-                    print(f"Error parsing line: {e}")
+        print(f"Found {len(all_tuples)} total verses to parse")
+
+        # Use dict to deduplicate by (book, chapter, verse)
+        verses_dict = {}
+
+        for tuple_data in tqdm(all_tuples, desc="Parsing verses"):
+            try:
+                idx = int(tuple_data[0])
+                cate = int(tuple_data[1])
+                book = int(tuple_data[2])
+                chapter = int(tuple_data[3])
+                paragraph = int(tuple_data[4])
+                sentence = tuple_data[5]
+                testament = tuple_data[6]
+                long_label = tuple_data[7]
+                short_label = tuple_data[8]
+
+                # Skip verse 0 (database constraint requires verse >= 1)
+                if paragraph == 0:
                     continue
+
+                # Clean text: remove section headers like <천지 창조>
+                text = re.sub(r'<[^>]+>\s*', '', sentence)
+                # Unescape single quotes
+                text = text.replace("''", "'")
+                text = text.strip()
+
+                # Skip empty text (section headers only)
+                if not text:
+                    continue
+
+                # Create unique key
+                key = (book, chapter, paragraph)
+
+                # Only keep first occurrence of each verse
+                if key not in verses_dict:
+                    verses_dict[key] = {
+                        "book_number": book,
+                        "chapter": chapter,
+                        "verse": paragraph,
+                        "text": text,
+                    }
+
+            except (ValueError, IndexError) as e:
+                print(f"Error parsing tuple: {e}")
+                continue
+
+        # Convert dict to list
+        verses_data = list(verses_dict.values())
+        print(f"Parsed {len(verses_data)} unique verses from SQL dump")
 
     except FileNotFoundError:
         print(f"File not found: {sql_file_path}")
@@ -91,9 +128,10 @@ def fetch_nkrv_from_mysql_dump(sql_file_path: str) -> list[dict]:
         return []
     except Exception as e:
         print(f"Error reading SQL file: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
-    print(f"Parsed {len(verses_data)} verses from SQL dump")
     return verses_data
 
 
@@ -154,37 +192,54 @@ def fetch_nkrv(sql_file_path: Optional[str] = None) -> list[dict]:
     """Fetch 개역개정 (NKRV) Bible data.
 
     Tries in order:
-    1. Parse existing SQL file
+    1. Parse existing SQL file (checks multiple paths)
     2. Download SQL file from sir.kr
     3. Return empty list with instructions
 
     Args:
-        sql_file_path: Path to bible2_1.sql (optional)
+        sql_file_path: Path to bible2_1.sql or bible2 1.sql (optional)
 
     Returns:
         List of verse dictionaries
     """
-    # Default SQL file path
-    if sql_file_path is None:
-        sql_file_path = "bible2_1.sql"
-
-    # Try to parse existing file
     import os
-    if os.path.exists(sql_file_path):
-        print(f"Found existing SQL file: {sql_file_path}")
-        return fetch_nkrv_from_mysql_dump(sql_file_path)
+
+    # Try multiple possible file paths
+    possible_paths = []
+
+    if sql_file_path is not None:
+        possible_paths.append(sql_file_path)
+
+    # Common paths to check
+    possible_paths.extend([
+        "bible2 1.sql",  # File with space
+        "bible2_1.sql",  # File with underscore
+        "../bible2 1.sql",  # Project root from backend/scripts
+        "../bible2_1.sql",
+        "../../bible2 1.sql",  # From deeper directories
+        "../../bible2_1.sql",
+    ])
+
+    # Try to find existing file
+    for path in possible_paths:
+        if os.path.exists(path):
+            print(f"✅ Found existing SQL file: {path}")
+            return fetch_nkrv_from_mysql_dump(path)
+
+    # Use default path for download attempt
+    default_path = sql_file_path or "bible2_1.sql"
 
     # Try to download
     print(f"SQL file not found, attempting download...")
-    if download_nkrv_sql_file(sql_file_path):
-        return fetch_nkrv_from_mysql_dump(sql_file_path)
+    if download_nkrv_sql_file(default_path):
+        return fetch_nkrv_from_mysql_dump(default_path)
 
     # Failed
     print("\n⚠️ Unable to fetch 개역개정 automatically.")
     print("\nManual steps:")
     print("1. Visit: https://sir.kr/g5_tip/4160")
     print("2. Download bible2_1.sql (6.0MB)")
-    print(f"3. Place in backend/ directory as: {sql_file_path}")
+    print(f"3. Place in project root or backend/ directory")
     print("4. Run ingestion again")
     print("\nAlternative: Use 개역한글 (KRV) which is copyright-free:")
     print("  python data_ingestion.py  # Already includes KRV")

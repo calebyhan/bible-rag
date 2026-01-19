@@ -344,9 +344,8 @@ def run_ingestion(
             # Korean translation (GetBible - public domain)
             "RKV",      # 개역성경 (Korean Revised Version)
 
-            # ⚠️ OPTIONAL: Uncomment to include 개역개정 (educational use only)
-            # Requires bible2_1.sql file from https://sir.kr/g5_tip/4160
-            # "NKRV",     # 개역개정 (New Korean Revised Version, 1998)
+            # ⚠️  개역개정 (educational use only) - Requires bible2_1.sql or bible2 1.sql file
+            "NKRV",     # 개역개정 (New Korean Revised Version, 1998)
         ]
 
     db = SessionLocal()
