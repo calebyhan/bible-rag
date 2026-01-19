@@ -21,6 +21,167 @@ from embeddings import embed_query
 settings = get_settings()
 
 
+def fulltext_search_verses(
+    db: Session,
+    query: str,
+    translation_ids: list,
+    translation_map: dict,
+    max_results: int,
+    filters: Optional[dict],
+    include_original: bool,
+    include_cross_refs: bool,
+    use_cache: bool,
+    cache_key: str,
+    start_time: float,
+) -> dict:
+    """Fallback full-text search when embeddings are not available.
+
+    Uses PostgreSQL full-text search with ranking.
+
+    Args:
+        db: Database session
+        query: Search query text
+        translation_ids: List of translation UUIDs
+        translation_map: Mapping of translation IDs to abbreviations
+        max_results: Maximum number of results
+        filters: Optional filters (testament, genre, books)
+        include_original: Include original language data
+        include_cross_refs: Include cross-references
+        use_cache: Whether to use caching
+        cache_key: Cache key for results
+        start_time: Start time for query timing
+
+    Returns:
+        Dictionary with search results and metadata
+    """
+    from cache import get_cache
+
+    cache = get_cache()
+
+    # Build full-text search query using OR for better recall
+    # plainto_tsquery handles stopwords and uses OR by default
+
+    sql_template = """
+        WITH ranked_verses AS (
+            SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
+                v.id as verse_id,
+                v.book_id,
+                v.chapter,
+                v.verse,
+                v.text,
+                v.translation_id,
+                b.name as book_name,
+                b.name_korean as book_name_korean,
+                b.abbreviation as book_abbrev,
+                b.testament,
+                b.genre,
+                ts_rank(to_tsvector('english', v.text), plainto_tsquery('english', :query)) as rank
+            FROM verses v
+            JOIN books b ON v.book_id = b.id
+            WHERE v.translation_id = ANY(:translation_ids)
+                AND (
+                    to_tsvector('english', v.text) @@ plainto_tsquery('english', :query)
+                    OR v.text ILIKE '%' || :query_like || '%'
+                )
+    """
+
+    bindparams_list = [
+        bindparam("translation_ids", value=translation_ids, type_=ARRAY(PGUUID)),
+        bindparam("query", value=query),
+        bindparam("query_like", value=query),
+        bindparam("max_results", value=max_results, type_=Integer),
+    ]
+
+    # Apply filters
+    if filters:
+        if filters.get("testament"):
+            sql_template += " AND b.testament = :testament"
+            bindparams_list.append(bindparam("testament", value=filters["testament"]))
+
+        if filters.get("genre"):
+            sql_template += " AND b.genre = :genre"
+            bindparams_list.append(bindparam("genre", value=filters["genre"]))
+
+        if filters.get("books"):
+            sql_template += " AND b.abbreviation = ANY(:book_abbrevs)"
+            bindparams_list.append(
+                bindparam("book_abbrevs", value=filters["books"], type_=ARRAY(PGUUID))
+            )
+
+    sql_template += """
+            ORDER BY v.book_id, v.chapter, v.verse, rank DESC
+        )
+        SELECT *
+        FROM ranked_verses
+        WHERE rank > 0
+        ORDER BY rank DESC
+        LIMIT :max_results
+    """
+
+    # Execute query
+    stmt = text(sql_template).bindparams(*bindparams_list)
+    result = db.execute(stmt)
+    rows = result.fetchall()
+
+    # Group results by verse reference
+    verse_groups = {}
+    for row in rows:
+        ref_key = f"{row.book_id}:{row.chapter}:{row.verse}"
+
+        if ref_key not in verse_groups:
+            verse_groups[ref_key] = {
+                "reference": {
+                    "book": row.book_name,
+                    "book_korean": row.book_name_korean,
+                    "book_abbrev": row.book_abbrev,
+                    "chapter": row.chapter,
+                    "verse": row.verse,
+                    "testament": row.testament,
+                    "genre": row.genre,
+                },
+                "translations": {},
+                "relevance_score": float(row.rank),
+                "verse_id": str(row.verse_id),
+            }
+
+        trans_abbrev = translation_map.get(str(row.translation_id), "Unknown")
+        verse_groups[ref_key]["translations"][trans_abbrev] = row.text
+
+    # Convert to list
+    results = list(verse_groups.values())
+
+    # Fetch additional data if requested
+    for result_item in results:
+        verse_id = UUID(result_item["verse_id"])
+
+        # Get cross-references
+        if include_cross_refs:
+            result_item["cross_references"] = get_cross_references(db, verse_id)
+
+        # Get original language data
+        if include_original:
+            result_item["original"] = get_original_words(db, verse_id)
+
+    query_time_ms = int((time.time() - start_time) * 1000)
+
+    response = {
+        "query_time_ms": query_time_ms,
+        "results": results,
+        "search_metadata": {
+            "total_results": len(results),
+            "embedding_model": None,
+            "search_method": "full-text",
+            "cached": False,
+        },
+    }
+
+    # Cache results
+    if use_cache:
+        cache.cache_results(cache_key, response, query)
+
+    return response
+
+
 def search_verses(
     db: Session,
     query: str,
@@ -79,6 +240,25 @@ def search_verses(
                 "error": "No valid translations found",
             },
         }
+
+    # Check if embeddings table has data
+    embeddings_count = db.query(Embedding).limit(1).count()
+
+    # Use full-text search if no embeddings available
+    if embeddings_count == 0:
+        return fulltext_search_verses(
+            db=db,
+            query=query,
+            translation_ids=translation_ids,
+            translation_map=translation_map,
+            max_results=max_results,
+            filters=filters,
+            include_original=include_original,
+            include_cross_refs=include_cross_refs,
+            use_cache=use_cache,
+            cache_key=cache_key,
+            start_time=start_time,
+        )
 
     # Generate query embedding
     query_embedding = embed_query(query, api_key=api_key)

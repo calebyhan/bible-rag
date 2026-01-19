@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import SearchBar from '@/components/SearchBar';
 import SearchResults from '@/components/SearchResults';
+import SearchMethodWarning from '@/components/SearchMethodWarning';
 import { searchVerses } from '@/lib/api';
 import { SearchResponse } from '@/types';
 
@@ -38,6 +39,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
+      {/* Search Method Warning */}
+      <SearchMethodWarning searchMetadata={results?.search_metadata} />
+
       {/* Hero section */}
       <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-blue-800 text-white">
         <div className="container mx-auto px-4 py-16 md:py-24">
