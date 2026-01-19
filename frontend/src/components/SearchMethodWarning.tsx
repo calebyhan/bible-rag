@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { checkHealth } from '@/lib/api';
 
 interface SearchMethodWarningProps {
   searchMetadata?: {
@@ -13,6 +14,7 @@ interface SearchMethodWarningProps {
 export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarningProps) {
   const [showWarning, setShowWarning] = useState(false);
   const [hasSeenWarning, setHasSeenWarning] = useState(false);
+  const [isProduction, setIsProduction] = useState(false);
 
   useEffect(() => {
     // Check if user has already dismissed this warning in this session
@@ -20,10 +22,30 @@ export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarn
       const seen = sessionStorage.getItem('search-warning-seen');
       setHasSeenWarning(seen === 'true');
     }
+
+    // Check if we're in production by checking the API health endpoint on mount
+    const checkEnvironment = async () => {
+      try {
+        const health = await checkHealth();
+        // Check if the environment is using Gemini embeddings (production)
+        const isProd = health.services?.embedding_model?.toLowerCase().includes('gemini') || false;
+        setIsProduction(isProd);
+
+        // Show warning immediately if production and not seen yet
+        if (isProd && !sessionStorage.getItem('search-warning-seen')) {
+          setShowWarning(true);
+        }
+      } catch (error) {
+        // If health check fails, don't show warning
+        console.error('Failed to check environment:', error);
+      }
+    };
+
+    checkEnvironment();
   }, []);
 
   useEffect(() => {
-    // Show warning if we're using Gemini embeddings (production) instead of multilingual-e5
+    // Also show warning if we get search results with Gemini embeddings
     if (
       searchMetadata &&
       !hasSeenWarning &&
