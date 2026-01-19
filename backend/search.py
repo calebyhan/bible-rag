@@ -58,8 +58,16 @@ def fulltext_search_verses(
 
     cache = get_cache()
 
-    # Build full-text search query using OR for better recall
-    # plainto_tsquery handles stopwords and uses OR by default
+    # Extract meaningful search terms from conversational queries
+    # Remove common question words and filler words
+    stopwords = {'what', 'does', 'the', 'bible', 'say', 'about', 'teach', 'us', 'tell', 'me', 'can', 'you', 'how', 'why', 'when', 'where', 'who', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'did', 'will', 'would', 'should', 'could', 'may', 'might', 'must', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'from', 'by', 'as', 'that', 'this', 'these', 'those', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 'so', 'than'}
+
+    # Extract keywords from query
+    words = query.lower().split()
+    keywords = [w for w in words if w not in stopwords and len(w) > 2]
+
+    # If we filtered out everything, use original query
+    search_query = ' '.join(keywords) if keywords else query
 
     sql_template = """
         WITH ranked_verses AS (
@@ -75,20 +83,20 @@ def fulltext_search_verses(
                 b.abbreviation as book_abbrev,
                 b.testament,
                 b.genre,
-                ts_rank(to_tsvector('english', v.text), plainto_tsquery('english', :query)) as rank
+                ts_rank(to_tsvector('english', v.text), plainto_tsquery('english', :search_query)) as rank
             FROM verses v
             JOIN books b ON v.book_id = b.id
             WHERE v.translation_id = ANY(:translation_ids)
                 AND (
-                    to_tsvector('english', v.text) @@ plainto_tsquery('english', :query)
+                    to_tsvector('english', v.text) @@ plainto_tsquery('english', :search_query)
                     OR v.text ILIKE '%' || :query_like || '%'
                 )
     """
 
     bindparams_list = [
         bindparam("translation_ids", value=translation_ids, type_=ARRAY(PGUUID)),
-        bindparam("query", value=query),
-        bindparam("query_like", value=query),
+        bindparam("search_query", value=search_query),
+        bindparam("query_like", value=search_query),
         bindparam("max_results", value=max_results, type_=Integer),
     ]
 

@@ -7,10 +7,12 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from cache import get_cache
+from config import get_settings
 from database import Embedding, Translation, Verse, get_db
 from schemas import HealthResponse
 
 router = APIRouter(tags=["health"])
+settings = get_settings()
 
 
 @router.get("/health", response_model=HealthResponse)
@@ -50,29 +52,37 @@ def health_check(db: Session = Depends(get_db)):
         services["redis"] = "unhealthy"
         errors.append(f"Redis error: {str(e)}")
 
-    # Check embedding model (just report if loaded)
+    # Report embedding mode and model
     try:
-        from embeddings import get_embedding_model
+        # Report embedding mode (local vs gemini)
+        services["embedding_mode"] = settings.embedding_mode
+        services["embedding_model"] = settings.embedding_model
 
-        # Don't actually load the model here, just check if it's cached
-        import functools
+        # Check if model is loaded (only for local mode)
+        if settings.embedding_mode == "local":
+            from embeddings import get_embedding_model
 
-        if hasattr(get_embedding_model, "cache_info"):
-            cache_info = get_embedding_model.cache_info()
-            if cache_info.hits > 0 or cache_info.currsize > 0:
-                services["embedding_model"] = "loaded"
+            # Don't actually load the model here, just check if it's cached
+            import functools
+
+            if hasattr(get_embedding_model, "cache_info"):
+                cache_info = get_embedding_model.cache_info()
+                if cache_info.hits > 0 or cache_info.currsize > 0:
+                    services["embedding_status"] = "loaded"
+                else:
+                    services["embedding_status"] = "not_loaded"
             else:
-                services["embedding_model"] = "not_loaded"
+                services["embedding_status"] = "unknown"
         else:
-            services["embedding_model"] = "unknown"
-    except Exception:
-        services["embedding_model"] = "not_loaded"
+            services["embedding_status"] = "api"
+    except Exception as e:
+        services["embedding_status"] = f"error: {str(e)}"
 
     # Determine overall status
     overall_status = "healthy"
     if "unhealthy" in services.values():
         overall_status = "unhealthy"
-    elif "not_loaded" in services.values():
+    elif services.get("embedding_status") == "not_loaded":
         overall_status = "degraded"
 
     return HealthResponse(

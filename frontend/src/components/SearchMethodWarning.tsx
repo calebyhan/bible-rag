@@ -27,8 +27,8 @@ export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarn
     const checkEnvironment = async () => {
       try {
         const health = await checkHealth();
-        // Check if the environment is using Gemini embeddings (production)
-        const isProd = health.services?.embedding_model?.toLowerCase().includes('gemini') || false;
+        // Check if the environment is using Gemini embeddings mode (production)
+        const isProd = health.services?.embedding_mode === 'gemini';
         setIsProduction(isProd);
 
         // Show warning immediately if production and not seen yet
