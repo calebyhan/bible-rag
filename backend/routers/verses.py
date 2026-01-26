@@ -3,7 +3,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from schemas import VerseDetailResponse
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api", tags=["verses"])
 
 
 @router.get("/verse/{book}/{chapter}/{verse}", response_model=VerseDetailResponse)
-def get_verse(
+async def get_verse(
     book: str,
     chapter: int,
     verse: int,
@@ -29,7 +29,7 @@ def get_verse(
         True,
         description="Include cross-references",
     ),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get a specific verse by reference.
 
@@ -52,7 +52,7 @@ def get_verse(
     if translations:
         translation_list = [t.strip() for t in translations.split(",")]
 
-    result = get_verse_by_reference(
+    result = await get_verse_by_reference(
         db=db,
         book=book,
         chapter=chapter,
@@ -80,7 +80,7 @@ def get_verse(
 
 
 @router.get("/chapter/{book}/{chapter}")
-def get_chapter(
+async def get_chapter(
     book: str,
     chapter: int,
     translations: Optional[str] = Query(
@@ -91,7 +91,7 @@ def get_chapter(
         False,
         description="Include original language data",
     ),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get an entire chapter with all verses.
 
@@ -112,7 +112,7 @@ def get_chapter(
     if translations:
         translation_list = [t.strip() for t in translations.split(",")]
 
-    result = get_chapter_by_reference(
+    result = await get_chapter_by_reference(
         db=db,
         book=book,
         chapter=chapter,

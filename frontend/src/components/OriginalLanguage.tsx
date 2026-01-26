@@ -19,6 +19,81 @@ interface OriginalLanguageProps {
 }
 
 /**
+ * Parse morphology code into human-readable description
+ */
+const parseMorphology = (code: string, language: string): string => {
+  if (!code) return '';
+
+  if (language === 'greek') {
+    // Greek morphology patterns (e.g., "V-AAI-3S")
+    const parts = code.split('-');
+    const descriptions: string[] = [];
+
+    // Part of speech
+    const posMap: Record<string, string> = {
+      'V': 'Verb',
+      'N': 'Noun',
+      'A': 'Adjective',
+      'P': 'Personal Pronoun',
+      'R': 'Relative Pronoun',
+      'D': 'Demonstrative Pronoun',
+      'C': 'Conjunction',
+      'T': 'Article',
+      'PREP': 'Preposition',
+      'ADV': 'Adverb',
+      'CONJ': 'Conjunction',
+      'PRT': 'Particle',
+      'INJ': 'Interjection',
+    };
+    descriptions.push(posMap[parts[0]] || parts[0]);
+
+    // For verbs: tense, voice, mood
+    if (parts[0] === 'V' && parts[1]) {
+      const tenseMap: Record<string, string> = {
+        'P': 'Present', 'I': 'Imperfect', 'F': 'Future',
+        'A': 'Aorist', 'X': 'Perfect', 'Y': 'Pluperfect',
+      };
+      const voiceMap: Record<string, string> = {
+        'A': 'Active', 'M': 'Middle', 'P': 'Passive',
+      };
+      const moodMap: Record<string, string> = {
+        'I': 'Indicative', 'S': 'Subjunctive', 'O': 'Optative',
+        'M': 'Imperative', 'N': 'Infinitive', 'P': 'Participle',
+      };
+
+      const tense = tenseMap[parts[1][0]] || '';
+      const voice = voiceMap[parts[1][1]] || '';
+      const mood = moodMap[parts[1][2]] || '';
+
+      if (tense) descriptions.push(tense);
+      if (voice) descriptions.push(voice);
+      if (mood) descriptions.push(mood);
+    }
+
+    // Person and number (e.g., "3S" = 3rd person singular)
+    if (parts[2]) {
+      const personMap: Record<string, string> = { '1': '1st person', '2': '2nd person', '3': '3rd person' };
+      const numberMap: Record<string, string> = { 'S': 'Singular', 'P': 'Plural' };
+
+      const person = personMap[parts[2][0]] || '';
+      const number = numberMap[parts[2][1]] || '';
+
+      if (person) descriptions.push(person);
+      if (number) descriptions.push(number);
+    }
+
+    return descriptions.join(', ');
+  }
+
+  // Hebrew morphology (simpler for now)
+  if (language === 'hebrew') {
+    return code; // Could add Hebrew parsing logic here
+  }
+
+  return code;
+};
+
+/**
  * OriginalLanguage component displays Greek, Hebrew, or Aramaic text
  * with transliteration, Strong's numbers, and interlinear analysis.
  */
@@ -32,57 +107,96 @@ export default function OriginalLanguage({
 }: OriginalLanguageProps) {
   const [selectedWord, setSelectedWord] = useState<OriginalWord | null>(null);
   const [showDefinitions, setShowDefinitions] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [highlightedStrongs, setHighlightedStrongs] = useState<string | null>(null);
+
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWordClick = (word: OriginalWord) => {
+    // Toggle selection
+    const newSelectedWord = selectedWord === word ? null : word;
+    setSelectedWord(newSelectedWord);
+
+    // Highlight all words with the same Strong's number
+    if (newSelectedWord?.strongs_number) {
+      setHighlightedStrongs(
+        highlightedStrongs === newSelectedWord.strongs_number
+          ? null
+          : newSelectedWord.strongs_number
+      );
+    } else {
+      setHighlightedStrongs(null);
+    }
+  };
+
+  // Count words with the same Strong's number
+  const getStrongsCount = (strongsNumber: string): number => {
+    return words.filter(w => w.strongs_number === strongsNumber).length;
+  };
 
   const languageInfo = {
     greek: {
       name: 'Greek',
       nativeName: 'Ελληνικά',
-      fontClass: 'font-serif',
-      icon: '🇬🇷',
       direction: 'ltr',
+      color: 'text-accent-greek dark:text-accent-dark-greek',
     },
     hebrew: {
       name: 'Hebrew',
       nativeName: 'עברית',
-      fontClass: 'font-serif',
-      icon: '🇮🇱',
       direction: 'rtl',
+      color: 'text-accent-hebrew dark:text-accent-dark-hebrew',
     },
     aramaic: {
       name: 'Aramaic',
       nativeName: 'ܐܪܡܝܐ',
-      fontClass: 'font-serif',
-      icon: '📜',
       direction: 'rtl',
+      color: 'text-accent-reference dark:text-accent-dark-reference',
     },
   };
 
   const info = languageInfo[language];
 
   return (
-    <div className="original-language-display bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-6 border border-amber-200">
+    <div className="border-t-2 border-b-2 border-text-tertiary dark:border-text-dark-tertiary py-space-lg px-space-md my-space-md bg-surface dark:bg-surface-dark transition-colors">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <span>{info.icon}</span>
-          <span>Original {info.name}</span>
-          <span className="text-sm font-normal text-gray-600">({info.nativeName})</span>
-        </h3>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-space-md">
+        <div>
+          <h3 className={`font-ui text-sm uppercase tracking-wide ${info.color} font-semibold`}>
+            Original {info.name}
+          </h3>
+          <p className="font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary mt-1">{info.nativeName}</p>
+        </div>
 
-        {words.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Copy button */}
           <button
-            onClick={() => setShowDefinitions(!showDefinitions)}
-            className="text-sm px-3 py-1 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded-lg transition-colors"
+            onClick={handleCopyText}
+            className="btn-text dark:text-text-dark-secondary dark:hover:text-text-dark-primary dark:border-text-dark-tertiary dark:hover:border-text-dark-primary"
+            title="Copy original text"
           >
-            {showDefinitions ? 'Hide Definitions' : 'Show Definitions'}
+            {copied ? 'Copied!' : 'Copy Text'}
           </button>
-        )}
+
+          {words.length > 0 && (
+            <button
+              onClick={() => setShowDefinitions(!showDefinitions)}
+              className="btn-text dark:text-text-dark-secondary dark:hover:text-text-dark-primary dark:border-text-dark-tertiary dark:hover:border-text-dark-primary"
+            >
+              {showDefinitions ? 'Hide Definitions' : 'Show Definitions'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Original Text */}
-      <div className={`mb-6 ${info.direction === 'rtl' ? 'text-right' : 'text-left'}`}>
+      <div className={`mb-space-sm ${info.direction === 'rtl' ? 'text-right' : 'text-left'}`}>
         <p
-          className={`text-3xl leading-relaxed ${info.fontClass} text-gray-900`}
+          className={`original-text ${info.color}`}
           dir={info.direction}
         >
           {text}
@@ -91,33 +205,30 @@ export default function OriginalLanguage({
 
       {/* Transliteration */}
       {transliteration && (
-        <div className="mb-6 pb-6 border-b border-amber-200">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <div className="mb-space-sm pb-space-sm border-b border-border-light dark:border-border-dark-light">
+          <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
             Transliteration
           </label>
-          <p className="text-lg italic text-gray-800">{transliteration}</p>
+          <p className="font-body text-base italic text-text-secondary dark:text-text-dark-secondary">{transliteration}</p>
         </div>
       )}
 
       {/* Strong's Numbers */}
       {strongs.length > 0 && (
-        <div className="mb-6 pb-6 border-b border-amber-200">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
+        <div className="mb-space-sm pb-space-sm border-b border-border-light dark:border-border-dark-light">
+          <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-2">
             Strong's Concordance Numbers
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
             {strongs.map((num, index) => (
               <a
                 key={index}
                 href={`https://www.blueletterbible.org/lexicon/${num}/kjv/tr/0-1/`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-lg text-sm font-medium transition-colors"
+                className="verse-ref dark:text-accent-dark-reference dark:hover:border-accent-dark-reference"
               >
-                <span>{num}</span>
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
+                {num}
               </a>
             ))}
           </div>
@@ -126,83 +237,126 @@ export default function OriginalLanguage({
 
       {/* Interlinear Word Analysis */}
       {showInterlinear && words.length > 0 && (
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            Interlinear Analysis
-          </label>
+        <details className="border-t border-border-light dark:border-border-dark-light">
+          <summary className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary cursor-pointer py-space-sm">
+            Interlinear Analysis ({words.length} words)
+          </summary>
 
-          <div className={`grid gap-3 ${info.direction === 'rtl' ? 'direction-rtl' : ''}`}>
-            {words.map((word, index) => (
-              <div
-                key={index}
-                className={`p-4 bg-white rounded-lg border ${
-                  selectedWord === word ? 'border-primary-500 ring-2 ring-primary-200' : 'border-gray-200'
-                } hover:border-primary-300 transition-all cursor-pointer`}
-                onClick={() => setSelectedWord(selectedWord === word ? null : word)}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Word Number */}
-                  <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm font-semibold text-gray-600">
-                    {word.word_order || index + 1}
-                  </div>
+          <div className={`mt-space-sm space-y-2 ${info.direction === 'rtl' ? 'direction-rtl' : ''}`}>
+            {words.map((word, index) => {
+              const isSelected = selectedWord === word;
+              const isHighlighted = highlightedStrongs && word.strongs_number === highlightedStrongs;
+              const wordCount = word.strongs_number ? getStrongsCount(word.strongs_number) : 0;
 
-                  <div className="flex-1 space-y-2">
-                    {/* Original Word */}
-                    <p
-                      className={`text-2xl ${info.fontClass} text-gray-900`}
-                      dir={info.direction}
-                    >
-                      {word.word}
-                    </p>
+              return (
+                <div
+                  key={index}
+                  className={`relative p-space-sm border-2 transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-text-primary dark:border-text-dark-primary bg-surface dark:bg-surface-dark'
+                      : isHighlighted
+                      ? 'border-accent-relevance dark:border-accent-dark-relevance bg-background dark:bg-background-dark'
+                      : 'border-border-light dark:border-border-dark-light hover:border-border-medium dark:hover:border-border-dark-medium bg-surface dark:bg-surface-dark'
+                  }`}
+                  onClick={() => handleWordClick(word)}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Word Number */}
+                    <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center font-ui text-xs font-semibold text-text-tertiary dark:text-text-dark-tertiary">
+                      {word.word_order || index + 1}
+                    </div>
 
-                    {/* Transliteration */}
-                    {word.transliteration && (
-                      <p className="text-sm italic text-gray-700">{word.transliteration}</p>
-                    )}
+                    <div className="flex-1 space-y-1">
+                      {/* Original Word */}
+                      <p
+                        className={`original-text ${info.color}`}
+                        dir={info.direction}
+                      >
+                        {word.word}
+                      </p>
 
-                    {/* Strong's Number */}
-                    {word.strongs_number && (
-                      <div className="flex items-center gap-2">
-                        <a
-                          href={`https://www.blueletterbible.org/lexicon/${word.strongs_number}/kjv/tr/0-1/`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded text-xs font-medium transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {word.strongs_number}
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </a>
+                      {/* Transliteration */}
+                      {word.transliteration && (
+                        <p className="font-body text-sm italic text-text-secondary dark:text-text-dark-secondary">{word.transliteration}</p>
+                      )}
 
-                        {word.morphology && (
-                          <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
-                            {word.morphology}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                      {/* Strong's Number and Morphology */}
+                      {word.strongs_number && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <a
+                            href={`https://www.blueletterbible.org/lexicon/${word.strongs_number}/kjv/tr/0-1/`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="verse-ref dark:text-accent-dark-reference dark:hover:border-accent-dark-reference"
+                            onClick={(e) => e.stopPropagation()}
+                            title="View in Blue Letter Bible"
+                          >
+                            {word.strongs_number}
+                          </a>
 
-                    {/* Definition (shown when showDefinitions is true or word is selected) */}
-                    {word.definition && (showDefinitions || selectedWord === word) && (
-                      <div className="mt-2 pt-2 border-t border-gray-100">
-                        <p className="text-sm text-gray-700">{word.definition}</p>
-                      </div>
-                    )}
+                          <a
+                            href={`/search?strongs=${word.strongs_number}`}
+                            className="font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b border-transparent hover:border-text-tertiary dark:hover:border-text-dark-tertiary"
+                            onClick={(e) => e.stopPropagation()}
+                            title={`Find all verses with ${word.strongs_number}`}
+                          >
+                            Find all
+                          </a>
+
+                          {word.morphology && (
+                            <span
+                              className="font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary border-b border-border-light dark:border-border-dark-light cursor-help"
+                              title={parseMorphology(word.morphology, language)}
+                            >
+                              {word.morphology}
+                            </span>
+                          )}
+
+                          {isHighlighted && wordCount > 1 && (
+                            <span className="font-ui text-xs font-bold text-accent-relevance dark:text-accent-dark-relevance">
+                              {wordCount}×
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Definition */}
+                      {word.definition && (showDefinitions || selectedWord === word) && (
+                        <div className="mt-2 pt-2 border-t border-border-light dark:border-border-dark-light">
+                          <p className="font-body text-sm text-text-secondary dark:text-text-dark-secondary">{word.definition}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        </details>
+      )}
+
+      {/* Highlight notification */}
+      {highlightedStrongs && (
+        <div className="mt-space-sm p-space-sm border-2 border-accent-relevance dark:border-accent-dark-relevance bg-surface dark:bg-surface-dark transition-colors">
+          <p className="font-ui text-sm text-text-primary dark:text-text-dark-primary flex items-center justify-between">
+            <span>
+              Highlighting <strong>{highlightedStrongs}</strong> ({getStrongsCount(highlightedStrongs)} occurrence{getStrongsCount(highlightedStrongs) !== 1 ? 's' : ''})
+            </span>
+            <button
+              onClick={() => setHighlightedStrongs(null)}
+              className="font-ui text-sm text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary font-bold"
+              title="Clear highlight"
+            >
+              ✕
+            </button>
+          </p>
         </div>
       )}
 
       {/* Help Text */}
-      <div className="mt-6 pt-6 border-t border-amber-200">
-        <p className="text-xs text-gray-600">
-          💡 <strong>Tip:</strong> Click on Strong's numbers to view full lexical entries at Blue Letter Bible.
-          {words.length > 0 && ' Click on words to see their definitions.'}
+      <div className="mt-space-sm pt-space-sm border-t border-border-light dark:border-border-dark-light">
+        <p className="font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary">
+          <strong>Note:</strong> Click on Strong's numbers to view full lexical entries. Click on words to highlight all occurrences of the same Strong's number.
         </p>
       </div>
     </div>
@@ -217,30 +371,29 @@ export function CompactOriginalLanguage({
   text,
   transliteration,
 }: Pick<OriginalLanguageProps, 'language' | 'text' | 'transliteration'>) {
-  const icons = {
-    greek: '🇬🇷',
-    hebrew: '🇮🇱',
-    aramaic: '📜',
-  };
-
   const directions = {
     greek: 'ltr',
     hebrew: 'rtl',
     aramaic: 'rtl',
   };
 
+  const colors = {
+    greek: 'text-accent-greek dark:text-accent-dark-greek',
+    hebrew: 'text-accent-hebrew dark:text-accent-dark-hebrew',
+    aramaic: 'text-accent-reference dark:text-accent-dark-reference',
+  };
+
   return (
-    <div className="compact-original-language inline-flex items-center gap-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
-      <span className="text-lg">{icons[language]}</span>
+    <div className="inline-flex items-center gap-3 p-space-sm border-l-4 border-text-tertiary dark:border-text-dark-tertiary bg-surface dark:bg-surface-dark transition-colors">
       <div className="flex-1">
         <p
-          className="font-serif text-lg text-gray-900"
+          className={`original-text ${colors[language]}`}
           dir={directions[language]}
         >
           {text}
         </p>
         {transliteration && (
-          <p className="text-sm italic text-gray-600 mt-1">{transliteration}</p>
+          <p className="font-body text-sm italic text-text-tertiary dark:text-text-dark-tertiary mt-1">{transliteration}</p>
         )}
       </div>
     </div>

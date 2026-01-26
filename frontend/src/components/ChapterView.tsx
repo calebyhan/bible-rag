@@ -86,24 +86,24 @@ export default function ChapterView({
   };
 
   return (
-    <div className="verse-card p-6 mb-6">
+    <div className="border border-border-light dark:border-border-dark-light p-space-lg mb-space-lg">
       {/* Chapter Header */}
-      <div className="mb-6 pb-4 border-b border-gray-200 dark:border-slate-700">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+      <div className="mb-space-md pb-space-sm border-b border-border-light dark:border-border-dark-light">
+        <h2 className="font-heading text-4xl text-text-primary dark:text-text-dark-primary">
           {reference.book} {reference.chapter}
         </h2>
         {reference.book_korean && (
-          <p className="text-lg text-gray-600 dark:text-gray-400 korean-text mt-1">
+          <p className="font-korean text-xl text-text-secondary mt-space-xs">
             {reference.book_korean} {reference.chapter}장
           </p>
         )}
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        <p className="font-ui text-xs uppercase tracking-wide text-text-tertiary mt-space-sm">
           Click any verse to see {showOriginal ? 'original language, ' : ''}cross-references{showOriginal ? '' : ', and more'}
         </p>
       </div>
 
       {/* Verses */}
-      <div className="space-y-1">
+      <div className="space-y-px">
         {verses.map((verse) => {
           const isExpanded = expandedVerse === verse.verse;
           const details = verseDetails[verse.verse];
@@ -113,18 +113,18 @@ export default function ChapterView({
             <div key={verse.verse} id={`verse-${verse.verse}`}>
               {/* Verse Text */}
               <div
-                className={`group hover:bg-gray-50 dark:hover:bg-slate-800/50 -mx-4 px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                  isExpanded ? 'bg-primary-50 dark:bg-primary-900/20' : ''
+                className={`group hover:bg-background dark:hover:bg-background-dark -mx-space-sm px-space-sm py-space-sm transition-all cursor-pointer ${
+                  isExpanded ? 'bg-background dark:bg-background-dark border-l-4 border-accent-scripture dark:border-accent-dark-scripture' : ''
                 }`}
                 onClick={() => handleVerseClick(verse.verse)}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-space-sm">
                   {/* Verse Number */}
                   <span
-                    className={`flex-shrink-0 text-sm font-bold mt-1 w-8 ${
+                    className={`flex-shrink-0 font-ui text-sm font-bold mt-1 w-8 ${
                       isExpanded
-                        ? 'text-primary-700 dark:text-primary-300'
-                        : 'text-primary-600 dark:text-primary-400'
+                        ? 'text-accent-scripture dark:text-accent-dark-scripture'
+                        : 'text-accent-scripture dark:text-accent-dark-scripture opacity-70'
                     }`}
                   >
                     {verse.verse}
@@ -133,12 +133,12 @@ export default function ChapterView({
                   {/* Verse Text */}
                   <div className="flex-1">
                     <p
-                      className={`text-base leading-relaxed ${
+                      className={`font-body text-lg leading-relaxed ${
                         selectedTranslation.includes('개역') ||
                         selectedTranslation.includes('KR')
-                          ? 'korean-text'
+                          ? 'font-korean'
                           : ''
-                      } text-gray-800 dark:text-gray-200`}
+                      } text-text-primary dark:text-text-dark-primary`}
                     >
                       {verse.translations[selectedTranslation] ||
                         Object.values(verse.translations)[0]}
@@ -146,7 +146,7 @@ export default function ChapterView({
                   </div>
 
                   {/* Expand Indicator */}
-                  <span className="text-gray-400 dark:text-gray-500 text-xs mt-1">
+                  <span className="text-text-tertiary dark:text-text-dark-tertiary text-xs mt-1">
                     {isExpanded ? '▼' : '▶'}
                   </span>
                 </div>
@@ -154,29 +154,29 @@ export default function ChapterView({
 
               {/* Expanded Details */}
               {isExpanded && (
-                <div className="mt-2 mb-4 ml-11 mr-4 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg border-l-4 border-primary-500">
+                <div className="mt-space-xs mb-space-md ml-10 mr-space-sm p-space-md border-l-4 border-border-light dark:border-border-dark-light">
                   {isLoading ? (
-                    <div className="text-center py-4">
-                      <div className="spinner mx-auto mb-2"></div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-center py-space-md">
+                      <div className="spinner mx-auto mb-space-xs"></div>
+                      <p className="font-ui text-sm text-text-secondary dark:text-text-dark-secondary">
                         Loading details...
                       </p>
                     </div>
                   ) : details ? (
-                    <div className="space-y-4">
+                    <div className="space-y-space-md">
                       {/* View Full Details Button */}
                       <div className="flex justify-end">
                         <button
                           onClick={() => navigateToVerse(reference.book, reference.chapter, verse.verse)}
-                          className="text-sm px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
+                          className="border-2 border-text-primary dark:border-text-dark-primary bg-transparent text-text-primary dark:text-text-dark-primary hover:bg-text-primary dark:hover:bg-text-dark-primary hover:text-surface dark:hover:text-surface-dark px-space-sm py-space-xs font-ui text-sm uppercase tracking-wide transition-all"
                         >
-                          <span>📖</span>
-                          View Full Details
+                          View Full Details →
                         </button>
                       </div>
+
                       {/* Original Language */}
                       {details.original && (
-                        <div className="mb-4">
+                        <div className="mb-space-md">
                           <OriginalLanguage
                             language={details.original.language as 'greek' | 'hebrew' | 'aramaic'}
                             text={details.original.words?.map(w => w.word).join(' ') || ''}
@@ -191,11 +191,10 @@ export default function ChapterView({
                       {/* Cross References */}
                       {details.cross_references && details.cross_references.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                            <span>🔗</span>
+                          <h4 className="font-ui text-xs uppercase tracking-wide text-text-primary dark:text-text-dark-primary mb-space-sm border-b border-border-light dark:border-border-dark-light pb-space-xs">
                             Cross References ({details.cross_references.length})
                           </h4>
-                          <div className="space-y-2">
+                          <div className="space-y-space-xs">
                             {details.cross_references.map((ref, idx) => (
                               <button
                                 key={idx}
@@ -203,14 +202,14 @@ export default function ChapterView({
                                   e.stopPropagation();
                                   navigateToVerse(ref.book, ref.chapter, ref.verse);
                                 }}
-                                className="w-full text-left p-3 bg-white dark:bg-slate-700 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors cursor-pointer"
+                                className="w-full text-left p-space-sm border border-border-light dark:border-border-dark-light hover:border-text-primary dark:hover:border-text-dark-primary transition-colors cursor-pointer"
                               >
-                                <div className="flex items-start justify-between gap-2">
-                                  <span className="font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+                                <div className="flex items-start justify-between gap-space-xs">
+                                  <span className="font-ui text-sm text-accent-reference dark:text-accent-dark-reference hover:text-text-primary dark:hover:text-text-dark-primary border-b border-transparent hover:border-accent-reference dark:hover:border-accent-dark-reference">
                                     {ref.book} {ref.chapter}:{ref.verse} →
                                   </span>
                                   {ref.relationship && (
-                                    <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">
+                                    <span className="font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary uppercase tracking-wide">
                                       {ref.relationship}
                                     </span>
                                   )}
@@ -224,22 +223,21 @@ export default function ChapterView({
                       {/* Other Translations */}
                       {Object.keys(details.translations).length > 1 && (
                         <div>
-                          <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                            <span>🌐</span>
+                          <h4 className="font-ui text-xs uppercase tracking-wide text-text-primary dark:text-text-dark-primary mb-space-sm border-b border-border-light dark:border-border-dark-light pb-space-xs">
                             Other Translations
                           </h4>
-                          <div className="space-y-2">
+                          <div className="space-y-space-sm">
                             {Object.entries(details.translations)
                               .filter(([abbr]) => abbr !== selectedTranslation)
                               .map(([abbr, text]) => (
                                 <div
                                   key={abbr}
-                                  className="p-2 bg-white dark:bg-slate-700 rounded"
+                                  className="p-space-sm border-l-4 border-border-light dark:border-border-dark-light"
                                 >
-                                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                  <span className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary">
                                     {abbr}
                                   </span>
-                                  <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">
+                                  <p className="font-body text-base text-text-primary dark:text-text-dark-primary mt-space-xs">
                                     {text}
                                   </p>
                                 </div>
@@ -249,7 +247,7 @@ export default function ChapterView({
                       )}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="font-ui text-sm text-text-tertiary dark:text-text-dark-tertiary">
                       No additional details available
                     </p>
                   )}

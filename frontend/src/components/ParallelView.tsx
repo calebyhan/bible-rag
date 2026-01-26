@@ -47,63 +47,59 @@ export default function ParallelView({
     return text;
   };
 
-  const getLayoutClasses = () => {
-    switch (layout) {
-      case 'vertical':
-        return 'flex flex-col space-y-6';
-      case 'horizontal':
-        return 'flex flex-row space-x-6 overflow-x-auto';
-      case 'grid':
-      default:
-        return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
-    }
-  };
-
   const isKoreanTranslation = (abbrev: string) => {
     const koreanAbbrevs = ['RNKSV', 'NKRV', 'RKV', 'KRV', 'KCBS'];
     return koreanAbbrevs.includes(abbrev);
   };
 
   return (
-    <div className="parallel-view">
+    <div className="parallel-view max-w-content mx-auto">
       {/* Header */}
-      <div className="mb-6 pb-4 border-b border-gray-200 dark:border-slate-700">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          {book} {chapter}:{verse}
-        </h2>
-        {book_korean && (
-          <p className="text-lg text-gray-700 dark:text-gray-300 korean-text mt-1">
-            {book_korean} {chapter}:{verse}
-          </p>
-        )}
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-          Comparing {translations.length} translation{translations.length !== 1 ? 's' : ''}
+      <div className="mb-space-md pb-space-sm border-b-2 border-text-tertiary dark:border-text-dark-tertiary">
+        <div className="flex items-baseline gap-3">
+          <h2 className="font-heading text-3xl text-text-primary dark:text-text-dark-primary">
+            {book} {chapter}:{verse}
+          </h2>
+          {book_korean && (
+            <p className="font-korean text-lg text-text-secondary dark:text-text-dark-secondary">
+              {book_korean} {chapter}:{verse}
+            </p>
+          )}
+        </div>
+        <p className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mt-space-xs">
+          {translations.length} Translation{translations.length !== 1 ? 's' : ''}
         </p>
       </div>
 
-      {/* Translations */}
-      <div className={getLayoutClasses()}>
+      {/* Translations - Dynamic Layout */}
+      <div className={`mt-space-md ${
+        layout === 'vertical' ? 'space-y-space-md' :
+        layout === 'horizontal' ? 'flex gap-space-md overflow-x-auto' :
+        'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md'
+      }`}>
         {translations.map((translation, index) => (
           <div
             key={index}
-            className="parallel-translation-card bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow"
+            className={`border-l-4 border-text-tertiary dark:border-text-dark-tertiary pl-space-md pr-space-md py-space-sm bg-surface dark:bg-surface-dark transition-colors ${
+              layout === 'horizontal' ? 'min-w-[400px] flex-shrink-0' : ''
+            }`}
           >
             {/* Translation Header */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-slate-700">
-              <h3 className="font-bold text-primary-700 dark:text-primary-400 text-lg">
+            <div className="flex items-baseline justify-between mb-space-sm pb-space-xs border-b border-border-light dark:border-border-dark-light">
+              <h3 className="font-ui text-xs uppercase tracking-wide text-text-primary dark:text-text-dark-primary font-semibold">
                 {translation.abbreviation}
               </h3>
-              <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded">
-                {isKoreanTranslation(translation.abbreviation) ? '한글' : 'English'}
+              <span className="font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary">
+                {isKoreanTranslation(translation.abbreviation) ? 'Korean' : 'English'}
               </span>
             </div>
 
             {/* Verse Text */}
             <p
-              className={`leading-relaxed text-gray-800 dark:text-gray-200 ${
+              className={`font-body text-lg leading-relaxed text-text-primary dark:text-text-dark-primary ${
                 isKoreanTranslation(translation.abbreviation)
-                  ? 'verse-text-korean text-base'
-                  : 'verse-text text-base'
+                  ? 'font-korean'
+                  : ''
               }`}
             >
               {transformKoreanText(
@@ -113,8 +109,8 @@ export default function ParallelView({
             </p>
 
             {/* Word Count */}
-            <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-space-sm pt-space-xs border-t border-border-light dark:border-border-dark-light">
+              <p className="font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary">
                 {translation.text.split(/\s+/).length} words
               </p>
             </div>
@@ -124,19 +120,19 @@ export default function ParallelView({
 
       {/* Empty State */}
       {translations.length === 0 && (
-        <div className="text-center py-12 bg-gray-50 dark:bg-slate-800 rounded-lg">
-          <p className="text-gray-700 dark:text-gray-300">No translations to display</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        <div className="text-center py-space-lg border-2 border-border-light dark:border-border-dark-light bg-background dark:bg-background-dark transition-colors">
+          <p className="font-body text-text-primary dark:text-text-dark-primary">No translations to display</p>
+          <p className="font-ui text-sm text-text-tertiary dark:text-text-dark-tertiary mt-space-xs">
             Select translations from the search options
           </p>
         </div>
       )}
 
-      {/* Layout Toggle (if needed) */}
+      {/* Help Text */}
       {translations.length > 1 && (
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
-          <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
-            💡 Tip: Compare word choices, emphasis, and translation philosophy across versions
+        <div className="mt-space-lg pt-space-md border-t border-border-light dark:border-border-dark-light">
+          <p className="font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary text-center">
+            Compare word choices, emphasis, and translation philosophy across versions
           </p>
         </div>
       )}
@@ -174,18 +170,18 @@ export function CompactParallelView({
   };
 
   return (
-    <div className="compact-parallel-view space-y-3">
+    <div className="compact-parallel-view space-y-space-sm">
       {translations.map((translation, index) => (
-        <div key={index} className="flex gap-3">
+        <div key={index} className="flex gap-space-sm items-start">
           <div className="flex-shrink-0">
-            <span className="inline-block px-2 py-1 text-xs font-semibold bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded">
+            <span className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary font-semibold border-b border-text-tertiary dark:border-text-dark-tertiary pb-px">
               {translation.abbreviation}
             </span>
           </div>
           <p
-            className={`flex-1 text-sm text-gray-800 dark:text-gray-200 ${
+            className={`flex-1 font-body text-sm text-text-primary dark:text-text-dark-primary ${
               isKoreanTranslation(translation.abbreviation)
-                ? 'korean-text'
+                ? 'font-korean'
                 : ''
             }`}
           >

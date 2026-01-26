@@ -23,7 +23,7 @@ export default function ComparePage() {
 
   // State for translations
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
-  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'ESV', 'NKRV']);
+  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'ESV', 'KJV']);
 
   // State for books
   const [books, setBooks] = useState<Book[]>([]);
@@ -34,13 +34,19 @@ export default function ComparePage() {
   const [error, setError] = useState<string | null>(null);
 
   // State for layout
-  const [layout, setLayout] = useState<'vertical' | 'horizontal' | 'grid'>('grid');
+  const [layout, setLayout] = useState<'vertical' | 'grid'>('grid');
 
   // State for Korean display mode
   const [koreanMode, setKoreanMode] = useState<KoreanDisplayMode>('hangul');
 
   // State for original language display
   const [showOriginal, setShowOriginal] = useState(false);
+
+  // State for translation dropdown
+  const [showTranslations, setShowTranslations] = useState(false);
+
+  // State for book dropdown
+  const [showBookDropdown, setShowBookDropdown] = useState(false);
 
   // Load translations and books on mount
   useEffect(() => {
@@ -52,6 +58,21 @@ export default function ComparePage() {
     loadVerse();
   }, [verseSelection, selectedTranslations, showOriginal]);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.book-dropdown-container')) {
+        setShowBookDropdown(false);
+      }
+    };
+
+    if (showBookDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showBookDropdown]);
+
   const loadTranslationsAndBooks = async () => {
     try {
       const [translationsRes, booksRes] = await Promise.all([
@@ -62,15 +83,7 @@ export default function ComparePage() {
       setAvailableTranslations(translationsRes.translations);
       setBooks(booksRes.books);
 
-      // Set default translations if available
-      const englishTranslations = translationsRes.translations
-        .filter(t => t.language_code === 'en')
-        .slice(0, 3)
-        .map(t => t.abbreviation);
-
-      if (englishTranslations.length > 0) {
-        setSelectedTranslations(englishTranslations);
-      }
+      // Default translations are set in state initialization (NIV, ESV, KJV)
     } catch (err) {
       console.error('Failed to load translations/books:', err);
     }
@@ -98,11 +111,15 @@ export default function ComparePage() {
   };
 
   const handleTranslationToggle = (abbreviation: string) => {
-    setSelectedTranslations(prev =>
-      prev.includes(abbreviation)
-        ? prev.filter(t => t !== abbreviation)
-        : [...prev, abbreviation]
-    );
+    const isSelected = selectedTranslations.includes(abbreviation);
+
+    if (isSelected) {
+      // Don't allow deselecting if it's the only one
+      if (selectedTranslations.length === 1) return;
+      setSelectedTranslations((prev) => prev.filter((t) => t !== abbreviation));
+    } else {
+      setSelectedTranslations((prev) => [...prev, abbreviation]);
+    }
   };
 
   const handleBookChange = (bookName: string) => {
@@ -121,41 +138,101 @@ export default function ComparePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <main className="min-h-screen bg-background dark:bg-background-dark transition-colors">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-blue-800 text-white">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Verse Comparison</h1>
-          <p className="text-primary-100">
+      <div className="bg-surface dark:bg-surface-dark border-b border-border-light dark:border-border-dark-light transition-colors">
+        <div className="max-w-content mx-auto px-space-md py-space-lg">
+          <h1 className="font-heading text-2xl sm:text-3xl md:text-4xl text-text-primary dark:text-text-dark-primary mb-space-xs">Verse Comparison</h1>
+          <p className="font-ui text-sm text-text-secondary dark:text-text-dark-secondary">
             Compare Bible translations side-by-side • 성경 번역본 비교
           </p>
         </div>
       </div>
 
       {/* Controls */}
-      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-16 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+      <div className="bg-surface dark:bg-surface-dark border-b border-border-light dark:border-border-dark-light transition-colors">
+        <div className="max-w-content mx-auto px-space-md py-space-md">
           {/* Verse Selector */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-space-sm mb-space-md">
             {/* Book selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Book / 책</label>
-              <select
-                value={verseSelection.book}
-                onChange={(e) => handleBookChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            <div className="relative book-dropdown-container">
+              <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Book / 책</label>
+              <button
+                onClick={() => setShowBookDropdown(!showBookDropdown)}
+                className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture text-left flex items-center justify-between transition-colors"
               >
-                {books.map(book => (
-                  <option key={book.id} value={book.name}>
-                    {book.name} ({book.testament})
-                  </option>
-                ))}
-              </select>
+                <span>{verseSelection.book}</span>
+                <span className="text-xs">{showBookDropdown ? '▲' : '▼'}</span>
+              </button>
+
+              {/* Book Dropdown */}
+              {showBookDropdown && (
+                <div className="absolute z-50 mt-1 left-0 w-full sm:min-w-[500px] max-w-[95vw] bg-surface dark:bg-surface-dark border-2 border-text-primary dark:border-text-dark-primary max-h-96 overflow-y-auto transition-colors">
+                  {/* Old Testament */}
+                  {books.filter(b => b.testament === 'OT').length > 0 && (
+                    <div className="p-space-sm">
+                      <h3 className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary font-semibold mb-space-xs px-space-xs">
+                        Old Testament / 구약
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+                        {books.filter(b => b.testament === 'OT').map((book) => (
+                          <button
+                            key={book.id}
+                            onClick={() => {
+                              handleBookChange(book.name);
+                              setShowBookDropdown(false);
+                            }}
+                            className="text-left px-space-xs py-space-xs hover:bg-background dark:hover:bg-background-dark transition-colors border border-transparent hover:border-border-medium dark:hover:border-border-dark-medium"
+                          >
+                            <div className="font-body text-sm text-text-primary dark:text-text-dark-primary">
+                              {book.name}
+                            </div>
+                            <div className="font-korean text-xs text-text-tertiary dark:text-text-dark-tertiary">
+                              {book.name_korean}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Divider */}
+                  <div className="border-t-2 border-text-tertiary dark:border-text-dark-tertiary"></div>
+
+                  {/* New Testament */}
+                  {books.filter(b => b.testament === 'NT').length > 0 && (
+                    <div className="p-space-sm">
+                      <h3 className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary font-semibold mb-space-xs px-space-xs">
+                        New Testament / 신약
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+                        {books.filter(b => b.testament === 'NT').map((book) => (
+                          <button
+                            key={book.id}
+                            onClick={() => {
+                              handleBookChange(book.name);
+                              setShowBookDropdown(false);
+                            }}
+                            className="text-left px-space-xs py-space-xs hover:bg-background dark:hover:bg-background-dark transition-colors border border-transparent hover:border-border-medium dark:hover:border-border-dark-medium"
+                          >
+                            <div className="font-body text-sm text-text-primary dark:text-text-dark-primary">
+                              {book.name}
+                            </div>
+                            <div className="font-korean text-xs text-text-tertiary dark:text-text-dark-tertiary">
+                              {book.name_korean}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Chapter selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Chapter / 장</label>
+              <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Chapter / 장</label>
               <input
                 type="number"
                 min="1"
@@ -165,13 +242,13 @@ export default function ComparePage() {
                   ...prev,
                   chapter: Math.max(1, Math.min(getMaxChapter(), parseInt(e.target.value) || 1))
                 }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture transition-colors"
               />
             </div>
 
             {/* Verse selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Verse / 절</label>
+              <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Verse / 절</label>
               <input
                 type="number"
                 min="1"
@@ -181,17 +258,17 @@ export default function ComparePage() {
                   ...prev,
                   verse: Math.max(1, parseInt(e.target.value) || 1)
                 }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture transition-colors"
               />
             </div>
 
             {/* Quick reference input */}
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Quick Reference / 빠른 참조</label>
+              <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Quick Reference / 빠른 참조</label>
               <input
                 type="text"
                 placeholder="e.g., John 3:16"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary placeholder:text-text-tertiary dark:placeholder:text-text-dark-tertiary placeholder:italic font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture transition-colors"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const input = e.currentTarget.value;
@@ -211,54 +288,67 @@ export default function ComparePage() {
           </div>
 
           {/* Translation selector */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-              Select Translations / 번역본 선택 ({selectedTranslations.length} selected)
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {availableTranslations.map(trans => (
-                <button
-                  key={trans.id}
-                  onClick={() => handleTranslationToggle(trans.abbreviation)}
-                  className={`
-                    px-3 py-1.5 rounded-lg text-sm font-medium transition-all
-                    ${selectedTranslations.includes(trans.abbreviation)
-                      ? 'bg-primary-500 text-white shadow-sm'
-                      : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
-                    }
-                  `}
-                >
-                  {trans.abbreviation}
-                  <span className="ml-1 text-xs opacity-75">
-                    ({trans.language_code === 'ko' ? '한' : 'en'})
-                  </span>
-                </button>
-              ))}
+          <div className="mb-space-md">
+            <div className="flex justify-center mb-space-xs">
+              <button
+                type="button"
+                onClick={() => setShowTranslations(!showTranslations)}
+                className="btn-text"
+              >
+                {showTranslations ? '▾' : '▸'} Translations ({selectedTranslations.length} selected)
+              </button>
             </div>
+
+            {showTranslations && (
+              <div className="space-y-2">
+                <div className="flex flex-wrap justify-center gap-4">
+                  {availableTranslations.map((trans) => {
+                    const isSelected = selectedTranslations.includes(trans.abbreviation);
+
+                    return (
+                      <button
+                        key={trans.id}
+                        type="button"
+                        onClick={() => handleTranslationToggle(trans.abbreviation)}
+                        className={`font-ui text-sm transition-colors ${isSelected
+                            ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                            : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-secondary dark:hover:text-text-dark-secondary border-b-2 border-transparent'
+                          }`}
+                        title={trans.name}
+                      >
+                        {trans.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-center text-text-tertiary dark:text-text-dark-tertiary font-ui">
+                  Click to select/deselect translations
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Layout and display controls */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex flex-wrap items-center justify-between gap-space-sm">
+            <div className="flex items-center gap-space-sm flex-wrap">
               {/* Layout selector */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Layout / 레이아웃:</label>
-                <div className="inline-flex rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 p-1">
-                  {(['grid', 'vertical', 'horizontal'] as const).map(l => (
+              <div className="flex items-center gap-space-xs">
+                <label className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary">Layout / 레이아웃:</label>
+                <div className="inline-flex border-2 border-text-primary dark:border-text-dark-primary">
+                  {(['grid', 'vertical'] as const).map(l => (
                     <button
                       key={l}
                       onClick={() => setLayout(l)}
                       className={`
-                        px-3 py-1 text-sm rounded-md transition-all
+                        px-space-sm py-space-xs font-ui text-xs uppercase tracking-wide font-semibold transition-all border-r-2 last:border-r-0 border-text-primary dark:border-text-dark-primary
                         ${layout === l
-                          ? 'bg-white dark:bg-slate-600 text-primary-600 dark:text-primary-400 shadow-sm'
-                          : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                          ? 'bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark'
+                          : 'bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark'
                         }
                       `}
                     >
-                      {l === 'grid' && '📱 Grid'}
-                      {l === 'vertical' && '📄 Vertical'}
-                      {l === 'horizontal' && '↔️ Horizontal'}
+                      {l === 'grid' && 'Grid'}
+                      {l === 'vertical' && 'Vertical'}
                     </button>
                   ))}
                 </div>
@@ -267,14 +357,12 @@ export default function ComparePage() {
               {/* Original Language Toggle */}
               <button
                 onClick={() => setShowOriginal(!showOriginal)}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  showOriginal
-                    ? 'bg-amber-500 text-white hover:bg-amber-600'
-                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50'
-                }`}
+                className={`px-space-sm py-space-xs font-ui text-xs uppercase tracking-wide font-semibold transition-colors whitespace-nowrap border-2 ${showOriginal
+                    ? 'border-text-primary dark:border-text-dark-primary bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark'
+                    : 'border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark'
+                  }`}
               >
-                <span className="text-base">📖</span>
-                <span>원어 {showOriginal ? 'Hide' : 'Show'}</span>
+                원어 {showOriginal ? 'Hide' : 'Show'}
               </button>
             </div>
 
@@ -285,18 +373,18 @@ export default function ComparePage() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-content mx-auto px-space-md py-space-lg">
         {error && (
-          <div className="max-w-4xl mx-auto mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            <p className="font-medium">Error / 오류</p>
-            <p className="text-sm">{error}</p>
+          <div className="mb-space-md border-l-4 border-error dark:border-error-dark pl-space-md py-space-sm">
+            <p className="font-ui text-sm uppercase tracking-wide text-text-primary dark:text-text-dark-primary mb-space-xs">Error / 오류</p>
+            <p className="font-body text-sm text-text-secondary dark:text-text-dark-secondary">{error}</p>
           </div>
         )}
 
         {isLoading && (
-          <div className="text-center py-12">
-            <div className="spinner mx-auto mb-4"></div>
-            <p className="text-gray-700 dark:text-gray-300">Loading verse... / 구절 로딩 중...</p>
+          <div className="text-center py-space-xl">
+            <div className="spinner mx-auto mb-space-sm"></div>
+            <p className="font-ui text-sm text-text-secondary dark:text-text-dark-secondary">Loading verse... / 구절 로딩 중...</p>
           </div>
         )}
 
@@ -304,10 +392,10 @@ export default function ComparePage() {
           <>
             {/* Original Language Display (if enabled) */}
             {verseData.original && showOriginal && (
-              <div className="mb-8 max-w-6xl mx-auto">
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800 mb-4">
-                  <p className="text-sm text-amber-900 dark:text-amber-200 mb-2">
-                    <strong>💡 Original Text Context:</strong> The translations below are all derived from this original{' '}
+              <div className="mb-space-lg">
+                <div className="border-l-4 border-border-light dark:border-border-dark-light pl-space-md mb-space-md">
+                  <p className="font-body text-sm text-text-secondary dark:text-text-dark-secondary italic">
+                    <strong className="text-text-primary dark:text-text-dark-primary not-italic">Original Text Context:</strong> The translations below are all derived from this original{' '}
                     {verseData.original.language === 'greek' ? 'Greek' : verseData.original.language === 'hebrew' ? 'Hebrew' : 'Aramaic'}{' '}
                     text. Notice how different translators interpret and convey the same source material.
                   </p>
@@ -341,31 +429,31 @@ export default function ComparePage() {
         )}
 
         {!isLoading && !error && selectedTranslations.length === 0 && (
-          <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-            <p className="text-gray-700 dark:text-gray-300">Please select at least one translation to compare.</p>
-            <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm">비교할 번역본을 하나 이상 선택하세요.</p>
+          <div className="text-center py-space-xl border border-border-light dark:border-border-dark-light p-space-lg">
+            <p className="font-body text-text-primary dark:text-text-dark-primary">Please select at least one translation to compare.</p>
+            <p className="font-korean text-sm text-text-secondary dark:text-text-dark-secondary mt-space-xs">비교할 번역본을 하나 이상 선택하세요.</p>
           </div>
         )}
 
         {/* Verse context navigation */}
         {verseData?.context && (
-          <div className="mt-8 max-w-4xl mx-auto">
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Context Navigation / 맥락 탐색</h3>
-              <div className="grid md:grid-cols-2 gap-4">
+          <div className="mt-space-lg">
+            <div className="border-t border-border-light dark:border-border-dark-light pt-space-lg">
+              <h3 className="font-ui text-sm uppercase tracking-wide text-text-primary dark:text-text-dark-primary mb-space-md">Context Navigation / 맥락 탐색</h3>
+              <div className="grid md:grid-cols-2 gap-space-sm">
                 {verseData.context.previous && (
                   <button
                     onClick={() => setVerseSelection(prev => ({
                       ...prev,
                       verse: prev.verse - 1
                     }))}
-                    className="text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                    className="text-left p-space-sm border-2 border-border-light dark:border-border-dark-light hover:border-text-primary dark:hover:border-text-dark-primary bg-background dark:bg-background-dark transition-colors"
                   >
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">← 이전 절 / Previous Verse</div>
-                    <div className="text-sm text-gray-800 dark:text-gray-200">
+                    <div className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">← 이전 절 / Previous Verse</div>
+                    <div className="font-ui text-sm font-semibold text-text-primary dark:text-text-dark-primary">
                       {verseSelection.chapter}:{verseSelection.verse - 1}
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                    <p className="font-body text-xs text-text-secondary dark:text-text-dark-secondary mt-space-xs line-clamp-2">
                       {verseData.context.previous.text}
                     </p>
                   </button>
@@ -376,13 +464,13 @@ export default function ComparePage() {
                       ...prev,
                       verse: prev.verse + 1
                     }))}
-                    className="text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                    className="text-left p-space-sm border-2 border-border-light dark:border-border-dark-light hover:border-text-primary dark:hover:border-text-dark-primary bg-background dark:bg-background-dark transition-colors"
                   >
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">다음 절 / Next Verse →</div>
-                    <div className="text-sm text-gray-800 dark:text-gray-200">
+                    <div className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">다음 절 / Next Verse →</div>
+                    <div className="font-ui text-sm font-semibold text-text-primary dark:text-text-dark-primary">
                       {verseSelection.chapter}:{verseSelection.verse + 1}
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                    <p className="font-body text-xs text-text-secondary dark:text-text-dark-secondary mt-space-xs line-clamp-2">
                       {verseData.context.next.text}
                     </p>
                   </button>
@@ -393,10 +481,10 @@ export default function ComparePage() {
         )}
 
         {/* Tips */}
-        <div className="mt-8 max-w-4xl mx-auto">
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">💡 Comparison Tips / 비교 팁</h4>
-            <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+        <div className="mt-space-lg">
+          <div className="border-l-4 border-border-light dark:border-border-dark-light pl-space-md py-space-sm">
+            <h4 className="font-ui text-xs uppercase tracking-wide text-text-primary dark:text-text-dark-primary mb-space-sm">Comparison Tips / 비교 팁</h4>
+            <ul className="font-body text-sm text-text-secondary dark:text-text-dark-secondary space-y-1">
               <li>• Compare word choices and emphasis across different translations</li>
               <li>• Notice how translators handle the same original text differently</li>
               <li>• Enable "Show Original" to see the Greek/Hebrew source text with Strong's numbers</li>
@@ -406,14 +494,6 @@ export default function ComparePage() {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-200 mt-12 py-8">
-        <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
-          <p>Bible RAG - Verse Comparison Tool</p>
-          <p className="mt-1">Compare translations to deepen your understanding</p>
-        </div>
-      </footer>
     </main>
   );
 }

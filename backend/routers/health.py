@@ -3,8 +3,8 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy import text, select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from cache import get_cache
 from config import get_settings
@@ -16,7 +16,7 @@ settings = get_settings()
 
 
 @router.get("/health", response_model=HealthResponse)
-def health_check(db: Session = Depends(get_db)):
+async def health_check(db: AsyncSession = Depends(get_db)):
     """Health check endpoint.
 
     Returns the status of all services and basic statistics.
@@ -27,13 +27,13 @@ def health_check(db: Session = Depends(get_db)):
 
     # Check database
     try:
-        db.execute(text("SELECT 1"))
+        await db.execute(text("SELECT 1"))
         services["database"] = "healthy"
 
         # Get stats
-        stats["total_verses"] = db.query(Verse).count()
-        stats["total_translations"] = db.query(Translation).count()
-        stats["total_embeddings"] = db.query(Embedding).count()
+        stats["total_verses"] = (await db.execute(select(func.count()).select_from(Verse))).scalar()
+        stats["total_translations"] = (await db.execute(select(func.count()).select_from(Translation))).scalar()
+        stats["total_embeddings"] = (await db.execute(select(func.count()).select_from(Embedding))).scalar()
     except Exception as e:
         services["database"] = "unhealthy"
         errors.append(f"Database error: {str(e)}")

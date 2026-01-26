@@ -154,10 +154,10 @@ export default function VerseDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
         <div className="text-center">
-          <div className="spinner mx-auto mb-4"></div>
-          <p className="text-gray-700 dark:text-gray-300">Loading verse...</p>
+          <div className="inline-block w-12 h-12 border-4 border-text-tertiary dark:border-text-dark-tertiary border-t-text-primary dark:border-t-text-dark-primary animate-spin mb-space-md"></div>
+          <p className="font-body text-base text-text-primary dark:text-text-dark-primary">Loading verse...</p>
         </div>
       </div>
     );
@@ -165,13 +165,13 @@ export default function VerseDetailPage() {
 
   if (error || !verseData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
         <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Verse Not Found</h2>
-          <p className="text-gray-700 dark:text-gray-300 mb-6">{error || 'The requested verse could not be found.'}</p>
+          <h2 className="font-heading text-3xl font-bold text-text-primary dark:text-text-dark-primary mb-space-md">Verse Not Found</h2>
+          <p className="font-body text-base text-text-secondary dark:text-text-dark-secondary mb-space-lg">{error || 'The requested verse could not be found.'}</p>
           <button
             onClick={() => router.push('/')}
-            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+            className="px-space-md py-space-sm font-ui text-sm uppercase tracking-wide font-semibold border-2 border-text-primary dark:border-text-dark-primary bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark hover:bg-background dark:hover:bg-background-dark hover:text-text-primary dark:hover:text-text-dark-primary transition-all"
           >
             Return Home
           </button>
@@ -183,14 +183,14 @@ export default function VerseDetailPage() {
   const { reference, translations, original, cross_references, context } = verseData;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-background dark:bg-background-dark transition-colors">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 shadow-sm border-b dark:border-slate-700">
-        <div className="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4 mb-2">
+      <header className="bg-surface dark:bg-surface-dark border-b-2 border-text-tertiary dark:border-text-dark-tertiary transition-colors">
+        <div className="max-w-content mx-auto px-space-md py-space-md sm:px-space-lg lg:px-space-xl">
+          <div className="flex items-center gap-space-sm mb-space-sm">
             <button
               onClick={handleBack}
-              className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium inline-flex items-center text-sm"
+              className="font-ui text-sm uppercase tracking-wide text-text-primary dark:text-text-dark-primary hover:text-text-scripture dark:hover:text-accent-dark-scripture font-semibold pb-1 border-b-2 border-transparent hover:border-text-scripture dark:hover:border-accent-dark-scripture transition-colors inline-flex items-center"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -198,36 +198,35 @@ export default function VerseDetailPage() {
               Back
             </button>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold text-text-primary dark:text-text-dark-primary">
             {reference.book} {reference.chapter}:{reference.verse}
           </h1>
           {reference.book_korean && (
-            <p className="text-lg text-gray-700 dark:text-gray-300 korean-text mt-1">
+            <p className="font-korean text-lg sm:text-xl text-text-secondary dark:text-text-dark-secondary mt-space-xs">
               {reference.book_korean} {reference.chapter}:{reference.verse}
             </p>
           )}
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <main className="max-w-content mx-auto px-space-md py-space-lg sm:px-space-lg lg:px-space-xl">
         {/* Translation Selector */}
-        <div className="mb-6 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 border dark:border-slate-700">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+        <div className="mb-space-lg bg-surface dark:bg-surface-dark border-2 border-text-tertiary dark:border-text-dark-tertiary p-space-md transition-colors">
+          <div className="flex items-center justify-between mb-space-sm">
+            <h3 className="font-ui text-sm uppercase tracking-wide font-semibold text-text-primary dark:text-text-dark-primary">
               Translations ({Object.keys(translations).length} loaded)
             </h3>
 
             {/* Original Language Toggle */}
-            <div className="inline-flex items-center gap-1">
+            <div className="inline-flex items-center gap-2">
               <button
                 onClick={() => setShowOriginal(!showOriginal)}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`inline-flex items-center gap-2 px-space-sm py-space-xs font-ui text-sm uppercase tracking-wide font-semibold transition-all border-2 ${
                   showOriginal
-                    ? 'bg-amber-500 text-white hover:bg-amber-600'
-                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50'
+                    ? 'border-text-primary dark:border-text-dark-primary bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark'
+                    : 'border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark'
                 }`}
               >
-                <span className="text-base">📖</span>
                 <span>{showOriginal ? 'Hide' : 'Show'} Original</span>
               </button>
               <InfoTooltip
@@ -239,16 +238,16 @@ export default function VerseDetailPage() {
 
           <div className="flex flex-wrap gap-2">
             {translationsLoading ? (
-              <div className="text-sm text-gray-500 dark:text-gray-400">Loading translations...</div>
+              <div className="font-ui text-sm text-text-tertiary dark:text-text-dark-tertiary">Loading translations...</div>
             ) : (
               availableTranslations.map(({ abbreviation, name }) => (
                 <button
                   key={abbreviation}
                   onClick={() => handleTranslationToggle(abbreviation)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-space-sm py-space-xs font-ui text-sm font-semibold transition-all border-2 ${
                     selectedTranslations.includes(abbreviation)
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
+                      ? 'border-text-primary dark:border-text-dark-primary bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark'
+                      : 'border-text-tertiary dark:border-text-dark-tertiary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:border-text-primary dark:hover:border-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark'
                   }`}
                 >
                   {name}
@@ -259,22 +258,22 @@ export default function VerseDetailPage() {
         </div>
 
         {/* Verse Translations */}
-        <div className="space-y-4 mb-8">
+        <div className="space-y-space-md mb-space-lg">
           {Object.keys(translations).length === 0 && (
-            <div className="verse-card p-6 text-center text-gray-500 dark:text-gray-400">
+            <div className="bg-surface dark:bg-surface-dark border-2 border-text-tertiary dark:border-text-dark-tertiary p-space-lg text-center font-body text-base text-text-tertiary dark:text-text-dark-tertiary transition-colors">
               No translations available for the selected options.
             </div>
           )}
           {Object.entries(translations).map(([lang, text]) => (
-            <div key={lang} className="verse-card p-6">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-primary-600 dark:text-primary-400 uppercase">
+            <div key={lang} className="bg-surface dark:bg-surface-dark border-l-4 border-text-scripture dark:border-accent-dark-scripture p-space-lg transition-colors">
+              <div className="flex items-center justify-between mb-space-sm border-b border-border-light dark:border-border-dark-light pb-space-xs">
+                <span className="font-ui text-xs uppercase tracking-wide font-semibold text-text-primary dark:text-text-dark-primary">
                   {translationLabels[lang] || lang}
                 </span>
               </div>
               <p
-                className={`text-lg leading-relaxed text-gray-800 dark:text-gray-200 ${
-                  lang === 'NKRV' || lang === 'KRV' || lang === 'RKV' || lang === 'RNKSV' || lang === 'KCBS' || lang.includes('개역') ? 'verse-text-korean' : 'verse-text'
+                className={`text-lg sm:text-xl leading-relaxed text-text-primary dark:text-text-dark-primary ${
+                  lang === 'NKRV' || lang === 'KRV' || lang === 'RKV' || lang === 'RNKSV' || lang === 'KCBS' || lang.includes('개역') ? 'font-korean' : 'font-body'
                 }`}
               >
                 {text}
@@ -285,7 +284,7 @@ export default function VerseDetailPage() {
 
         {/* Original Language */}
         {original && showOriginal && (
-          <div className="mb-8">
+          <div className="mb-space-lg">
             <OriginalLanguage
               language={original.language as 'greek' | 'hebrew' | 'aramaic'}
               text={original.words?.map(w => w.word).join(' ') || ''}
@@ -299,43 +298,43 @@ export default function VerseDetailPage() {
 
         {/* Context (Previous/Next verses) */}
         {context && (context.previous || context.next) && (
-          <div className="verse-card p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <div className="bg-surface dark:bg-surface-dark border-2 border-text-tertiary dark:border-text-dark-tertiary p-space-md mb-space-lg transition-colors">
+            <h3 className="font-heading text-lg sm:text-xl font-bold text-text-primary dark:text-text-dark-primary mb-space-md flex items-center gap-2">
               Context
               <InfoTooltip
                 title="Context"
                 description="Shows the verses immediately before and after this verse to help you understand the surrounding narrative and flow of thought."
               />
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-space-md">
               {context.previous && (
-                <div className="border-l-4 border-gray-300 dark:border-slate-600 pl-4">
+                <div className="border-l-4 border-text-tertiary dark:border-text-dark-tertiary pl-space-md">
                   <button
                     onClick={() => navigateToVerse({
                       book: reference.book,
                       chapter: context.previous!.chapter,
                       verse: context.previous!.verse,
                     })}
-                    className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 mb-1"
+                    className="verse-ref mb-space-xs inline-block"
                   >
                     {reference.book} {context.previous.chapter}:{context.previous.verse}
                   </button>
-                  <p className="text-gray-800 dark:text-gray-200">{context.previous.text}</p>
+                  <p className="font-body text-base text-text-primary dark:text-text-dark-primary">{context.previous.text}</p>
                 </div>
               )}
               {context.next && (
-                <div className="border-l-4 border-gray-300 dark:border-slate-600 pl-4">
+                <div className="border-l-4 border-text-tertiary dark:border-text-dark-tertiary pl-space-md">
                   <button
                     onClick={() => navigateToVerse({
                       book: reference.book,
                       chapter: context.next!.chapter,
                       verse: context.next!.verse,
                     })}
-                    className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 mb-1"
+                    className="verse-ref mb-space-xs inline-block"
                   >
                     {reference.book} {context.next.chapter}:{context.next.verse}
                   </button>
-                  <p className="text-gray-800 dark:text-gray-200">{context.next.text}</p>
+                  <p className="font-body text-base text-text-primary dark:text-text-dark-primary">{context.next.text}</p>
                 </div>
               )}
             </div>
@@ -344,15 +343,15 @@ export default function VerseDetailPage() {
 
         {/* Cross References */}
         {cross_references && cross_references.length > 0 && (
-          <div className="verse-card p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <div className="bg-surface dark:bg-surface-dark border-2 border-text-tertiary dark:border-text-dark-tertiary p-space-md mb-space-lg transition-colors">
+            <h3 className="font-heading text-lg sm:text-xl font-bold text-text-primary dark:text-text-dark-primary mb-space-md flex items-center gap-2">
               Cross References ({cross_references.length})
               <InfoTooltip
                 title="Cross References"
                 description="Biblically-linked verses that have explicit connections such as parallel passages, prophecy fulfillments, direct quotations, or thematic allusions referenced by biblical scholars."
               />
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
               {cross_references.map((ref, idx) => (
                 <button
                   key={idx}
@@ -361,20 +360,20 @@ export default function VerseDetailPage() {
                     chapter: ref.chapter,
                     verse: ref.verse,
                   })}
-                  className="text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                  className="text-left p-space-sm border-2 border-text-tertiary dark:border-text-dark-tertiary hover:border-text-primary dark:hover:border-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark transition-all"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-primary-700 dark:text-primary-400">
+                  <div className="flex items-center justify-between mb-space-xs">
+                    <span className="verse-ref inline-block">
                       {ref.book} {ref.chapter}:{ref.verse}
                     </span>
                     {ref.relationship && (
-                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-slate-700 rounded text-gray-700 dark:text-gray-300">
+                      <span className="font-ui text-xs uppercase tracking-wide px-space-xs py-1 bg-surface dark:bg-surface-dark border border-border-light dark:border-border-dark-light text-text-secondary dark:text-text-dark-secondary">
                         {ref.relationship}
                       </span>
                     )}
                   </div>
                   {ref.book_korean && (
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 korean-text">{ref.book_korean}</p>
+                    <p className="font-korean text-xs text-text-secondary dark:text-text-dark-secondary">{ref.book_korean}</p>
                   )}
                 </button>
               ))}
@@ -383,8 +382,8 @@ export default function VerseDetailPage() {
         )}
 
         {/* Related Verses - Lazy Hydrated */}
-        <div className="verse-card p-6">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+        <div className="bg-surface dark:bg-surface-dark border-2 border-text-tertiary dark:border-text-dark-tertiary p-space-md transition-colors">
+          <h3 className="font-heading text-lg sm:text-xl font-bold text-text-primary dark:text-text-dark-primary mb-space-md flex items-center gap-2">
             Related Verses {relatedVerses.length > 0 && `(${relatedVerses.length})`}
             <InfoTooltip
               title="Related Verses"
@@ -392,34 +391,34 @@ export default function VerseDetailPage() {
             />
           </h3>
           {loadingRelated ? (
-            <div className="text-center py-8">
-              <div className="spinner mx-auto mb-2"></div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Finding related verses...</p>
+            <div className="text-center py-space-lg">
+              <div className="inline-block w-12 h-12 border-4 border-text-tertiary dark:border-text-dark-tertiary border-t-text-primary dark:border-t-text-dark-primary animate-spin mb-space-sm"></div>
+              <p className="font-ui text-sm text-text-tertiary dark:text-text-dark-tertiary">Finding related verses...</p>
             </div>
           ) : relatedVerses.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-space-sm">
               {relatedVerses.map((verse, idx) => (
                 <button
                   key={idx}
                   onClick={() => navigateToVerse(verse.reference)}
-                  className="w-full text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                  className="w-full text-left p-space-sm border-2 border-text-tertiary dark:border-text-dark-tertiary hover:border-text-primary dark:hover:border-text-dark-primary hover:bg-background dark:hover:bg-background-dark transition-all"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-primary-700 dark:text-primary-400">
+                  <div className="flex items-center justify-between mb-space-xs">
+                    <span className="verse-ref inline-block">
                       {verse.reference.book} {verse.reference.chapter}:{verse.reference.verse}
                     </span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="font-ui text-sm text-text-tertiary dark:text-text-dark-tertiary">
                       {Math.round(verse.relevance_score * 100)}% relevant
                     </span>
                   </div>
                   {verse.translations.en && (
-                    <p className="text-sm text-gray-800 dark:text-gray-200">{verse.translations.en}</p>
+                    <p className="font-body text-sm text-text-primary dark:text-text-dark-primary">{verse.translations.en}</p>
                   )}
                 </button>
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-600 dark:text-gray-400 py-4">
+            <p className="text-center font-body text-base text-text-tertiary dark:text-text-dark-tertiary py-space-md">
               No related verses found.
             </p>
           )}

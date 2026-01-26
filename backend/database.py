@@ -16,39 +16,46 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
-    create_engine,
-    text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 import os
 
 from config import get_settings
 
 settings = get_settings()
 
+# Helper to get the correct database URL
+def get_db_url():
+    url = settings.database_url
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
+
 # Database engine with connection pooling
-# Use SQLite for testing to avoid PostgreSQL dependency
 if os.getenv("DATABASE_URL", "").startswith("sqlite"):
-    # SQLite doesn't support pool_size/max_overflow parameters
-    engine = create_engine(
-        settings.database_url,
+    engine = create_async_engine(
+        get_db_url(),
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
         echo=settings.debug,
     )
 else:
-    # PostgreSQL with connection pooling
-    engine = create_engine(
-        settings.database_url,
+    engine = create_async_engine(
+        get_db_url(),
         pool_size=20,
         max_overflow=10,
         pool_pre_ping=True,
         echo=settings.debug,
     )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
 
 
 class Base(DeclarativeBase):
@@ -297,55 +304,53 @@ class QueryCache(Base):
     )
 
 
-def get_db():
+async def get_db():
     """Dependency for getting database sessions."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    async with AsyncSessionLocal() as session:
+        yield session
 
 
-def init_db():
+async def init_db():
     """Initialize the database schema."""
-    Base.metadata.create_all(bind=engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     print("Database schema created successfully!")
 
 
-def create_vector_index(db_session=None):
+async def create_vector_index(db_session=None):
     """Create ivfflat index for vector similarity search.
 
     Should be called after all embeddings are inserted.
     """
     close_session = False
     if db_session is None:
-        db_session = SessionLocal()
+        db_session = AsyncSessionLocal()
         close_session = True
 
     try:
         # Drop existing index if it exists
-        db_session.execute(text("DROP INDEX IF EXISTS idx_embeddings_vector"))
+        await db_session.execute(text("DROP INDEX IF EXISTS idx_embeddings_vector"))
 
-        # Create ivfflat index
-        db_session.execute(
+        # Create hnsw index (faster than ivfflat)
+        await db_session.execute(
             text(
                 """
                 CREATE INDEX idx_embeddings_vector
                 ON embeddings
-                USING ivfflat (vector vector_cosine_ops)
-                WITH (lists = 100)
+                USING hnsw (vector vector_cosine_ops)
                 """
             )
         )
-        db_session.commit()
+        await db_session.commit()
         print("Vector index created successfully!")
     except Exception as e:
-        db_session.rollback()
+        await db_session.rollback()
         raise e
     finally:
         if close_session:
-            db_session.close()
+            await db_session.close()
 
 
 if __name__ == "__main__":
-    init_db()
+    import asyncio
+    asyncio.run(init_db())

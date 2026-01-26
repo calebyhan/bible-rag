@@ -11,7 +11,6 @@ interface VerseCardProps {
 }
 
 export default function VerseCard({ result, showAllTranslations = false, defaultTranslation }: VerseCardProps) {
-  // Use defaultTranslation if available and exists in translations, otherwise first available
   const initialTranslation =
     defaultTranslation && result.translations[defaultTranslation]
       ? defaultTranslation
@@ -22,57 +21,54 @@ export default function VerseCard({ result, showAllTranslations = false, default
 
   const { reference, translations, relevance_score, cross_references } = result;
 
-  // Format relevance score as percentage
   const relevancePercent = Math.round(relevance_score * 100);
-
-  // Determine if text is Korean
   const isKorean = (text: string) => /[\uac00-\ud7a3]/.test(text);
-
-  // Build the verse URL using the English book name
   const verseUrl = `/verse/${encodeURIComponent(reference.book)}/${reference.chapter}/${reference.verse}`;
 
   return (
     <div className="verse-card">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <Link href={verseUrl} className="group">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-              {reference.book} {reference.chapter}:{reference.verse}
-            </h3>
+      {/* Reference as large typographic element */}
+      <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between mb-space-sm gap-2">
+        <div className="flex items-baseline gap-2">
+          <Link href={verseUrl} className="group flex items-baseline gap-2">
+            <span className="font-ui text-xs sm:text-sm uppercase tracking-wide text-accent-scripture dark:text-accent-dark-scripture hover:text-text-primary dark:hover:text-text-dark-primary transition-colors">
+              {reference.book}
+            </span>
+            <span className="font-serif text-2xl sm:text-3xl md:text-4xl font-light text-accent-scripture dark:text-accent-dark-scripture group-hover:text-text-primary dark:group-hover:text-text-dark-primary transition-colors">
+              {reference.chapter}:{reference.verse}
+            </span>
           </Link>
-          {reference.book_korean && (
-            <Link href={verseUrl} className="group">
-              <p className="text-sm text-gray-600 dark:text-gray-400 korean-text group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                {reference.book_korean} {reference.chapter}:{reference.verse}
-              </p>
-            </Link>
-          )}
         </div>
 
-        {/* Testament badge and relevance */}
-        <div className="flex items-center gap-2">
-          <span className={`badge ${reference.testament === 'OT' ? 'badge-ot' : 'badge-nt'}`}>
-            {reference.testament}
+        {/* Testament and relevance */}
+        <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1">
+          <span className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary">
+            {reference.testament === 'OT' ? 'OT' : 'NT'}
           </span>
-          <span className="text-sm text-gray-600 dark:text-gray-400">{relevancePercent}%</span>
+          <span className="font-ui text-xs text-text-secondary dark:text-text-dark-secondary">
+            <span className="hidden sm:inline">Relevance: </span><span className="font-medium">{relevancePercent}%</span>
+          </span>
         </div>
       </div>
 
-      {/* Relevance bar */}
-      <div className="relevance-bar mb-4">
-        <div className="relevance-fill" style={{ width: `${relevancePercent}%` }} />
-      </div>
+      {/* Korean reference */}
+      {reference.book_korean && (
+        <Link href={verseUrl}>
+          <p className="font-korean text-sm text-text-secondary dark:text-text-dark-secondary mb-space-md hover:text-text-primary dark:hover:text-text-dark-primary transition-colors">
+            {reference.book_korean} {reference.chapter}:{reference.verse}
+          </p>
+        </Link>
+      )}
 
-      {/* Translation tabs */}
+      {/* Translation selector - underlined text tabs */}
       {Object.keys(translations).length > 1 && !showAllTranslations && (
-        <div className="flex border-b border-gray-200 mb-4">
+        <div className="flex gap-4 mb-space-sm border-b border-border-light dark:border-border-dark-light pb-2">
           {Object.keys(translations).map((trans) => (
             <button
               key={trans}
               onClick={() => setActiveTranslation(trans)}
-              className={`translation-tab ${
-                activeTranslation === trans ? 'translation-tab-active' : ''
+              className={`translation-tab dark:text-text-dark-tertiary dark:hover:text-text-dark-primary dark:border-transparent ${
+                activeTranslation === trans ? 'translation-tab-active dark:text-text-dark-primary dark:border-text-dark-primary' : ''
               }`}
             >
               {trans}
@@ -81,61 +77,57 @@ export default function VerseCard({ result, showAllTranslations = false, default
         </div>
       )}
 
-      {/* Verse text */}
+      {/* Verse text - THE HERO */}
       {showAllTranslations ? (
-        <div className="space-y-4">
+        <div className="space-y-space-md">
           {Object.entries(translations).map(([trans, text]) => (
-            <div key={trans} className="border-l-4 border-primary-200 dark:border-primary-700 pl-4">
-              <span className="text-xs font-medium text-primary-600 dark:text-primary-400 block mb-1">{trans}</span>
-              <p className={`${isKorean(text) ? 'verse-text-korean korean-text' : 'verse-text'} text-gray-800 dark:text-gray-200`}>
+            <div key={trans} className="border-l-4 border-border-light dark:border-border-dark-light pl-space-md">
+              <span className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary block mb-2">
+                {trans}
+              </span>
+              <p className={`${isKorean(text) ? 'verse-text-korean korean-text dark:text-text-dark-primary' : 'verse-text dark:text-text-dark-primary'}`}>
                 {text}
               </p>
             </div>
           ))}
         </div>
       ) : (
-        <p
-          className={`${
+        <p className={`${
             isKorean(translations[activeTranslation] || '')
-              ? 'verse-text-korean korean-text'
-              : 'verse-text'
-          } text-gray-800 dark:text-gray-200`}
+              ? 'verse-text-korean korean-text dark:text-text-dark-primary'
+              : 'verse-text dark:text-text-dark-primary'
+          } mb-space-sm`}
         >
           {translations[activeTranslation]}
         </p>
       )}
 
-      {/* Cross-references */}
+      {/* Cross-references - comma-separated links */}
       {cross_references && cross_references.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+        <div className="mt-space-md pt-space-md border-t border-border-light dark:border-border-dark-light">
           <button
             onClick={() => setShowCrossRefs(!showCrossRefs)}
-            className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1"
+            className="btn-text dark:text-text-dark-secondary dark:hover:text-text-dark-primary dark:border-text-dark-tertiary dark:hover:border-text-dark-primary mb-2"
           >
-            <span>Cross-references ({cross_references.length})</span>
-            <svg
-              className={`w-4 h-4 transition-transform ${showCrossRefs ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            {showCrossRefs ? '▾' : '▸'} See also ({cross_references.length})
           </button>
 
           {showCrossRefs && (
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
               {cross_references.map((ref, idx) => {
                 const crossRefUrl = `/verse/${encodeURIComponent(ref.book)}/${ref.chapter}/${ref.verse}`;
                 return (
-                  <Link
-                    key={idx}
-                    href={crossRefUrl}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 cursor-pointer transition-colors"
-                  >
-                    {ref.book} {ref.chapter}:{ref.verse}
-                    <span className="ml-1 text-gray-500 dark:text-gray-400">({ref.relationship})</span>
-                  </Link>
+                  <span key={idx}>
+                    <Link
+                      href={crossRefUrl}
+                      className="verse-ref dark:text-accent-dark-reference dark:hover:border-accent-dark-reference"
+                    >
+                      {ref.book} {ref.chapter}:{ref.verse}
+                    </Link>
+                    {idx < cross_references.length - 1 && (
+                      <span className="text-text-tertiary dark:text-text-dark-tertiary">, </span>
+                    )}
+                  </span>
                 );
               })}
             </div>

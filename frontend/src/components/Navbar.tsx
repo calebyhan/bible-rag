@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import APIKeySettings from './APIKeySettings';
+import DarkModeToggle from './DarkModeToggle';
 
 interface NavbarProps {
   showBackButton?: boolean;
@@ -15,6 +16,7 @@ export default function Navbar({ showBackButton = false, backButtonText = 'Back'
   const pathname = usePathname();
   const router = useRouter();
   const [showSettings, setShowSettings] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleBackClick = () => {
     if (onBackClick) {
@@ -29,107 +31,165 @@ export default function Navbar({ showBackButton = false, backButtonText = 'Back'
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white dark:bg-slate-800 shadow-sm border-b border-gray-200 dark:border-slate-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Left side: Logo/Brand and Back button */}
-          <div className="flex items-center gap-4">
+    <nav className="border-b-2 border-text-primary dark:border-text-dark-primary bg-surface dark:bg-surface-dark py-4 transition-colors">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
+        <div className="flex justify-between items-center">
+          {/* Left side: Back button and Logo */}
+          <div className="flex items-center gap-3 sm:gap-6">
             {showBackButton && (
               <button
                 onClick={handleBackClick}
-                className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium inline-flex items-center gap-1 text-sm"
+                className="font-ui text-sm text-text-secondary dark:text-text-dark-secondary hover:text-text-primary dark:hover:text-text-dark-primary transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                {backButtonText}
+                ← {backButtonText}
               </button>
             )}
 
             <Link
               href="/"
-              className="flex items-center gap-2 text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              className="font-serif text-xl sm:text-2xl text-text-primary dark:text-text-dark-primary hover:text-accent-scripture dark:hover:text-accent-dark-scripture transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
-              <span className="font-bold text-lg hidden sm:inline">Bible RAG</span>
+              Bible RAG
             </Link>
           </div>
 
-          {/* Center/Right side: Navigation links */}
-          <div className="flex items-center gap-2">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-6">
             <Link
               href="/"
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`font-ui text-sm uppercase tracking-wide pb-1 transition-colors ${
                 isActive('/')
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                  : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b-2 border-transparent'
               }`}
             >
-              <span className="hidden sm:inline">Search</span>
-              <span className="sm:hidden">🔍</span>
+              Search
             </Link>
 
             <Link
               href="/browse"
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`font-ui text-sm uppercase tracking-wide pb-1 transition-colors ${
                 isActive('/browse')
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                  : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b-2 border-transparent'
               }`}
             >
-              <span className="hidden sm:inline">Browse</span>
-              <span className="sm:hidden">📖</span>
+              Browse
             </Link>
 
             <Link
               href="/compare"
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`font-ui text-sm uppercase tracking-wide pb-1 transition-colors ${
                 isActive('/compare')
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                  : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b-2 border-transparent'
               }`}
             >
-              <span className="hidden sm:inline">Compare</span>
-              <span className="sm:hidden">⚖️</span>
+              Compare
             </Link>
 
             <Link
               href="/themes"
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`font-ui text-sm uppercase tracking-wide pb-1 transition-colors ${
                 isActive('/themes')
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                  : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b-2 border-transparent'
               }`}
             >
-              <span className="hidden sm:inline">Themes</span>
-              <span className="sm:hidden">🔍</span>
+              Themes
             </Link>
 
             {/* Settings button */}
             <button
               onClick={() => setShowSettings(true)}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+              className="w-10 h-10 flex items-center justify-center font-ui text-xs uppercase tracking-wide font-semibold transition-colors border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark"
+              aria-label="API Key Settings"
               title="API Key Settings"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <span className="inline-block scale-150">⚙</span>
+            </button>
+
+            {/* Dark Mode Toggle */}
+            <DarkModeToggle />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-3">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="w-10 h-10 flex items-center justify-center font-ui text-xs uppercase tracking-wide font-semibold transition-colors border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark"
+              aria-label="API Key Settings"
+              title="API Key Settings"
+            >
+              <span className="inline-block scale-150">⚙</span>
+            </button>
+
+            <DarkModeToggle />
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="w-10 h-10 flex items-center justify-center border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark transition-colors"
+              aria-label="Toggle menu"
+            >
+              <span className="text-lg">{mobileMenuOpen ? '✕' : '☰'}</span>
             </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden mt-4 pt-4 border-t-2 border-text-tertiary dark:border-text-dark-tertiary">
+            <div className="flex flex-col gap-4">
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`font-ui text-sm uppercase tracking-wide pb-2 transition-colors ${
+                  isActive('/')
+                    ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                    : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b-2 border-transparent'
+                }`}
+              >
+                Search
+              </Link>
+
+              <Link
+                href="/browse"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`font-ui text-sm uppercase tracking-wide pb-2 transition-colors ${
+                  isActive('/browse')
+                    ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                    : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b-2 border-transparent'
+                }`}
+              >
+                Browse
+              </Link>
+
+              <Link
+                href="/compare"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`font-ui text-sm uppercase tracking-wide pb-2 transition-colors ${
+                  isActive('/compare')
+                    ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                    : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b-2 border-transparent'
+                }`}
+              >
+                Compare
+              </Link>
+
+              <Link
+                href="/themes"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`font-ui text-sm uppercase tracking-wide pb-2 transition-colors ${
+                  isActive('/themes')
+                    ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                    : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary border-b-2 border-transparent'
+                }`}
+              >
+                Themes
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Settings Modal */}

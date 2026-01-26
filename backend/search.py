@@ -8,8 +8,8 @@ import time
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy import text, select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import ARRAY, UUID as PGUUID
 from sqlalchemy import bindparam, Integer, Float
 
@@ -21,8 +21,8 @@ from embeddings import embed_query
 settings = get_settings()
 
 
-def fulltext_search_verses(
-    db: Session,
+async def fulltext_search_verses(
+    db: AsyncSession,
     query: str,
     translation_ids: list,
     translation_map: dict,
@@ -128,7 +128,7 @@ def fulltext_search_verses(
 
     # Execute query
     stmt = text(sql_template).bindparams(*bindparams_list)
-    result = db.execute(stmt)
+    result = await db.execute(stmt)
     rows = result.fetchall()
 
     # Group results by verse reference
@@ -164,11 +164,11 @@ def fulltext_search_verses(
 
         # Get cross-references
         if include_cross_refs:
-            result_item["cross_references"] = get_cross_references(db, verse_id)
+            result_item["cross_references"] = await get_cross_references(db, verse_id)
 
         # Get original language data
         if include_original:
-            result_item["original"] = get_original_words(db, verse_id)
+            result_item["original"] = await get_original_words(db, verse_id)
 
     query_time_ms = int((time.time() - start_time) * 1000)
 
@@ -190,8 +190,311 @@ def fulltext_search_verses(
     return response
 
 
-def search_verses(
-    db: Session,
+async def get_chapter_by_reference(
+    db: AsyncSession,
+    book: str,
+    chapter: int,
+    translations: Optional[list[str]] = None,
+    include_original: bool = False,
+) -> Optional[dict]:
+    """Get an entire chapter with all verses.
+
+    Args:
+        db: Database session
+        book: Book name or abbreviation
+        chapter: Chapter number
+        translations: List of translation abbreviations (all if None)
+        include_original: Include original language data
+
+    Returns:
+        Chapter data dictionary with all verses or None if not found
+    """
+    # Find the book
+    book_obj = (
+        await db.execute(
+            select(Book)
+            .where(
+                (Book.name.ilike(book))
+                | (Book.name_korean == book)
+                | (Book.abbreviation.ilike(book))
+            )
+        )
+    ).scalar_one_or_none()
+
+    if not book_obj:
+        return None
+
+    # Build verse query for all verses in the chapter
+    query = (
+        select(Verse, Translation)
+        .join(Translation)
+        .where(
+            Verse.book_id == book_obj.id,
+            Verse.chapter == chapter,
+        )
+        .order_by(Verse.verse)
+    )
+
+    if translations:
+        query = query.where(Translation.abbreviation.in_(translations))
+
+    results = (await db.execute(query)).all()
+
+    if not results:
+        return None
+
+    # Group verses by verse number
+    verses_dict = {}
+    for verse_obj, translation in results:
+        verse_num = verse_obj.verse
+        if verse_num not in verses_dict:
+            verses_dict[verse_num] = {
+                "verse_id": str(verse_obj.id),
+                "verse": verse_num,
+                "translations": {},
+            }
+        verses_dict[verse_num]["translations"][translation.abbreviation] = verse_obj.text
+
+    # Convert to list and sort by verse number
+    verses_list = [verses_dict[v] for v in sorted(verses_dict.keys())]
+
+    # Add original language data if requested
+    if include_original:
+        for verse_data in verses_list:
+            original = await get_original_words(db, UUID(verse_data["verse_id"]))
+            if original:
+                verse_data["original"] = original
+
+    return {
+        "reference": {
+            "book": book_obj.name,
+            "book_korean": book_obj.name_korean,
+            "chapter": chapter,
+            "testament": book_obj.testament,
+        },
+        "verses": verses_list,
+    }
+
+
+async def get_verse_by_reference(
+    db: AsyncSession,
+    book: str,
+    chapter: int,
+    verse: int,
+    translations: Optional[list[str]] = None,
+    include_original: bool = False,
+    include_cross_refs: bool = True,
+    use_cache: bool = True,
+) -> Optional[dict]:
+    """Get a specific verse by reference.
+
+    Args:
+        db: Database session
+        book: Book name or abbreviation
+        chapter: Chapter number
+        verse: Verse number
+        translations: List of translation abbreviations (all if None)
+        include_original: Include original language data
+        include_cross_refs: Include cross-references
+        use_cache: Whether to use caching
+
+    Returns:
+        Verse data dictionary or None if not found
+    """
+    cache = get_cache()
+
+    # Generate cache key
+    cache_key = cache.generate_verse_cache_key(
+        book=book,
+        chapter=chapter,
+        verse=verse,
+        translations=translations,
+        include_original=include_original,
+        include_cross_refs=include_cross_refs,
+    )
+
+    # Check cache
+    if use_cache:
+        cached = cache.get_cached_verse(cache_key)
+        if cached:
+            return cached
+
+    # Find the book
+    book_obj = (
+        await db.execute(
+            select(Book)
+            .where(
+                (Book.name.ilike(book))
+                | (Book.name_korean == book)
+                | (Book.abbreviation.ilike(book))
+            )
+        )
+    ).scalar_one_or_none()
+
+    if not book_obj:
+        return None
+
+    # Build verse query
+    query = (
+        select(Verse, Translation)
+        .join(Translation)
+        .where(
+            Verse.book_id == book_obj.id,
+            Verse.chapter == chapter,
+            Verse.verse == verse,
+        )
+    )
+
+    if translations:
+        query = query.where(Translation.abbreviation.in_(translations))
+
+    results = (await db.execute(query)).all()
+
+    if not results:
+        return None
+
+    # Get first verse for cross-refs and original words
+    first_verse = results[0][0]
+
+    response = {
+        "reference": {
+            "book": book_obj.name,
+            "book_korean": book_obj.name_korean,
+            "chapter": chapter,
+            "verse": verse,
+            "testament": book_obj.testament,
+            "genre": book_obj.genre,
+        },
+        "translations": {trans.abbreviation: v.text for v, trans in results},
+    }
+
+    if include_cross_refs:
+        response["cross_references"] = await get_cross_references(db, first_verse.id)
+
+    if include_original:
+        response["original"] = await get_original_words(db, first_verse.id)
+
+    # Get context (previous and next verses)
+    # Use first selected translation for context
+    context_translation = results[0][1].abbreviation if results else None
+    response["context"] = await get_verse_context(db, book_obj.id, chapter, verse, context_translation)
+
+    # Cache the result
+    if use_cache:
+        cache.cache_verse(cache_key, response)
+
+    return response
+
+
+async def get_verse_context(
+    db: AsyncSession,
+    book_id: UUID,
+    chapter: int,
+    verse: int,
+    translation_abbr: Optional[str] = None,
+) -> dict:
+    """Get surrounding context for a verse.
+
+    Args:
+        db: Database session
+        book_id: Book ID
+        chapter: Chapter number
+        verse: Verse number
+        translation_abbr: Translation abbreviation to use (uses first if None)
+
+    Returns:
+        Dictionary with previous and next verse info
+    """
+    context = {"previous": None, "next": None}
+
+    # Convert UUID to string for SQLite compatibility in tests
+    book_id_value = str(book_id) if isinstance(book_id, UUID) else book_id
+
+    # Get translation for context
+    if translation_abbr:
+        translation = (await db.execute(select(Translation).where(Translation.abbreviation == translation_abbr))).scalar_one_or_none()
+    else:
+        translation = (await db.execute(select(Translation).limit(1))).scalar_one_or_none()
+
+    if not translation:
+        return context
+
+    # Fetch both previous and next verses in a single query
+    # This is more efficient than two separate queries
+    context_verses = (
+        await db.execute(
+            select(Verse)
+            .where(
+                Verse.book_id == book_id_value,
+                Verse.translation_id == translation.id,
+                Verse.chapter == chapter,
+                Verse.verse.in_([verse - 1, verse + 1]),
+            )
+        )
+    ).scalars().all()
+
+    for v in context_verses:
+        verse_data = {
+            "chapter": v.chapter,
+            "verse": v.verse,
+            "text": v.text[:100] + "..." if len(v.text) > 100 else v.text,
+        }
+
+        if v.verse == verse - 1:
+            context["previous"] = verse_data
+        elif v.verse == verse + 1:
+            context["next"] = verse_data
+
+    return context
+
+
+async def search_by_theme(
+    db: AsyncSession,
+    theme: str,
+    translations: list[str],
+    testament: Optional[str] = None,
+    max_results: int = 20,
+    api_key: str | None = None,
+) -> dict:
+    """Search for verses by theme.
+
+    This is essentially semantic search with testament filtering.
+
+    Args:
+        db: Database session
+        theme: Theme keyword or phrase
+        translations: List of translation abbreviations
+        testament: Optional testament filter ('OT' or 'NT')
+        max_results: Maximum number of results
+        api_key: API key for embeddings
+
+    Returns:
+        Dictionary with search results
+    """
+    filters = {}
+    if testament and testament != "both":
+        filters["testament"] = testament
+
+    results = await search_verses(
+        db=db,
+        query=theme,
+        translations=translations,
+        max_results=max_results,
+        filters=filters,
+        include_original=False,
+        include_cross_refs=False,  # Don't include cross-refs for theme search to keep it clean
+        api_key=api_key,
+    )
+
+    # Add theme-specific metadata
+    results["theme"] = theme
+    results["testament_filter"] = testament
+
+    return results
+
+
+async def search_verses(
+    db: AsyncSession,
     query: str,
     translations: list[str],
     max_results: int = 10,
@@ -232,10 +535,11 @@ def search_verses(
 
     # Get translation IDs
     translation_objs = (
-        db.query(Translation)
-        .filter(Translation.abbreviation.in_(translations))
-        .all()
-    )
+        await db.execute(
+            select(Translation)
+            .where(Translation.abbreviation.in_(translations))
+        )
+    ).scalars().all()
     translation_ids = [t.id for t in translation_objs]
     translation_map = {str(t.id): t.abbreviation for t in translation_objs}
 
@@ -250,11 +554,11 @@ def search_verses(
         }
 
     # Check if embeddings table has data
-    embeddings_count = db.query(Embedding).limit(1).count()
+    embeddings_count = (await db.execute(select(func.count()).select_from(Embedding))).scalar()
 
     # Use full-text search if no embeddings available
     if embeddings_count == 0:
-        return fulltext_search_verses(
+        return await fulltext_search_verses(
             db=db,
             query=query,
             translation_ids=translation_ids,
@@ -276,12 +580,10 @@ def search_verses(
     # Convert query_embedding to string format for PostgreSQL
     query_vector_str = str(query_embedding.tolist())
 
-    # Set ivfflat probes for better accuracy (search more clusters)
-    # Higher = more accurate but slower. Default is 1, we use 20 for better recall
-    db.execute(text("SET ivfflat.probes = 20"))
+    # Set ivfflat/hnsw probes for better accuracy
+    await db.execute(text("SET ivfflat.probes = 20"))
 
     # Build SQL query - embed vector directly, use bindparams for UUIDs/scalars
-    # Strategy: Find top N unique verse references, then fetch all translations
     sql_template = f"""
         WITH top_verses AS (
             SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
@@ -348,11 +650,10 @@ def search_verses(
 
     # Execute query with bindparams
     stmt = text(sql_template).bindparams(*bindparams_list)
-    result = db.execute(stmt)
+    result = await db.execute(stmt)
     rows = result.fetchall()
 
-    # Group results by verse reference (book + chapter + verse)
-    # to consolidate translations
+    # Group results by verse reference
     verse_groups = {}
     for row in rows:
         ref_key = f"{row.book_id}:{row.chapter}:{row.verse}"
@@ -385,11 +686,11 @@ def search_verses(
 
         # Get cross-references
         if include_cross_refs:
-            result_item["cross_references"] = get_cross_references(db, verse_id)
+            result_item["cross_references"] = await get_cross_references(db, verse_id)
 
         # Get original language data
         if include_original:
-            result_item["original"] = get_original_words(db, verse_id)
+            result_item["original"] = await get_original_words(db, verse_id)
 
     query_time_ms = int((time.time() - start_time) * 1000)
 
@@ -410,7 +711,7 @@ def search_verses(
     return response
 
 
-def get_cross_references(db: Session, verse_id: UUID, limit: int = 5) -> list[dict]:
+async def get_cross_references(db: AsyncSession, verse_id: UUID, limit: int = 5) -> list[dict]:
     """Get cross-references for a verse.
 
     Args:
@@ -425,14 +726,15 @@ def get_cross_references(db: Session, verse_id: UUID, limit: int = 5) -> list[di
     verse_id_value = str(verse_id) if isinstance(verse_id, UUID) else verse_id
 
     refs = (
-        db.query(CrossReference, Verse, Book)
-        .join(Verse, CrossReference.related_verse_id == Verse.id)
-        .join(Book, Verse.book_id == Book.id)
-        .filter(CrossReference.verse_id == verse_id_value)
-        .order_by(CrossReference.confidence.desc())
-        .limit(limit)
-        .all()
-    )
+        await db.execute(
+            select(CrossReference, Verse, Book)
+            .join(Verse, CrossReference.related_verse_id == Verse.id)
+            .join(Book, Verse.book_id == Book.id)
+            .where(CrossReference.verse_id == verse_id_value)
+            .order_by(CrossReference.confidence.desc())
+            .limit(limit)
+        )
+    ).all()
 
     return [
         {
@@ -447,7 +749,7 @@ def get_cross_references(db: Session, verse_id: UUID, limit: int = 5) -> list[di
     ]
 
 
-def get_original_words(db: Session, verse_id: UUID) -> Optional[dict]:
+async def get_original_words(db: AsyncSession, verse_id: UUID) -> Optional[dict]:
     """Get original language words for a verse.
 
     Args:
@@ -462,35 +764,38 @@ def get_original_words(db: Session, verse_id: UUID) -> Optional[dict]:
 
     # First try direct lookup
     words = (
-        db.query(OriginalWord)
-        .filter(OriginalWord.verse_id == verse_id_value)
-        .order_by(OriginalWord.word_order)
-        .all()
-    )
+        await db.execute(
+            select(OriginalWord)
+            .where(OriginalWord.verse_id == verse_id_value)
+            .order_by(OriginalWord.word_order)
+        )
+    ).scalars().all()
 
     # If no words found, look up by book/chapter/verse reference
-    # Original words are linked to one verse_id but we need them for all translations
     if not words:
         # Get the verse reference
-        verse = db.query(Verse).filter(Verse.id == verse_id_value).first()
+        verse = (await db.execute(select(Verse).where(Verse.id == verse_id_value))).scalar_one_or_none()
         if verse:
             # Find any verse with the same book/chapter/verse that has original words
             sibling_verses = (
-                db.query(Verse)
-                .filter(
-                    Verse.book_id == verse.book_id,
-                    Verse.chapter == verse.chapter,
-                    Verse.verse == verse.verse,
+                await db.execute(
+                    select(Verse)
+                    .where(
+                        Verse.book_id == verse.book_id,
+                        Verse.chapter == verse.chapter,
+                        Verse.verse == verse.verse,
+                    )
                 )
-                .all()
-            )
+            ).scalars().all()
+
             for sibling in sibling_verses:
                 words = (
-                    db.query(OriginalWord)
-                    .filter(OriginalWord.verse_id == sibling.id)
-                    .order_by(OriginalWord.word_order)
-                    .all()
-                )
+                    await db.execute(
+                        select(OriginalWord)
+                        .where(OriginalWord.verse_id == sibling.id)
+                        .order_by(OriginalWord.word_order)
+                    )
+                ).scalars().all()
                 if words:
                     break
 
@@ -526,303 +831,3 @@ def get_original_words(db: Session, verse_id: UUID) -> Optional[dict]:
             for w in words
         ],
     }
-
-
-def get_chapter_by_reference(
-    db: Session,
-    book: str,
-    chapter: int,
-    translations: Optional[list[str]] = None,
-    include_original: bool = False,
-) -> Optional[dict]:
-    """Get an entire chapter with all verses.
-
-    Args:
-        db: Database session
-        book: Book name or abbreviation
-        chapter: Chapter number
-        translations: List of translation abbreviations (all if None)
-        include_original: Include original language data
-
-    Returns:
-        Chapter data dictionary with all verses or None if not found
-    """
-    # Find the book
-    book_obj = (
-        db.query(Book)
-        .filter(
-            (Book.name.ilike(book))
-            | (Book.name_korean == book)
-            | (Book.abbreviation.ilike(book))
-        )
-        .first()
-    )
-
-    if not book_obj:
-        return None
-
-    # Build verse query for all verses in the chapter
-    query = (
-        db.query(Verse, Translation)
-        .join(Translation)
-        .filter(
-            Verse.book_id == book_obj.id,
-            Verse.chapter == chapter,
-        )
-        .order_by(Verse.verse)
-    )
-
-    if translations:
-        query = query.filter(Translation.abbreviation.in_(translations))
-
-    results = query.all()
-
-    if not results:
-        return None
-
-    # Group verses by verse number
-    verses_dict = {}
-    for verse_obj, translation in results:
-        verse_num = verse_obj.verse
-        if verse_num not in verses_dict:
-            verses_dict[verse_num] = {
-                "verse_id": str(verse_obj.id),
-                "verse": verse_num,
-                "translations": {},
-            }
-        verses_dict[verse_num]["translations"][translation.abbreviation] = verse_obj.text
-
-    # Convert to list and sort by verse number
-    verses_list = [verses_dict[v] for v in sorted(verses_dict.keys())]
-
-    # Add original language data if requested
-    if include_original:
-        for verse_data in verses_list:
-            original = get_original_words(db, verse_data["verse_id"])
-            if original:
-                verse_data["original"] = original
-
-    return {
-        "reference": {
-            "book": book_obj.name,
-            "book_korean": book_obj.name_korean,
-            "chapter": chapter,
-            "testament": book_obj.testament,
-        },
-        "verses": verses_list,
-    }
-
-
-def get_verse_by_reference(
-    db: Session,
-    book: str,
-    chapter: int,
-    verse: int,
-    translations: Optional[list[str]] = None,
-    include_original: bool = False,
-    include_cross_refs: bool = True,
-    use_cache: bool = True,
-) -> Optional[dict]:
-    """Get a specific verse by reference.
-
-    Args:
-        db: Database session
-        book: Book name or abbreviation
-        chapter: Chapter number
-        verse: Verse number
-        translations: List of translation abbreviations (all if None)
-        include_original: Include original language data
-        include_cross_refs: Include cross-references
-        use_cache: Whether to use caching
-
-    Returns:
-        Verse data dictionary or None if not found
-    """
-    cache = get_cache()
-
-    # Generate cache key
-    cache_key = cache.generate_verse_cache_key(
-        book=book,
-        chapter=chapter,
-        verse=verse,
-        translations=translations,
-        include_original=include_original,
-        include_cross_refs=include_cross_refs,
-    )
-
-    # Check cache
-    if use_cache:
-        cached = cache.get_cached_verse(cache_key)
-        if cached:
-            return cached
-
-    # Find the book
-    book_obj = (
-        db.query(Book)
-        .filter(
-            (Book.name.ilike(book))
-            | (Book.name_korean == book)
-            | (Book.abbreviation.ilike(book))
-        )
-        .first()
-    )
-
-    if not book_obj:
-        return None
-
-    # Build verse query
-    query = (
-        db.query(Verse, Translation)
-        .join(Translation)
-        .filter(
-            Verse.book_id == book_obj.id,
-            Verse.chapter == chapter,
-            Verse.verse == verse,
-        )
-    )
-
-    if translations:
-        query = query.filter(Translation.abbreviation.in_(translations))
-
-    results = query.all()
-
-    if not results:
-        return None
-
-    # Get first verse for cross-refs and original words
-    first_verse = results[0][0]
-
-    response = {
-        "reference": {
-            "book": book_obj.name,
-            "book_korean": book_obj.name_korean,
-            "chapter": chapter,
-            "verse": verse,
-            "testament": book_obj.testament,
-            "genre": book_obj.genre,
-        },
-        "translations": {trans.abbreviation: v.text for v, trans in results},
-    }
-
-    if include_cross_refs:
-        response["cross_references"] = get_cross_references(db, first_verse.id)
-
-    if include_original:
-        response["original"] = get_original_words(db, first_verse.id)
-
-    # Get context (previous and next verses)
-    # Use first selected translation for context
-    context_translation = results[0][1].abbreviation if results else None
-    response["context"] = get_verse_context(db, book_obj.id, chapter, verse, context_translation)
-
-    # Cache the result
-    if use_cache:
-        cache.cache_verse(cache_key, response)
-
-    return response
-
-
-def get_verse_context(
-    db: Session,
-    book_id: UUID,
-    chapter: int,
-    verse: int,
-    translation_abbr: Optional[str] = None,
-) -> dict:
-    """Get surrounding context for a verse.
-
-    Args:
-        db: Database session
-        book_id: Book ID
-        chapter: Chapter number
-        verse: Verse number
-        translation_abbr: Translation abbreviation to use (uses first if None)
-
-    Returns:
-        Dictionary with previous and next verse info
-    """
-    context = {"previous": None, "next": None}
-
-    # Convert UUID to string for SQLite compatibility in tests
-    book_id_value = str(book_id) if isinstance(book_id, UUID) else book_id
-
-    # Get translation for context
-    if translation_abbr:
-        translation = db.query(Translation).filter(Translation.abbreviation == translation_abbr).first()
-    else:
-        translation = db.query(Translation).first()
-
-    if not translation:
-        return context
-
-    # Fetch both previous and next verses in a single query
-    # This is more efficient than two separate queries
-    context_verses = (
-        db.query(Verse)
-        .filter(
-            Verse.book_id == book_id_value,
-            Verse.translation_id == translation.id,
-            Verse.chapter == chapter,
-            Verse.verse.in_([verse - 1, verse + 1]),
-        )
-        .all()
-    )
-
-    for v in context_verses:
-        verse_data = {
-            "chapter": v.chapter,
-            "verse": v.verse,
-            "text": v.text[:100] + "..." if len(v.text) > 100 else v.text,
-        }
-
-        if v.verse == verse - 1:
-            context["previous"] = verse_data
-        elif v.verse == verse + 1:
-            context["next"] = verse_data
-
-    return context
-
-
-def search_by_theme(
-    db: Session,
-    theme: str,
-    translations: list[str],
-    testament: Optional[str] = None,
-    max_results: int = 20,
-    api_key: str | None = None,
-) -> dict:
-    """Search for verses by theme.
-
-    This is essentially semantic search with testament filtering.
-
-    Args:
-        db: Database session
-        theme: Theme keyword or phrase
-        translations: List of translation abbreviations
-        testament: Optional testament filter ('OT' or 'NT')
-        max_results: Maximum results
-        api_key: Gemini API key (required if EMBEDDING_MODE=gemini)
-
-    Returns:
-        Search results dictionary
-    """
-    filters = {}
-    if testament and testament != "both":
-        filters["testament"] = testament
-
-    results = search_verses(
-        db=db,
-        query=theme,
-        translations=translations,
-        max_results=max_results,
-        filters=filters,
-        include_original=False,
-        include_cross_refs=True,
-        api_key=api_key,
-    )
-
-    # Add theme-specific metadata
-    results["theme"] = theme
-    results["testament_filter"] = testament
-
-    return results

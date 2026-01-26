@@ -2,184 +2,287 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Scriptural Minimalism - Bible RAG Design System */
+
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 245, 245, 245;
+  /* Color Palette - Light Mode */
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-tertiary: #7a7a7a;
+  --background: #fafaf8;
+  --surface: #ffffff;
+  --border-light: #e5e5e5;
+  --border-medium: #d0d0d0;
+
+  /* Accent Colors - Light Mode */
+  --accent-scripture: #8b4513;
+  --accent-reference: #2c3e50;
+  --accent-greek: #1a365d;
+  --accent-hebrew: #7c2d12;
+  --accent-relevance: #d4a574;
+
+  /* Typography */
+  --font-serif: var(--font-crimson-pro);
+  --font-body: var(--font-crimson-text);
+  --font-korean: var(--font-noto-serif-kr);
+  --font-ui: 'Inter', 'system-ui', sans-serif;
+
+  /* Spacing Rhythm */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 4rem;
+  --space-xl: 6rem;
+
+  /* Layout */
+  --content-max-width: 1000px;
+  --margin-page: clamp(24px, 10vw, 120px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 15, 23, 42;
-    --background-end-rgb: 30, 41, 59;
-  }
+/* Dark Mode Variables */
+.dark {
+  --text-primary: #e5e5e5;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #808080;
+  --background: #1a1a1a;
+  --surface: #2a2a2a;
+  --border-light: #404040;
+  --border-medium: #505050;
+
+  --accent-scripture: #d4a574;
+  --accent-reference: #8fa9c4;
+  --accent-greek: #7faed6;
+  --accent-hebrew: #d88b6a;
+  --accent-relevance: #d4a574;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--text-primary);
+  background: var(--background);
+  font-family: var(--font-body);
 }
 
-/* Korean typography optimization */
+/* Typography Classes */
 .korean-text {
-  line-height: 1.8;
+  font-family: var(--font-korean);
+  line-height: 2.0;
+  letter-spacing: 0.02em;
   word-break: keep-all;
   overflow-wrap: break-word;
 }
 
-/* Original language (Greek/Hebrew) styling */
+.verse-text {
+  font-family: var(--font-body);
+  font-size: 20px;
+  line-height: 1.75;
+  color: var(--text-primary);
+}
+
+.verse-text-korean {
+  font-family: var(--font-korean);
+  font-size: 19px;
+  line-height: 2.0;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+/* Original Language Styling */
 .original-text {
-  font-family: 'SBL Greek', 'SBL Hebrew', 'Times New Roman', serif;
+  font-family: 'Gentium Plus', 'Times New Roman', serif;
+  font-size: 28px;
+  direction: ltr;
+}
+
+.greek-text {
+  font-family: 'Gentium Plus', 'Times New Roman', serif;
+  font-size: 28px;
+  color: var(--accent-greek);
   direction: ltr;
 }
 
 .hebrew-text {
+  font-family: 'SBL Hebrew', 'Ezra SIL', 'Times New Roman', serif;
+  font-size: 28px;
+  color: var(--accent-hebrew);
   direction: rtl;
-  font-family: 'SBL Hebrew', 'Times New Roman', serif;
+  text-align: right;
 }
 
-/* Verse text styling */
-.verse-text {
-  font-size: 1.125rem;
-  line-height: 1.75;
-}
-
-.verse-text-korean {
-  font-size: 1.125rem;
-  line-height: 1.9;
-}
-
-/* Search input styling */
+/* Form Input Styling */
 .search-input {
-  @apply w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-full;
-  @apply focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200;
-  @apply transition-all duration-200;
+  font-family: var(--font-body);
+  font-size: 18px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--text-primary);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text-primary);
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-scripture);
 }
 
 .search-input::placeholder {
-  @apply text-gray-400;
+  color: var(--text-tertiary);
+  font-style: italic;
 }
 
-/* Card styling */
+/* Verse Card - Border-Separated Sections */
 .verse-card {
-  @apply bg-white rounded-xl shadow-md p-6;
-  @apply border border-gray-100;
-  @apply hover:shadow-lg transition-shadow duration-200;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border-light);
 }
 
-/* Badge styling */
-.badge {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+.verse-card:last-child {
+  border-bottom: none;
 }
 
-.badge-ot {
-  @apply bg-amber-100 text-amber-800;
+/* Buttons */
+.btn-primary {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 24px;
+  border: 2px solid var(--text-primary);
+  background: transparent;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.badge-nt {
-  @apply bg-blue-100 text-blue-800;
+.btn-primary:hover:not(:disabled) {
+  background: var(--text-primary);
+  color: var(--background);
 }
 
-/* Translation tabs */
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-text {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  border: none;
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.btn-text:hover {
+  color: var(--text-primary);
+}
+
+/* Translation Selector - Underlined Text */
 .translation-tab {
-  @apply px-4 py-2 text-sm font-medium rounded-t-lg;
-  @apply hover:bg-gray-100 transition-colors;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  color: var(--text-tertiary);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.translation-tab:hover {
+  color: var(--text-secondary);
 }
 
 .translation-tab-active {
-  @apply bg-primary-100 text-primary-700 border-b-2 border-primary-500;
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-scripture);
+  font-weight: 600;
 }
 
-/* Relevance score indicator */
-.relevance-bar {
-  @apply h-1 rounded-full bg-gray-200;
+/* Links */
+a {
+  color: var(--accent-reference);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
 }
 
-.relevance-fill {
-  @apply h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600;
+a:hover {
+  border-bottom-color: var(--accent-reference);
 }
 
-/* Loading spinner */
+a.verse-ref {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--accent-scripture);
+  font-weight: 500;
+}
+
+/* Loading States */
 .spinner {
-  @apply animate-spin h-5 w-5 border-2 border-primary-500 rounded-full;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--text-primary);
   border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .verse-card {
-    @apply bg-slate-800 border-slate-700;
-  }
-
-  .search-input {
-    @apply bg-slate-800 border-slate-600 text-white;
-  }
-
-  .search-input::placeholder {
-    @apply text-slate-400;
-  }
-
-  /* Improved text contrast in dark mode */
-  .verse-text,
-  .verse-text-korean {
-    @apply text-slate-100;
-  }
-
-  .badge-ot {
-    @apply bg-amber-900 text-amber-200;
-  }
-
-  .badge-nt {
-    @apply bg-blue-900 text-blue-200;
-  }
-
-  .translation-tab {
-    @apply hover:bg-slate-700;
-  }
-
-  .translation-tab-active {
-    @apply bg-primary-900 text-primary-200 border-primary-400;
-  }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* Toast notification animations */
-@keyframes slide-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+/* Expandable Sections */
+details {
+  border-top: 1px solid var(--border-light);
+  padding: var(--space-sm) 0;
 }
 
-@keyframes slide-out {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
+summary {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  list-style: none;
 }
 
-.animate-slide-in {
-  animation: slide-in 0.3s ease-out forwards;
+summary:hover {
+  color: var(--text-primary);
 }
 
-.animate-slide-out {
-  animation: slide-out 0.3s ease-out forwards;
+summary::before {
+  content: "▸ ";
+  display: inline-block;
+  margin-right: 4px;
+  transition: transform 0.2s;
 }
 
-/* Tooltip fade-in animation */
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+/* Utility Classes */
+.container-content {
+  max-width: var(--content-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--margin-page);
+  padding-right: var(--margin-page);
+}
+
+/* Animations */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -193,4 +296,40 @@ body {
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out forwards;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-text {
+  animation: pulse-text 2s ease-in-out infinite;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+  :root {
+    --margin-page: 24px;
+  }
+
+  .verse-text {
+    font-size: 18px;
+  }
+
+  .verse-text-korean {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  :root {
+    --margin-page: 48px;
+  }
+}
+
+@media (min-width: 1025px) {
+  :root {
+    --margin-page: 120px;
+  }
 }

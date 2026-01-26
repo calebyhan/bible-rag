@@ -108,12 +108,106 @@ function handleError(error: AxiosError): never {
 /**
  * Semantic search for Bible verses.
  */
+/**
+ * Semantic search for Bible verses with streaming support.
+ */
 export async function searchVerses(request: SearchRequest): Promise<SearchResponse> {
+  // Legacy support or fallback if needed. Ideally page.tsx switches to streamSearchVerses.
+  // For now, we can wrap the stream to return a full promise, OR update page.tsx to use streamSearchVerses.
+  // Given the backend now returns stream, this standard axios call might fail or buffer everything.
+  // If backend returns NDJSON, axios parses it as one big string or JSON?
+  // Axios will fail JSON parsing if multiple JSON objects are concatenated without array.
+  // So searchVerses MUST be updated to handle NDJSON buffering if we want to keep the signature,
+  // OR we just abandon searchVerses for the main flow.
+  // Let's implement buffering here for compatibility:
+
+  return new Promise((resolve, reject) => {
+    let finalResults: any = null;
+    let fullTokenText = "";
+
+    streamSearchVerses(request, {
+      onResults: (data) => { finalResults = data; },
+      onToken: (token) => { fullTokenText += token; },
+      onError: (msg) => reject(new Error(msg)),
+      onComplete: () => {
+        if (finalResults) {
+          finalResults.ai_response = fullTokenText || null;
+          resolve(finalResults);
+        } else {
+          reject(new Error("No results received"));
+        }
+      }
+    }).catch(reject);
+  });
+}
+
+export interface StreamCallbacks {
+  onResults?: (results: SearchResponse) => void;
+  onToken?: (token: string) => void;
+  onError?: (error: string) => void;
+  onComplete?: () => void;
+}
+
+export async function streamSearchVerses(
+  request: SearchRequest,
+  callbacks: StreamCallbacks
+): Promise<void> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  const geminiKey = getGeminiApiKey();
+  const groqKey = getGroqApiKey();
+
+  if (geminiKey) headers['X-Gemini-API-Key'] = geminiKey;
+  if (groqKey) headers['X-Groq-API-Key'] = groqKey;
+
   try {
-    const response = await api.post<SearchResponse>('/api/search', request);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/api/search`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    if (!response.body) return;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const msg = JSON.parse(line);
+          if (msg.type === 'results') {
+            callbacks.onResults?.(msg.data);
+          } else if (msg.type === 'token') {
+            callbacks.onToken?.(msg.content);
+          } else if (msg.type === 'error') {
+            callbacks.onError?.(msg.message);
+          }
+        } catch (e) {
+          console.error('JSON parse error', e);
+        }
+      }
+    }
+
+    callbacks.onComplete?.();
+
   } catch (error) {
-    handleError(error as AxiosError);
+    callbacks.onError?.(error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -228,7 +322,7 @@ export async function getTranslations(language?: string): Promise<TranslationsRe
  */
 export function preloadTranslations(): void {
   if (!translationsCache && !translationsCachePromise) {
-    getTranslations().catch(() => {}); // Fire and forget, errors handled in getTranslations
+    getTranslations().catch(() => { }); // Fire and forget, errors handled in getTranslations
   }
 }
 

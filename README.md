@@ -51,15 +51,15 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
 ## Tech Stack
 
 ### Backend
-- **FastAPI** (Python 3.14) - High-performance API server
+- **FastAPI** (Python 3.12+) - High-performance API server
 - **PostgreSQL + pgvector** - Vector similarity search
 - **Redis** - Query caching and performance optimization
 - **multilingual-e5-large** - Self-hosted embedding model (1024-dim)
 - **Google Gemini 2.5 Flash** - LLM for contextual responses (with Groq fallback)
 
 ### Frontend
-- **Next.js 16** - React framework with Turbopack bundler
-- **TypeScript 5.9** - Type-safe development
+- **Next.js 15** - React framework with Turbopack bundler
+- **TypeScript 5.7** - Type-safe development
 - **Tailwind CSS** - Utility-first styling
 - **Noto Sans KR** - Optimized Korean font support
 
@@ -70,8 +70,8 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
 ## Quick Start
 
 ### Prerequisites
-- Python 3.14+ (or Python 3.12+)
-- Node.js 24 LTS (or Node.js 22 LTS)
+- Python 3.12+
+- Node.js 22 LTS (or Node.js 20 LTS)
 - Docker & Docker Compose
 - 8GB RAM minimum (16GB recommended)
 
@@ -146,65 +146,65 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
 
 ```
 bible-rag/
-├── backend/                      # FastAPI backend
-│   ├── main.py                  # API entry point
-│   ├── database.py              # SQLAlchemy models
-│   ├── search.py                # Vector search logic
-│   ├── cache.py                 # Redis caching layer
-│   ├── llm.py                   # LLM integration (Gemini/Groq)
-│   ├── llm_batcher.py           # Batch LLM processing
-│   ├── original_language.py     # Strong's concordance integration
-│   ├── cross_references.py      # Verse reference linking
-│   ├── data_fetchers.py         # Bible data fetchers (Hebrew/Greek)
-│   ├── schemas.py               # Pydantic response models
-│   ├── config.py                # Environment configuration
-│   ├── routers/                 # API route modules
-│   │   ├── search.py           # Search endpoints
-│   │   ├── verses.py           # Verse lookup endpoints
-│   │   ├── themes.py           # Thematic search endpoints
-│   │   ├── metadata.py         # Translation/book metadata
-│   │   └── health.py           # Health check endpoints
-│   ├── scripts/                 # Data ingestion and utilities
-│   │   ├── data_ingestion.py   # Bible text ingestion (9 translations)
-│   │   ├── embeddings.py       # Embedding generation
-│   │   ├── original_ingestion.py  # Original language ingestion
-│   │   ├── ingest_aramaic.py   # Aramaic-specific ingestion
-│   │   ├── fetch_nkrv.py       # Korean NKRV fetcher
-│   │   └── verify_*.py         # Verification utilities
-│   ├── data/                    # Static data
-│   │   └── books_metadata.py   # Bible book metadata
-│   ├── migrations/              # Database migrations
-│   └── tests/                   # Test suite
+├── backend/                              # FastAPI backend
+│   ├── main.py                           # API entry point
+│   ├── database.py                       # SQLAlchemy models
+│   ├── search.py                         # Vector search logic
+│   ├── cache.py                          # Redis caching layer
+│   ├── llm.py                            # LLM integration (Gemini/Groq)
+│   ├── llm_batcher.py                    # Batch LLM processing
+│   ├── original_language.py              # Strong's concordance integration
+│   ├── cross_references.py               # Verse reference linking
+│   ├── data_fetchers.py                  # Bible data fetchers (Hebrew/Greek)
+│   ├── schemas.py                        # Pydantic response models
+│   ├── config.py                         # Environment configuration
+│   ├── routers/                          # API route modules
+│   │   ├── search.py                     # Search endpoints
+│   │   ├── verses.py                     # Verse lookup endpoints
+│   │   ├── themes.py                     # Thematic search endpoints
+│   │   ├── metadata.py                   # Translation/book metadata
+│   │   └── health.py                     # Health check endpoints
+│   ├── scripts/                          # Data ingestion and utilities
+│   │   ├── data_ingestion.py             # Bible text ingestion (9 translations)
+│   │   ├── embeddings.py                 # Embedding generation
+│   │   ├── original_ingestion.py         # Original language ingestion
+│   │   ├── ingest_aramaic.py             # Aramaic-specific ingestion
+│   │   ├── fetch_nkrv.py                 # Korean NKRV fetcher
+│   │   └── verify_*.py                   # Verification utilities
+│   ├── data/                             # Static data
+│   │   └── books_metadata.py             # Bible book metadata
+│   ├── migrations/                       # Database migrations
+│   └── tests/                            # Test suite
 │       ├── test_search.py
 │       ├── test_cache.py
 │       ├── test_llm.py
 │       └── test_api_endpoints.py
-├── frontend/                     # Next.js frontend
+├── frontend/                             # Next.js frontend
 │   └── src/
-│       ├── app/                 # Next.js pages (App Router)
-│       │   ├── page.tsx        # Home/search page
-│       │   ├── search/page.tsx # Search results
+│       ├── app/                          # Next.js pages (App Router)
+│       │   ├── page.tsx                  # Home/search page
 │       │   ├── verse/[book]/[chapter]/[verse]/page.tsx  # Verse detail
-│       │   ├── browse/page.tsx # Browse by book
-│       │   └── compare/page.tsx # Parallel translation comparison
-│       └── components/          # React components
+│       │   ├── browse/page.tsx           # Browse by book
+│       │   ├── compare/page.tsx          # Parallel translation comparison
+│       │   └── themes/page.tsx           # Thematic search
+│       └── components/                   # React components
 │           ├── SearchBar.tsx
 │           ├── VerseCard.tsx
 │           ├── ParallelView.tsx
 │           ├── OriginalLanguage.tsx
 │           └── ChapterView.tsx
-├── docs/                        # Comprehensive documentation
-│   ├── ARCHITECTURE.md         # System design
-│   ├── DATABASE.md             # Database schema
-│   ├── API.md                  # API reference
-│   ├── SETUP.md                # Detailed setup guide
-│   ├── DEPLOYMENT.md           # Production deployment
-│   ├── FEATURES.md             # Feature documentation
-│   ├── DEVELOPMENT.md          # Contributing guide
-│   ├── KOREAN.md               # Korean-specific docs
-│   └── DATA_SOURCES.md         # Licensing and attribution
-├── docker-compose.yml           # Local development environment
-└── README.md                    # This file
+├── docs/                                 # Comprehensive documentation
+│   ├── ARCHITECTURE.md                   # System design
+│   ├── DATABASE.md                       # Database schema
+│   ├── API.md                            # API reference
+│   ├── SETUP.md                          # Detailed setup guide
+│   ├── DEPLOYMENT.md                     # Production deployment
+│   ├── FEATURES.md                       # Feature documentation
+│   ├── DEVELOPMENT.md                    # Contributing guide
+│   ├── KOREAN.md                         # Korean-specific docs
+│   └── DATA_SOURCES.md                   # Licensing and attribution
+├── docker-compose.yml                    # Local development environment
+└── README.md                             # This file
 ```
 
 ## Documentation

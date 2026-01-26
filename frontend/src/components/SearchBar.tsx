@@ -7,6 +7,9 @@ interface SearchBarProps {
   onSearch: (query: string, translations: string[], defaultTranslation: string) => void;
   isLoading?: boolean;
   placeholder?: string;
+  initialQuery?: string;
+  initialTranslations?: string[];
+  initialDefaultTranslation?: string;
 }
 
 interface Translation {
@@ -19,20 +22,21 @@ export default function SearchBar({
   onSearch,
   isLoading = false,
   placeholder = 'Search the Bible...',
+  initialQuery = '',
+  initialTranslations = ['NIV', 'KRV'],
+  initialDefaultTranslation = 'NIV',
 }: SearchBarProps) {
-  const [query, setQuery] = useState('');
-  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'KRV']);
-  const [defaultTranslation, setDefaultTranslation] = useState<string>('NIV');
+  const [query, setQuery] = useState(initialQuery);
+  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(initialTranslations);
+  const [defaultTranslation, setDefaultTranslation] = useState<string>(initialDefaultTranslation);
   const [showFilters, setShowFilters] = useState(false);
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [translationsLoading, setTranslationsLoading] = useState(true);
 
-  // Fetch translations from API on mount
   useEffect(() => {
     const fetchTranslations = async () => {
       try {
         const response = await getTranslations();
-        // Filter to non-original language translations and map to component format
         const mappedTranslations = response.translations
           .filter(t => !t.is_original_language)
           .map(t => ({
@@ -41,7 +45,6 @@ export default function SearchBar({
             language: t.language_code,
           }));
 
-        // Remove duplicates based on abbreviation
         const uniqueTranslations = mappedTranslations.filter(
           (trans, index, self) =>
             index === self.findIndex(t => t.abbrev === trans.abbrev)
@@ -50,7 +53,6 @@ export default function SearchBar({
         setTranslations(uniqueTranslations);
       } catch (error) {
         console.error('Failed to fetch translations:', error);
-        // Fallback to common translations if API fails
         setTranslations([
           { abbrev: 'NIV', name: 'New International Version', language: 'en' },
           { abbrev: 'ESV', name: 'English Standard Version', language: 'en' },
@@ -77,34 +79,25 @@ export default function SearchBar({
     const isSelected = selectedTranslations.includes(abbrev);
     const isDefault = abbrev === defaultTranslation;
 
-    // Double-click: always set as default
     if (isDoubleClick) {
       setDefaultTranslation(abbrev);
-      // Ensure it's selected
       if (!isSelected) {
         setSelectedTranslations((prev) => [...prev, abbrev]);
       }
       return;
     }
 
-    // Single-click: toggle selection (but can't deselect the default)
     if (isSelected) {
-      // Can't deselect if it's the only one
       if (selectedTranslations.length === 1) return;
-
-      // Can't deselect if it's the default - must double-click another first
       if (isDefault) return;
-
-      // Deselect it
       setSelectedTranslations((prev) => prev.filter((t) => t !== abbrev));
     } else {
-      // Select it
       setSelectedTranslations((prev) => [...prev, abbrev]);
     }
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-content mx-auto">
       <form onSubmit={handleSubmit}>
         <div className="relative">
           <input
@@ -112,13 +105,13 @@ export default function SearchBar({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
-            className="search-input pr-24"
+            className="search-input pr-32 dark:bg-background-dark dark:text-text-dark-primary dark:border-text-dark-primary dark:placeholder:text-text-dark-tertiary"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !query.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-primary-600 text-white rounded-full hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 btn-primary text-xs dark:bg-text-dark-primary dark:text-background-dark dark:border-text-dark-primary dark:hover:bg-background-dark dark:hover:text-text-dark-primary"
           >
             {isLoading ? (
               <span className="spinner" />
@@ -133,62 +126,54 @@ export default function SearchBar({
           <button
             type="button"
             onClick={() => setShowFilters(!showFilters)}
-            className="text-sm text-gray-200 hover:text-white flex items-center gap-1"
+            className="btn-text dark:text-text-dark-secondary dark:hover:text-text-dark-primary dark:border-text-dark-tertiary dark:hover:border-text-dark-primary"
           >
-            <span>Translations</span>
-            <svg
-              className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            {showFilters ? '▾' : '▸'} Translations
           </button>
         </div>
 
-        {/* Translation filters */}
+        {/* Translation filters - underlined text buttons */}
         {showFilters && (
           <div className="mt-3 space-y-2">
             {translationsLoading ? (
-              <div className="text-center text-gray-300 text-sm">Loading translations...</div>
+              <div className="text-center text-text-tertiary dark:text-text-dark-tertiary text-sm">Loading translations...</div>
             ) : (
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="flex flex-wrap justify-center gap-4">
                 {translations.map((trans) => {
-                const isSelected = selectedTranslations.includes(trans.abbrev);
-                const isDefault = trans.abbrev === defaultTranslation;
+                  const isSelected = selectedTranslations.includes(trans.abbrev);
+                  const isDefault = trans.abbrev === defaultTranslation;
 
-                return (
-                  <button
-                    key={trans.abbrev}
-                    type="button"
-                    onClick={() => toggleTranslation(trans.abbrev, false)}
-                    onDoubleClick={() => toggleTranslation(trans.abbrev, true)}
-                    className={`px-3 py-1.5 rounded-full text-sm transition-colors flex items-center gap-1 ${
-                      isSelected
-                        ? 'bg-primary-100 text-primary-700 border-2 border-primary-300'
-                        : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
-                    } ${isDefault ? 'ring-2 ring-yellow-400' : ''}`}
-                    title={isDefault ? `${trans.name} (Default)` : trans.name}
-                  >
-                    {isDefault && <span className="text-yellow-500">★</span>}
-                    {trans.name}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={trans.abbrev}
+                      type="button"
+                      onClick={() => toggleTranslation(trans.abbrev, false)}
+                      onDoubleClick={() => toggleTranslation(trans.abbrev, true)}
+                      className={`font-ui text-sm transition-colors ${
+                        isSelected
+                          ? 'text-text-primary dark:text-text-dark-primary border-b-2 border-accent-scripture dark:border-accent-dark-scripture'
+                          : 'text-text-tertiary dark:text-text-dark-tertiary hover:text-text-secondary dark:hover:text-text-dark-secondary border-b-2 border-transparent'
+                      } ${isDefault ? 'font-bold' : 'font-normal'}`}
+                      title={isDefault ? `${trans.name} (Default)` : trans.name}
+                    >
+                      {isDefault && <span className="text-accent-scripture dark:text-accent-dark-scripture mr-1">★</span>}
+                      {trans.name}
+                    </button>
+                  );
+                })}
               </div>
             )}
-            <p className="text-xs text-center text-gray-300">
-              Click to select/deselect • Double-click to set as default (★) • Default can't be deselected
+            <p className="text-xs text-center text-text-tertiary dark:text-text-dark-tertiary font-ui">
+              Click to select/deselect • Double-click to set as default (★)
             </p>
           </div>
         )}
       </form>
 
       {/* Example queries */}
-      <div className="mt-6 text-center text-sm text-gray-200">
-        <p>Try searching:</p>
-        <div className="mt-2 flex flex-wrap justify-center gap-2">
+      <div className="mt-space-md text-center text-sm text-text-secondary dark:text-text-dark-secondary">
+        <p className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-2">Try searching:</p>
+        <div className="mt-2 flex flex-wrap justify-center gap-3">
           {[
             'love and forgiveness',
             '사랑에 대한 예수님의 말씀',
@@ -199,7 +184,7 @@ export default function SearchBar({
               key={example}
               type="button"
               onClick={() => setQuery(example)}
-              className="px-3 py-1 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
+              className="font-ui text-sm text-text-secondary dark:text-text-dark-secondary hover:text-text-primary dark:hover:text-text-dark-primary transition-colors border-b border-transparent hover:border-text-secondary dark:hover:border-text-dark-secondary"
             >
               {example}
             </button>

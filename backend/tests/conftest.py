@@ -1,8 +1,8 @@
 """Pytest configuration and fixtures for Bible RAG tests.
 
 This module provides shared fixtures for testing the backend including:
-- Test database sessions
-- FastAPI test client
+- Test database sessions (Async)
+- FastAPI test client (Async)
 - Mock services (Redis, LLM, embeddings)
 - Sample test data
 """
@@ -11,17 +11,20 @@ import os
 import sys
 import uuid
 from datetime import datetime
-from typing import Generator
+from typing import AsyncGenerator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy import create_engine, event, Column, Integer, String, Text, Boolean, DateTime, Float, ForeignKey
-from sqlalchemy.orm import Session, sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
+import pytest_asyncio
+from sqlalchemy import event, text, inspect
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import StaticPool
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.types import String, Text, Boolean, DateTime, Integer, Float
+from sqlalchemy.schema import ForeignKey
 
 # Set test environment before importing app modules
-os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 os.environ["REDIS_URL"] = "redis://localhost:6379/0"
 os.environ["GEMINI_API_KEY"] = "test-key"
 os.environ["GROQ_API_KEY"] = "test-key"
@@ -29,27 +32,31 @@ os.environ["GROQ_API_KEY"] = "test-key"
 # Add backend to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from database import Base, get_db
 
 # --- Test Database Setup ---
 
 # Create test engine for SQLite (separate from the app's PostgreSQL engine)
-test_engine = create_engine(
-    "sqlite:///:memory:",
+test_engine = create_async_engine(
+    "sqlite+aiosqlite:///:memory:",
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
 
-
 # Enable foreign keys for SQLite
-@event.listens_for(test_engine, "connect")
+@event.listens_for(test_engine.sync_engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
-
-TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-
+TestSessionLocal = async_sessionmaker(
+    bind=test_engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False,
+    autocommit=False,
+)
 
 # --- Test Models (SQLite-compatible) ---
 
@@ -130,10 +137,21 @@ class OriginalWord(TestBase):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class Embedding(TestBase):
+    """Embedding model - test version (SQLite compatible)."""
+    __tablename__ = "embeddings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    verse_id: Mapped[str] = mapped_column(String(36), ForeignKey("verses.id"), nullable=False)
+    vector: Mapped[str] = mapped_column(Text, nullable=True) 
+    model_version: Mapped[str] = mapped_column(Text, default="test-model")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 # --- Database Fixtures ---
 
-@pytest.fixture(scope="function",autouse=True)
-def patch_search_models():
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def patch_search_models():
     """Patch search.py to use test models for all tests."""
     import search
 
@@ -144,6 +162,7 @@ def patch_search_models():
         'Verse': search.Verse,
         'CrossReference': search.CrossReference,
         'OriginalWord': search.OriginalWord,
+        'Embedding': search.Embedding,
     }
 
     # Replace with test models
@@ -152,6 +171,7 @@ def patch_search_models():
     search.Verse = Verse
     search.CrossReference = CrossReference
     search.OriginalWord = OriginalWord
+    search.Embedding = Embedding
 
     yield
 
@@ -160,132 +180,88 @@ def patch_search_models():
         setattr(search, name, model)
 
 
-@pytest.fixture(scope="function")
-def test_db() -> Generator[Session, None, None]:
+@pytest_asyncio.fixture(scope="function")
+async def test_db() -> AsyncGenerator[AsyncSession, None]:
     """Create test database tables and provide a session."""
     # Create tables using test models
-    TestBase.metadata.create_all(bind=test_engine)
+    async with test_engine.begin() as conn:
+        await conn.run_sync(TestBase.metadata.create_all)
 
-    session = TestSessionLocal()
-
-    try:
+    async with TestSessionLocal() as session:
         yield session
-    finally:
-        session.close()
-        TestBase.metadata.drop_all(bind=test_engine)
+        
+    async with test_engine.begin() as conn:
+        await conn.run_sync(TestBase.metadata.drop_all)
 
 
-@pytest.fixture(scope="function")
-def test_client(test_db: Session) -> Generator:
+@pytest_asyncio.fixture(scope="function")
+async def test_client(test_db: AsyncSession, mock_redis) -> AsyncGenerator:
     """Create a FastAPI test client with mocked dependencies."""
-    from fastapi.testclient import TestClient
+    from httpx import AsyncClient, ASGITransport
     from fastapi import FastAPI
+    from cache import get_cache
+    
+    # Import routers - we need to ensure imports work and rely on same db dependency
+    from routers import metadata, search, verses, themes, health
 
-    # Create a minimal test app
     test_app = FastAPI()
+    
+    # Mount routers
+    test_app.include_router(metadata.router)
+    test_app.include_router(search.router) # /api/search
+    test_app.include_router(verses.router) # /api/verse /api/chapter
+    test_app.include_router(themes.router) # /api/themes
+    test_app.include_router(health.router) # /health
+    
+    # Patch get_cache in checking locations
+    patch_health_cache = patch("routers.health.get_cache", return_value=mock_redis)
+    patch_health_cache.start()
+    
+    patch_search_cache = patch("search.get_cache", return_value=mock_redis)
+    patch_search_cache.start()
+    
+    patch_embed = patch("search.embed_query", side_effect=lambda q, **k: [0.1] * 1024)
+    patch_embed.start()
+    
+    # Patch fulltext search to avoid Postgres specific SQL on SQLite
+    async def mock_fulltext(*args, **kwargs):
+        # Return valid search response structure
+        return {
+            "query_time_ms": 0,
+            "results": [],
+            "search_metadata": {
+                "total_results": 0,
+                "embedding_model": None,
+                "search_method": "full-text",
+                "cached": False,
+            }
+        }
+    patch_fulltext = patch("search.fulltext_search_verses", side_effect=mock_fulltext)
+    patch_fulltext.start()
 
+    # Add root route as defined in tests
     @test_app.get("/")
-    def root():
+    async def root():
         return {"name": "Bible RAG API", "version": "1.0.0", "docs": "/docs", "health": "/health"}
 
-    @test_app.get("/health")
-    def health():
-        return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+    # Override dependencies
+    async def override_get_db():
+        yield test_db
+        
+    def override_get_cache():
+        return mock_redis
 
-    @test_app.get("/api/translations")
-    def get_translations():
-        translations = test_db.query(Translation).all()
-        return {
-            "translations": [
-                {
-                    "id": t.id,
-                    "name": t.name,
-                    "abbreviation": t.abbreviation,
-                    "language_code": t.language_code,
-                    "is_original_language": t.is_original_language,
-                }
-                for t in translations
-            ],
-            "total_count": len(translations),
-        }
+    test_app.dependency_overrides[get_db] = override_get_db
+    test_app.dependency_overrides[get_cache] = override_get_cache
 
-    @test_app.get("/api/books")
-    def get_books(testament: str = None, genre: str = None):
-        query = test_db.query(Book)
-        if testament:
-            query = query.filter(Book.testament == testament)
-        if genre:
-            query = query.filter(Book.genre == genre)
-        books = query.all()
-        return {
-            "books": [
-                {
-                    "id": b.id,
-                    "name": b.name,
-                    "name_korean": b.name_korean,
-                    "abbreviation": b.abbreviation,
-                    "testament": b.testament,
-                    "genre": b.genre,
-                    "book_number": b.book_number,
-                    "total_chapters": b.total_chapters,
-                }
-                for b in books
-            ],
-            "total_count": len(books),
-        }
-
-    @test_app.get("/api/verse/{book}/{chapter}/{verse}")
-    def get_verse(book: str, chapter: int, verse: int, translations: str = None):
-        book_obj = test_db.query(Book).filter(
-            (Book.name == book) | (Book.abbreviation == book)
-        ).first()
-        if not book_obj:
-            from fastapi import HTTPException
-            raise HTTPException(status_code=404, detail="Book not found")
-
-        verse_obj = test_db.query(Verse).filter(
-            Verse.book_id == book_obj.id,
-            Verse.chapter == chapter,
-            Verse.verse == verse,
-        ).first()
-        if not verse_obj:
-            from fastapi import HTTPException
-            raise HTTPException(status_code=404, detail="Verse not found")
-
-        return {"reference": {"book": book, "chapter": chapter, "verse": verse}}
-
-    @test_app.post("/api/search")
-    def search(request: dict):
-        if "query" not in request:
-            from fastapi import HTTPException
-            raise HTTPException(status_code=422, detail="Missing query")
-        return {
-            "query_time_ms": 100,
-            "results": [],
-            "search_metadata": {"total_results": 0},
-        }
-
-    @test_app.post("/api/themes")
-    def themes(request: dict):
-        if "theme" not in request:
-            from fastapi import HTTPException
-            raise HTTPException(status_code=422, detail="Missing theme")
-        return {
-            "theme": request.get("theme"),
-            "testament_filter": request.get("testament"),
-            "query_time_ms": 100,
-            "results": [],
-            "total_results": 0,
-        }
-
-    with TestClient(test_app) as client:
-        yield client
+    async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as ac:
+        yield ac
 
 
 # --- Sample Data Fixtures ---
 
-@pytest.fixture
-def sample_translation(test_db: Session) -> Translation:
+@pytest_asyncio.fixture
+async def sample_translation(test_db: AsyncSession) -> Translation:
     """Create a sample translation for testing."""
     translation = Translation(
         id=str(uuid.uuid4()),
@@ -296,13 +272,13 @@ def sample_translation(test_db: Session) -> Translation:
         is_original_language=False,
     )
     test_db.add(translation)
-    test_db.commit()
-    test_db.refresh(translation)
+    await test_db.commit()
+    await test_db.refresh(translation)
     return translation
 
 
-@pytest.fixture
-def sample_korean_translation(test_db: Session) -> Translation:
+@pytest_asyncio.fixture
+async def sample_korean_translation(test_db: AsyncSession) -> Translation:
     """Create a sample Korean translation for testing."""
     translation = Translation(
         id=str(uuid.uuid4()),
@@ -313,13 +289,13 @@ def sample_korean_translation(test_db: Session) -> Translation:
         is_original_language=False,
     )
     test_db.add(translation)
-    test_db.commit()
-    test_db.refresh(translation)
+    await test_db.commit()
+    await test_db.refresh(translation)
     return translation
 
 
-@pytest.fixture
-def sample_book(test_db: Session) -> Book:
+@pytest_asyncio.fixture
+async def sample_book(test_db: AsyncSession) -> Book:
     """Create a sample book for testing."""
     book = Book(
         id=str(uuid.uuid4()),
@@ -332,13 +308,13 @@ def sample_book(test_db: Session) -> Book:
         total_chapters=50,
     )
     test_db.add(book)
-    test_db.commit()
-    test_db.refresh(book)
+    await test_db.commit()
+    await test_db.refresh(book)
     return book
 
 
-@pytest.fixture
-def sample_nt_book(test_db: Session) -> Book:
+@pytest_asyncio.fixture
+async def sample_nt_book(test_db: AsyncSession) -> Book:
     """Create a sample New Testament book for testing."""
     book = Book(
         id=str(uuid.uuid4()),
@@ -351,13 +327,13 @@ def sample_nt_book(test_db: Session) -> Book:
         total_chapters=28,
     )
     test_db.add(book)
-    test_db.commit()
-    test_db.refresh(book)
+    await test_db.commit()
+    await test_db.refresh(book)
     return book
 
 
-@pytest.fixture
-def sample_verse(test_db: Session, sample_translation: Translation, sample_book: Book) -> Verse:
+@pytest_asyncio.fixture
+async def sample_verse(test_db: AsyncSession, sample_translation: Translation, sample_book: Book) -> Verse:
     """Create a sample verse for testing."""
     verse = Verse(
         id=str(uuid.uuid4()),
@@ -368,14 +344,14 @@ def sample_verse(test_db: Session, sample_translation: Translation, sample_book:
         text="In the beginning God created the heavens and the earth.",
     )
     test_db.add(verse)
-    test_db.commit()
-    test_db.refresh(verse)
+    await test_db.commit()
+    await test_db.refresh(verse)
     return verse
 
 
-@pytest.fixture
-def sample_korean_verse(
-    test_db: Session,
+@pytest_asyncio.fixture
+async def sample_korean_verse(
+    test_db: AsyncSession,
     sample_korean_translation: Translation,
     sample_book: Book
 ) -> Verse:
@@ -389,14 +365,14 @@ def sample_korean_verse(
         text="태초에 하나님이 천지를 창조하시니라",
     )
     test_db.add(verse)
-    test_db.commit()
-    test_db.refresh(verse)
+    await test_db.commit()
+    await test_db.refresh(verse)
     return verse
 
 
-@pytest.fixture
-def sample_verses_with_theme(
-    test_db: Session,
+@pytest_asyncio.fixture
+async def sample_verses_with_theme(
+    test_db: AsyncSession,
     sample_translation: Translation,
     sample_nt_book: Book,
 ) -> list[Verse]:
@@ -420,25 +396,67 @@ def sample_verses_with_theme(
         test_db.add(verse)
         verses.append(verse)
 
-    test_db.commit()
+    await test_db.commit() 
+    
+    cleaned_verses = []
     for v in verses:
-        test_db.refresh(v)
+        await test_db.refresh(v)
+        cleaned_verses.append(v)
 
-    return verses
+    return cleaned_verses
 
 
-# --- Mock Fixtures ---
+@pytest_asyncio.fixture
+async def sample_verse_with_original(test_db: AsyncSession, sample_verse: Verse) -> Verse:
+    """Create a sample verse with original words."""
+    # Create original words linked to the sample verse
+    word1 = OriginalWord(
+        id=str(uuid.uuid4()),
+        verse_id=sample_verse.id,
+        word="In beginning",
+        language="hebrew",
+        strongs_number="H7225",
+        transliteration="bereshith",
+        morphology="Noun",
+        definition="in the beginning",
+        word_order=1,
+    )
+    word2 = OriginalWord(
+        id=str(uuid.uuid4()),
+        verse_id=sample_verse.id,
+        word="created",
+        language="hebrew",
+        strongs_number="H1254",
+        transliteration="bara",
+        morphology="Verb",
+        definition="create",
+        word_order=2,
+    )
+    test_db.add(word1)
+    test_db.add(word2)
+    await test_db.commit()
+    await test_db.refresh(sample_verse)
+    return sample_verse
+
 
 @pytest.fixture
 def mock_redis():
-    """Mock Redis client for testing without Redis server."""
+    """Mock Redis client/wrapper for testing."""
     mock = MagicMock()
+    # Mock RedisCache methods
+    mock.is_connected.return_value = True
+    mock.get_cache_stats.return_value = {"cached_searches": 0}
+    mock.get_cached_verse.return_value = None
+    mock.get_cached_results.return_value = None
+    
+    # Mock client methods (if accessed directly)
     mock.get.return_value = None
     mock.set.return_value = True
     mock.setex.return_value = True
     mock.delete.return_value = True
     mock.keys.return_value = []
     mock.info.return_value = {"used_memory_human": "1M", "connected_clients": 1}
+    mock.ping.return_value = True
     return mock
 
 
@@ -468,8 +486,6 @@ def mock_gemini(mock_llm_response):
         mock_genai.GenerativeModel.return_value = mock_model
         yield mock_genai
 
-
-# --- Pytest Configuration ---
 
 def pytest_configure(config):
     """Configure pytest with custom markers."""

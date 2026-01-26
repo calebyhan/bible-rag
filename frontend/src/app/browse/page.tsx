@@ -142,10 +142,9 @@ function BrowsePageContent() {
   const scrollToChapter = (key: string) => {
     const element = chapterRefs.current.get(key);
     if (element) {
-      // Calculate offset for navbar (64px) + sticky header (~120px) + padding
-      const navbarHeight = 64; // h-16 = 4rem = 64px
-      const stickyHeaderHeight = 140; // approximate height of browse sticky header
-      const totalOffset = navbarHeight + stickyHeaderHeight + 16; // 16px extra padding
+      // Calculate offset for navbar
+      const navbarHeight = 64;
+      const totalOffset = navbarHeight + 16;
 
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - totalOffset;
@@ -218,10 +217,8 @@ function BrowsePageContent() {
       setTimeout(() => {
         const verseElement = document.getElementById(`verse-${searchVerse}`);
         if (verseElement) {
-          // Calculate offset for navbar + sticky header
           const navbarHeight = 64;
-          const stickyHeaderHeight = 140;
-          const totalOffset = navbarHeight + stickyHeaderHeight + 16;
+          const totalOffset = navbarHeight + 16;
 
           const elementPosition = verseElement.getBoundingClientRect().top + window.pageYOffset;
           const offsetPosition = elementPosition - totalOffset;
@@ -231,10 +228,10 @@ function BrowsePageContent() {
             behavior: 'smooth'
           });
 
-          verseElement.classList.add('bg-yellow-100', 'dark:bg-yellow-900/30');
+          verseElement.classList.add('bg-background', 'border-l-4', 'border-text-scripture');
           setTimeout(
             () =>
-              verseElement.classList.remove('bg-yellow-100', 'dark:bg-yellow-900/30'),
+              verseElement.classList.remove('bg-background', 'border-l-4', 'border-text-scripture'),
             2000
           );
         }
@@ -272,10 +269,10 @@ function BrowsePageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
         <div className="text-center">
-          <div className="spinner mx-auto mb-4"></div>
-          <p className="text-gray-700 dark:text-gray-300">Loading... / 로딩 중...</p>
+          <div className="spinner mx-auto mb-space-sm"></div>
+          <p className="font-ui text-sm text-text-secondary dark:text-text-dark-secondary">Loading... / 로딩 중...</p>
         </div>
       </div>
     );
@@ -283,13 +280,13 @@ function BrowsePageContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Error / 오류</h2>
-          <p className="text-gray-700 dark:text-gray-300 mb-6">{error}</p>
+      <div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
+        <div className="text-center max-w-md border-2 border-text-tertiary dark:border-text-dark-tertiary p-space-lg bg-surface dark:bg-surface-dark transition-colors">
+          <h2 className="font-heading text-2xl text-text-primary dark:text-text-dark-primary mb-space-sm">Error / 오류</h2>
+          <p className="font-body text-text-secondary dark:text-text-dark-secondary mb-space-md">{error}</p>
           <button
             onClick={() => router.push('/')}
-            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+            className="btn-text border-2 border-text-primary dark:border-text-dark-primary px-space-md py-space-sm dark:text-text-dark-secondary dark:hover:text-text-dark-primary"
           >
             Return Home / 홈으로
           </button>
@@ -299,7 +296,7 @@ function BrowsePageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-background dark:bg-background-dark transition-colors">
       {/* Toast Notification */}
       {toast && (
         <Toast
@@ -309,25 +306,23 @@ function BrowsePageContent() {
         />
       )}
 
-      {/* Sticky Header with Navigation */}
-      <header className="sticky top-16 z-40 bg-white dark:bg-slate-800 shadow-md border-b dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4">
-            {/* Top row: Title */}
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Browse Bible
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">성경 둘러보기</p>
-              </div>
+      {/* Header with Navigation */}
+      <header className="bg-surface dark:bg-surface-dark border-b-2 border-text-tertiary dark:border-text-dark-tertiary transition-colors">
+        <div className="max-w-content mx-auto px-space-md py-space-md">
+          <div className="flex flex-col gap-space-sm">
+            {/* Title */}
+            <div>
+              <h1 className="font-heading text-xl sm:text-2xl text-text-primary dark:text-text-dark-primary">
+                Browse Bible
+              </h1>
+              <p className="font-korean text-xs sm:text-sm text-text-secondary dark:text-text-dark-secondary">성경 둘러보기</p>
             </div>
 
             {/* Navigation Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+            <div className="flex flex-col sm:flex-row gap-space-sm items-start sm:items-end">
               {/* Book Input */}
               <div className="flex-1 relative" ref={bookInputRef}>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
                   Book / 책
                 </label>
                 <input
@@ -344,16 +339,16 @@ function BrowsePageContent() {
                     }
                   }}
                   placeholder="Genesis, 창세기, Gen..."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture transition-colors"
                 />
 
                 {/* Book Dropdown */}
                 {showBookDropdown && (filteredOTBooks.length > 0 || filteredNTBooks.length > 0) && (
-                  <div className="absolute z-50 mt-1 w-full max-w-3xl bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-600 max-h-96 overflow-y-auto">
+                  <div className="absolute z-50 mt-1 left-0 w-[800px] max-w-[90vw] bg-surface dark:bg-surface-dark border-2 border-text-primary dark:border-text-dark-primary max-h-96 overflow-y-auto transition-colors">
                     {/* Old Testament */}
                     {filteredOTBooks.length > 0 && (
-                      <div className="p-3">
-                        <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 px-2">
+                      <div className="p-space-sm">
+                        <h3 className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary font-semibold mb-space-xs px-space-xs">
                           Old Testament / 구약
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
@@ -361,12 +356,12 @@ function BrowsePageContent() {
                             <button
                               key={book.id}
                               onClick={() => handleBookSelect(book)}
-                              className="text-left px-3 py-2 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group"
+                              className="text-left px-space-xs py-space-xs hover:bg-background dark:hover:bg-background-dark transition-colors border border-transparent hover:border-border-medium dark:hover:border-border-dark-medium"
                             >
-                              <div className="font-medium text-sm text-gray-900 dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-300">
+                              <div className="font-body text-sm text-text-primary dark:text-text-dark-primary">
                                 {book.name}
                               </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400 korean-text">
+                              <div className="font-korean text-xs text-text-tertiary dark:text-text-dark-tertiary">
                                 {book.name_korean}
                               </div>
                             </button>
@@ -377,13 +372,13 @@ function BrowsePageContent() {
 
                     {/* Divider */}
                     {filteredOTBooks.length > 0 && filteredNTBooks.length > 0 && (
-                      <div className="border-t border-gray-200 dark:border-slate-700"></div>
+                      <div className="border-t-2 border-text-tertiary dark:border-text-dark-tertiary"></div>
                     )}
 
                     {/* New Testament */}
                     {filteredNTBooks.length > 0 && (
-                      <div className="p-3">
-                        <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2 px-2">
+                      <div className="p-space-sm">
+                        <h3 className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary font-semibold mb-space-xs px-space-xs">
                           New Testament / 신약
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
@@ -391,12 +386,12 @@ function BrowsePageContent() {
                             <button
                               key={book.id}
                               onClick={() => handleBookSelect(book)}
-                              className="text-left px-3 py-2 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group"
+                              className="text-left px-space-xs py-space-xs hover:bg-background dark:hover:bg-background-dark transition-colors border border-transparent hover:border-border-medium dark:hover:border-border-dark-medium"
                             >
-                              <div className="font-medium text-sm text-gray-900 dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-300">
+                              <div className="font-body text-sm text-text-primary dark:text-text-dark-primary">
                                 {book.name}
                               </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400 korean-text">
+                              <div className="font-korean text-xs text-text-tertiary dark:text-text-dark-tertiary">
                                 {book.name_korean}
                               </div>
                             </button>
@@ -410,7 +405,7 @@ function BrowsePageContent() {
 
               {/* Chapter Input */}
               <div className="w-24">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
                   Chapter / 장
                 </label>
                 <input
@@ -424,14 +419,14 @@ function BrowsePageContent() {
                   }}
                   placeholder="1"
                   min="1"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture transition-colors"
                 />
               </div>
 
               {/* Verse Input (Optional) */}
               <div className="w-24">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Verse / 절 (opt)
+                <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
+                  Verse / 절
                 </label>
                 <input
                   type="number"
@@ -444,33 +439,26 @@ function BrowsePageContent() {
                   }}
                   placeholder="1"
                   min="1"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture transition-colors"
                 />
               </div>
 
               {/* Translation Selector */}
               <div className="relative" ref={translationInputRef}>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
                   Translation / 번역
                 </label>
                 <button
                   onClick={() => setShowTranslationDropdown(!showTranslationDropdown)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent text-left flex items-center justify-between gap-2"
+                  className="px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture text-left flex items-center justify-between gap-2 min-w-[80px] transition-colors"
                 >
-                  <span className="font-medium">{selectedTranslation}</span>
-                  <svg
-                    className={`w-4 h-4 transition-transform ${showTranslationDropdown ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <span className="font-semibold">{selectedTranslation}</span>
+                  <span className="text-xs">{showTranslationDropdown ? '▲' : '▼'}</span>
                 </button>
 
                 {/* Translation Dropdown */}
                 {showTranslationDropdown && (
-                  <div className="absolute z-50 mt-1 right-0 min-w-64 bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-600 max-h-80 overflow-y-auto">
+                  <div className="absolute z-50 mt-1 right-0 min-w-64 bg-surface dark:bg-surface-dark border-2 border-text-primary dark:border-text-dark-primary max-h-80 overflow-y-auto transition-colors">
                     {/* Group translations by language */}
                     {(() => {
                       const grouped = translations.reduce((acc, t) => {
@@ -487,8 +475,8 @@ function BrowsePageContent() {
                         if (!langTranslations?.length) return null;
 
                         return (
-                          <div key={lang} className="p-2">
-                            <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 px-2">
+                          <div key={lang} className="p-space-xs">
+                            <h3 className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary font-semibold mb-space-xs px-space-xs">
                               {lang}
                             </h3>
                             {langTranslations.map((t) => (
@@ -498,23 +486,21 @@ function BrowsePageContent() {
                                   setSelectedTranslation(t.abbreviation);
                                   setShowTranslationDropdown(false);
                                 }}
-                                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                                className={`w-full text-left px-space-sm py-space-xs transition-colors border-l-4 ${
                                   selectedTranslation === t.abbreviation
-                                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                                    : 'hover:bg-gray-100 dark:hover:bg-slate-700'
+                                    ? 'border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark'
+                                    : 'border-transparent hover:border-border-medium dark:hover:border-border-dark-medium hover:bg-background dark:hover:bg-background-dark'
                                 }`}
                               >
                                 <div className="flex items-center justify-between">
-                                  <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                                  <span className="font-ui text-sm font-semibold text-text-primary dark:text-text-dark-primary">
                                     {t.abbreviation}
                                   </span>
                                   {selectedTranslation === t.abbreviation && (
-                                    <svg className="w-4 h-4 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
+                                    <span className="text-text-primary dark:text-text-dark-primary">✓</span>
                                   )}
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                <div className="font-body text-xs text-text-tertiary dark:text-text-dark-tertiary mt-px">
                                   {t.name}
                                 </div>
                               </button>
@@ -530,20 +516,20 @@ function BrowsePageContent() {
               {/* Original Language Toggle */}
               <button
                 onClick={() => setShowOriginal(!showOriginal)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`px-space-sm py-space-xs font-ui text-xs uppercase tracking-wide font-semibold transition-colors whitespace-nowrap border-2 ${
                   showOriginal
-                    ? 'bg-amber-500 text-white hover:bg-amber-600'
-                    : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
+                    ? 'border-text-primary dark:border-text-dark-primary bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark'
+                    : 'border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark'
                 }`}
                 title="Toggle original language display / 원어 표시 전환"
               >
-                📖 원어 {showOriginal ? 'Hide' : 'Show'}
+                원어 {showOriginal ? 'Hide' : 'Show'}
               </button>
 
               {/* Go Button */}
               <button
                 onClick={() => handleJumpTo()}
-                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium text-sm whitespace-nowrap"
+                className="px-space-md py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark hover:bg-text-secondary dark:hover:bg-text-dark-secondary transition-colors font-ui font-semibold text-sm uppercase tracking-wide whitespace-nowrap"
               >
                 Go / 이동
               </button>
@@ -553,25 +539,25 @@ function BrowsePageContent() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <main className="max-w-content mx-auto px-space-md py-space-lg">
         {visibleChapters.length === 0 ? (
-          <div className="text-center py-12 verse-card">
-            <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
+          <div className="text-center py-space-xl border-2 border-text-tertiary dark:border-text-dark-tertiary p-space-lg bg-surface dark:bg-surface-dark transition-colors">
+            <p className="font-body text-lg text-text-primary dark:text-text-dark-primary mb-space-sm">
               Enter a book and chapter above to start reading
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="font-korean text-sm text-text-secondary dark:text-text-dark-secondary">
               위에서 책과 장을 입력하여 읽기 시작하세요
             </p>
-            <div className="mt-8">
-              <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            <div className="mt-space-md">
+              <h3 className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary font-semibold mb-space-sm">
                 Quick Start / 빠른 시작:
               </h3>
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="flex flex-wrap justify-center gap-space-xs">
                 {['Genesis', 'Psalms', 'John', 'Romans'].map((bookName) => (
                   <button
                     key={bookName}
                     onClick={() => handleJumpTo(bookName, 1)}
-                    className="px-4 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors"
+                    className="px-space-sm py-space-xs border-2 border-text-tertiary dark:border-text-dark-tertiary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:border-text-primary dark:hover:border-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark transition-colors font-ui text-sm"
                   >
                     {bookName} 1
                   </button>
@@ -603,7 +589,7 @@ function BrowsePageContent() {
                   />
 
                   {/* Navigation Buttons */}
-                  <div className="flex justify-between items-center mb-8 px-4">
+                  <div className="flex justify-between items-center mb-space-lg px-space-sm">
                     <button
                       onClick={() =>
                         handleLoadAdjacentChapter(
@@ -612,7 +598,7 @@ function BrowsePageContent() {
                         )
                       }
                       disabled={chapterData.reference.chapter === 1}
-                      className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-ui text-sm"
                     >
                       ← 이전 장 / Previous
                     </button>
@@ -626,7 +612,7 @@ function BrowsePageContent() {
                       disabled={
                         !book || chapterData.reference.chapter >= book.total_chapters
                       }
-                      className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-ui text-sm"
                     >
                       다음 장 / Next →
                     </button>
@@ -644,9 +630,9 @@ function BrowsePageContent() {
 export default function BrowsePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-gray-600 dark:text-gray-400">Loading... / 로딩 중...</div>
+      <div className="min-h-screen bg-background dark:bg-background-dark transition-colors">
+        <div className="max-w-content mx-auto px-space-md py-space-lg">
+          <div className="text-center font-ui text-sm text-text-secondary dark:text-text-dark-secondary">Loading... / 로딩 중...</div>
         </div>
       </div>
     }>

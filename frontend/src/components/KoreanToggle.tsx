@@ -15,7 +15,6 @@ interface KoreanToggleProps {
  * KoreanToggle component provides a toggle interface for switching between
  * different Korean text display modes:
  * - Hangul (한글): Standard Korean script
- * - Hanja (漢字): Chinese characters with Korean pronunciation
  * - Romanization (로마자): Latin alphabet transliteration
  */
 export default function KoreanToggle({
@@ -39,31 +38,31 @@ export default function KoreanToggle({
 
   return (
     <div className={`korean-toggle ${className}`}>
-      <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
+      <div className="inline-flex border-2 border-text-primary dark:border-text-dark-primary">
         {modes.map((m) => (
           <button
             key={m.value}
             onClick={() => handleModeChange(m.value)}
             className={`
-              px-3 py-2 text-sm font-medium rounded-md transition-all duration-200
-              flex items-center gap-2 min-w-[80px] justify-center
+              px-space-sm py-space-xs font-ui text-sm font-semibold uppercase tracking-wide transition-all
+              flex items-center gap-2 min-w-[80px] justify-center border-r-2 last:border-r-0 border-text-primary dark:border-text-dark-primary
               ${
                 mode === m.value
-                  ? 'bg-primary-500 text-white shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark'
+                  : 'bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark'
               }
             `}
             aria-label={`Switch to ${m.label} mode`}
             aria-pressed={mode === m.value}
           >
-            <span className="text-lg">{m.icon}</span>
+            <span className="text-base font-bold">{m.icon}</span>
             <span className="text-xs">{m.label}</span>
           </button>
         ))}
       </div>
 
       {/* Optional: Display current mode description */}
-      <div className="mt-2 text-xs text-gray-500 text-center">
+      <div className="mt-space-xs font-ui text-xs text-text-tertiary dark:text-text-dark-tertiary text-center">
         {mode === 'hangul' && 'Standard Korean script'}
         {mode === 'romanization' && 'Latin alphabet transliteration'}
       </div>
@@ -94,19 +93,19 @@ export function CompactKoreanToggle({
   ];
 
   return (
-    <div className={`inline-flex gap-1 ${className}`}>
+    <div className={`inline-flex border-2 border-text-primary dark:border-text-dark-primary ${className}`}>
       {modes.map((m) => (
         <button
           key={m.value}
           onClick={() => handleModeChange(m.value)}
           title={m.tooltip}
           className={`
-            w-8 h-8 rounded-md text-sm font-medium transition-all duration-200
-            flex items-center justify-center
+            w-8 h-8 font-ui text-sm font-bold transition-all
+            flex items-center justify-center border-r-2 last:border-r-0 border-text-primary dark:border-text-dark-primary
             ${
               mode === m.value
-                ? 'bg-primary-500 text-white shadow-sm'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-text-primary dark:bg-text-dark-primary text-background dark:text-background-dark'
+                : 'bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary hover:bg-surface dark:hover:bg-surface-dark'
             }
           `}
           aria-label={`Switch to ${m.tooltip}`}

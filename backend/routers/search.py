@@ -2,7 +2,7 @@
 
 import logging
 from fastapi import APIRouter, Depends, Header, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from llm import detect_language, generate_contextual_response
@@ -14,90 +14,77 @@ router = APIRouter(prefix="/api", tags=["search"])
 logger = logging.getLogger(__name__)
 
 
-@router.post("/search", response_model=SearchResponse)
+@router.post("/search")
 async def semantic_search(
     request: SearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     x_gemini_api_key: str | None = Header(None, alias="X-Gemini-API-Key"),
     x_groq_api_key: str | None = Header(None, alias="X-Groq-API-Key"),
 ):
     """Perform semantic search across Bible translations.
 
-    Search for verses using natural language queries in English or Korean.
-    Returns relevant verses ranked by semantic similarity.
+    Streams results and then AI response chunks using NDJSON.
     """
-    try:
-        # Convert filters to dict if present
-        filters = None
-        if request.filters:
-            filters = {
-                "testament": request.filters.testament,
-                "genre": request.filters.genre,
-                "books": request.filters.books,
+    import json
+    from fastapi.responses import StreamingResponse
+    from llm import generate_contextual_response_stream
+
+    async def response_generator():
+        try:
+            # Convert filters to dict if present
+            filters = None
+            if request.filters:
+                filters = {
+                    "testament": request.filters.testament,
+                    "genre": request.filters.genre,
+                    "books": request.filters.books,
+                }
+                filters = {k: v for k, v in filters.items() if v is not None}
+
+            # Perform search (await full results first)
+            results = await search_verses(
+                db=db,
+                query=request.query,
+                translations=request.translations,
+                max_results=request.max_results,
+                filters=filters if filters else None,
+                include_original=request.include_original,
+                include_cross_refs=True,
+                api_key=x_gemini_api_key,
+            )
+
+            # Send search results first
+            search_response = {
+                "type": "results",
+                "data": {
+                    "query_time_ms": results["query_time_ms"],
+                    "results": results["results"],
+                    "search_metadata": results["search_metadata"],
+                }
             }
-            # Remove None values
-            filters = {k: v for k, v in filters.items() if v is not None}
+            yield json.dumps(search_response) + "\n"
 
-        # Perform search
-        results = search_verses(
-            db=db,
-            query=request.query,
-            translations=request.translations,
-            max_results=request.max_results,
-            filters=filters if filters else None,
-            include_original=request.include_original,
-            include_cross_refs=True,
-            api_key=x_gemini_api_key,
-        )
-
-        # Detect language for AI response from query text
-        language = detect_language(request.query)
-
-        # Generate AI response if we have results (using batching)
-        ai_response = None
-        ai_error = None
-
-        if results.get("results"):
-            try:
-                ai_response = await batched_generate_response(
+            # Detect language and generate AI response stream
+            if results.get("results"):
+                language = detect_language(request.query)
+                
+                # Stream tokens
+                async for token in generate_contextual_response_stream(
                     query=request.query,
                     verses=results["results"],
                     language=language,
                     gemini_api_key=x_gemini_api_key,
                     groq_api_key=x_groq_api_key,
-                )
+                ):
+                    if token:
+                        msg = {"type": "token", "content": token}
+                        yield json.dumps(msg) + "\n"
+            
+            # Send done signal (optional but helpful)
+            # yield json.dumps({"type": "done"}) + "\n"
 
-                # If no response was generated, provide helpful error
-                if not ai_response:
-                    ai_error = "AI response service temporarily unavailable. Please try again in a moment."
-                    logger.warning(f"AI response generation returned None for query: {request.query[:50]}")
+        except Exception as e:
+            logger.error(f"Search error: {e}", exc_info=True)
+            yield json.dumps({"type": "error", "message": str(e)}) + "\n"
 
-            except Exception as e:
-                ai_error = "Failed to generate AI response. Please try again."
-                logger.error(f"AI generation failed: {e}", exc_info=True)
-        else:
-            # No verses found
-            ai_error = "No verses found matching your query. Try different keywords or check your spelling."
-            logger.info(f"No results found for query: {request.query}")
-
-        # Build response
-        return SearchResponse(
-            query_time_ms=results["query_time_ms"],
-            results=results["results"],
-            ai_response=ai_response,
-            ai_error=ai_error,
-            search_metadata={
-                "total_results": results["search_metadata"]["total_results"],
-                "embedding_model": results["search_metadata"].get("embedding_model"),
-                "cached": results.get("cached", False),
-            },
-        )
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "code": "INTERNAL_ERROR",
-                "message": str(e),
-            },
-        )
+    return StreamingResponse(response_generator(), media_type="application/x-ndjson")

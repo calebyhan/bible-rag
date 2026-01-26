@@ -3,8 +3,8 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import Book, Translation, Verse, get_db
 from schemas import BookInfo, BooksResponse, TranslationInfo, TranslationsResponse
@@ -21,29 +21,30 @@ LANGUAGE_NAMES = {
 
 
 @router.get("/translations", response_model=TranslationsResponse)
-def list_translations(
+async def list_translations(
     language: Optional[str] = Query(
         None,
         description="Filter by language code (en, ko, he, gr)",
     ),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
     """List all available Bible translations.
 
     Returns metadata for all translations, optionally filtered by language.
     """
-    query = db.query(Translation)
+    query = select(Translation)
 
     if language:
-        query = query.filter(Translation.language_code == language)
+        query = query.where(Translation.language_code == language)
 
-    translations = query.order_by(Translation.language_code, Translation.name).all()
+    translations = (await db.execute(query.order_by(Translation.language_code, Translation.name))).scalars().all()
 
     # Get verse counts for each translation
     verse_counts = dict(
-        db.query(Verse.translation_id, func.count(Verse.id))
-        .group_by(Verse.translation_id)
-        .all()
+        (await db.execute(
+            select(Verse.translation_id, func.count(Verse.id))
+            .group_by(Verse.translation_id)
+        )).all()
     )
 
     result = []
@@ -68,7 +69,7 @@ def list_translations(
 
 
 @router.get("/books", response_model=BooksResponse)
-def list_books(
+async def list_books(
     testament: Optional[str] = Query(
         None,
         description="Filter by testament: OT or NT",
@@ -78,33 +79,34 @@ def list_books(
         None,
         description="Filter by genre",
     ),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
     """List all Bible books with metadata.
 
     Returns metadata for all 66 books, optionally filtered by
     testament or genre.
     """
-    query = db.query(Book)
+    query = select(Book)
 
     if testament:
-        query = query.filter(Book.testament == testament)
+        query = query.where(Book.testament == testament)
 
     if genre:
-        query = query.filter(Book.genre == genre)
+        query = query.where(Book.genre == genre)
 
-    books = query.order_by(Book.book_number).all()
+    books = (await db.execute(query.order_by(Book.book_number))).scalars().all()
 
     # Get verse counts for each book (using first translation)
-    first_translation = db.query(Translation).first()
+    first_translation = (await db.execute(select(Translation).limit(1))).scalar_one_or_none()
     verse_counts = {}
 
     if first_translation:
         verse_counts = dict(
-            db.query(Verse.book_id, func.count(Verse.id))
-            .filter(Verse.translation_id == first_translation.id)
-            .group_by(Verse.book_id)
-            .all()
+            (await db.execute(
+                select(Verse.book_id, func.count(Verse.id))
+                .where(Verse.translation_id == first_translation.id)
+                .group_by(Verse.book_id)
+            )).all()
         )
 
     result = []

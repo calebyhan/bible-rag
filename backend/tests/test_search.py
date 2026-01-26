@@ -5,16 +5,16 @@ import uuid
 from unittest.mock import patch, MagicMock
 import numpy as np
 
-
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_search_verses_no_translations(test_db):
+async def test_search_verses_no_translations(test_db):
     """Test search with invalid translations returns empty results."""
     from search import search_verses
 
     with patch("search.embed_query") as mock_embed:
         mock_embed.return_value = np.array([0.1] * 1024)
 
-        results = search_verses(
+        results = await search_verses(
             db=test_db,
             query="test query",
             translations=["INVALID"],
@@ -26,17 +26,19 @@ def test_search_verses_no_translations(test_db):
         assert "error" in results["search_metadata"]
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_cross_references_empty(test_db, sample_verse):
+async def test_get_cross_references_empty(test_db, sample_verse):
     """Test getting cross-references for verse with none."""
     from search import get_cross_references
 
-    refs = get_cross_references(test_db, uuid.UUID(sample_verse.id))
+    refs = await get_cross_references(test_db, uuid.UUID(sample_verse.id))
     assert refs == []
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_cross_references_with_data(test_db, sample_verse, sample_nt_book, sample_translation):
+async def test_get_cross_references_with_data(test_db, sample_verse, sample_nt_book, sample_translation):
     """Test getting cross-references when they exist."""
     from tests.conftest import Verse, CrossReference
     from search import get_cross_references
@@ -51,7 +53,8 @@ def test_get_cross_references_with_data(test_db, sample_verse, sample_nt_book, s
         text="But I say to you, Love your enemies.",
     )
     test_db.add(related_verse)
-    test_db.flush()  # Ensure verse exists before creating cross-reference
+    await test_db.flush()  # Ensure verse exists before creating cross-reference
+    # flush works in async session too if autocommit is false
 
     # Create cross-reference
     cross_ref = CrossReference(
@@ -62,10 +65,10 @@ def test_get_cross_references_with_data(test_db, sample_verse, sample_nt_book, s
         confidence=0.95,
     )
     test_db.add(cross_ref)
-    test_db.commit()
-    test_db.refresh(related_verse)
+    await test_db.commit()
+    await test_db.refresh(related_verse)
 
-    refs = get_cross_references(test_db, uuid.UUID(sample_verse.id), limit=10)
+    refs = await get_cross_references(test_db, uuid.UUID(sample_verse.id), limit=10)
     assert len(refs) == 1
     assert refs[0]["relationship"] == "parallel"
     assert refs[0]["book"] == "Matthew"
@@ -74,17 +77,19 @@ def test_get_cross_references_with_data(test_db, sample_verse, sample_nt_book, s
     assert refs[0]["confidence"] == 0.95
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_original_words_none(test_db, sample_verse):
+async def test_get_original_words_none(test_db, sample_verse):
     """Test getting original words when none exist."""
     from search import get_original_words
 
-    result = get_original_words(test_db, uuid.UUID(sample_verse.id))
+    result = await get_original_words(test_db, uuid.UUID(sample_verse.id))
     assert result is None
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_original_words_with_data(test_db, sample_verse):
+async def test_get_original_words_with_data(test_db, sample_verse):
     """Test getting original words when they exist."""
     from tests.conftest import OriginalWord
     from search import get_original_words
@@ -120,9 +125,9 @@ def test_get_original_words_with_data(test_db, sample_verse):
             word_order=word_data["word_order"],
         )
         test_db.add(word)
-    test_db.commit()
+    await test_db.commit()
 
-    result = get_original_words(test_db, uuid.UUID(sample_verse.id))
+    result = await get_original_words(test_db, uuid.UUID(sample_verse.id))
     assert result is not None
     assert result["language"] == "greek"
     assert len(result["words"]) == 2
@@ -130,12 +135,13 @@ def test_get_original_words_with_data(test_db, sample_verse):
     assert result["words"][1]["word"] == "ἀρχῇ"
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_verse_by_reference_book_not_found(test_db):
+async def test_get_verse_by_reference_book_not_found(test_db):
     """Test getting verse with invalid book name."""
     from search import get_verse_by_reference
 
-    result = get_verse_by_reference(
+    result = await get_verse_by_reference(
         db=test_db,
         book="NonexistentBook",
         chapter=1,
@@ -144,15 +150,16 @@ def test_get_verse_by_reference_book_not_found(test_db):
     assert result is None
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_verse_by_reference_success(test_db, sample_book, sample_translation, sample_verse):
+async def test_get_verse_by_reference_success(test_db, sample_book, sample_translation, sample_verse):
     """Test getting verse by reference successfully."""
     from search import get_verse_by_reference
 
     # Ensure data is committed before searching
-    test_db.commit()
+    await test_db.commit()
 
-    result = get_verse_by_reference(
+    result = await get_verse_by_reference(
         db=test_db,
         book="Genesis",
         chapter=1,
@@ -170,15 +177,16 @@ def test_get_verse_by_reference_success(test_db, sample_book, sample_translation
     assert "In the beginning" in result["translations"]["TEV"]
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_verse_by_reference_korean_name(test_db, sample_book, sample_translation, sample_verse):
+async def test_get_verse_by_reference_korean_name(test_db, sample_book, sample_translation, sample_verse):
     """Test getting verse using Korean book name."""
     from search import get_verse_by_reference
 
     # Ensure data is committed
-    test_db.commit()
+    await test_db.commit()
 
-    result = get_verse_by_reference(
+    result = await get_verse_by_reference(
         db=test_db,
         book="창세기",
         chapter=1,
@@ -191,15 +199,16 @@ def test_get_verse_by_reference_korean_name(test_db, sample_book, sample_transla
     assert result["reference"]["book"] == "Genesis"
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_verse_by_reference_abbreviation(test_db, sample_book, sample_translation, sample_verse):
+async def test_get_verse_by_reference_abbreviation(test_db, sample_book, sample_translation, sample_verse):
     """Test getting verse using book abbreviation."""
     from search import get_verse_by_reference
 
     # Ensure data is committed
-    test_db.commit()
+    await test_db.commit()
 
-    result = get_verse_by_reference(
+    result = await get_verse_by_reference(
         db=test_db,
         book="Gen",
         chapter=1,
@@ -212,8 +221,9 @@ def test_get_verse_by_reference_abbreviation(test_db, sample_book, sample_transl
     assert result["reference"]["book"] == "Genesis"
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_get_verse_context(test_db, sample_book, sample_translation):
+async def test_get_verse_context(test_db, sample_book, sample_translation):
     """Test getting verse context (previous/next verses)."""
     from tests.conftest import Verse
     from search import get_verse_context
@@ -231,14 +241,14 @@ def test_get_verse_context(test_db, sample_book, sample_translation):
         )
         test_db.add(verse)
         verses.append(verse)
-    test_db.commit()
+    await test_db.commit()
 
     # Refresh verses to ensure they're properly loaded
     for v in verses:
-        test_db.refresh(v)
+        await test_db.refresh(v)
 
     # Get context for verse 2 - convert book_id string to UUID
-    context = get_verse_context(test_db, uuid.UUID(sample_book.id), 1, 2)
+    context = await get_verse_context(test_db, uuid.UUID(sample_book.id), 1, 2)
 
     assert context["previous"] is not None
     assert context["previous"]["verse"] == 1
@@ -249,19 +259,29 @@ def test_get_verse_context(test_db, sample_book, sample_translation):
     assert "This is verse 3" in context["next"]["text"]
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_search_by_theme(test_db, sample_translation):
+async def test_search_by_theme(test_db, sample_translation):
     """Test thematic search."""
     from search import search_by_theme
 
+    # We need to mock await search_verses (which is an async function)
+    # Patching async functions requires returning a coroutine or AsyncMock
+    # Or we can patch search_verses directly.
+    # Since search_by_theme calls await search_verses, the mock must be awaitable.
+    
     with patch("search.search_verses") as mock_search:
-        mock_search.return_value = {
-            "query_time_ms": 100,
-            "results": [],
-            "search_metadata": {"total_results": 0},
-        }
+        # Configure mock to be awaitable
+        async def mock_async_search(**kwargs):
+            return {
+                "query_time_ms": 100,
+                "results": [],
+                "search_metadata": {"total_results": 0},
+            }
+        
+        mock_search.side_effect = mock_async_search
 
-        results = search_by_theme(
+        results = await search_by_theme(
             db=test_db,
             theme="love",
             translations=["TEV"],
@@ -274,25 +294,28 @@ def test_search_by_theme(test_db, sample_translation):
         assert "testament_filter" in results
         assert results["testament_filter"] == "NT"
 
-        # Verify search_verses was called with correct filters
+        # Verify search_verses was called
         mock_search.assert_called_once()
         call_kwargs = mock_search.call_args.kwargs
         assert call_kwargs["filters"]["testament"] == "NT"
 
 
+@pytest.mark.asyncio
 @pytest.mark.unit
-def test_search_by_theme_both_testaments(test_db, sample_translation):
+async def test_search_by_theme_both_testaments(test_db, sample_translation):
     """Test thematic search with 'both' testament filter."""
     from search import search_by_theme
 
     with patch("search.search_verses") as mock_search:
-        mock_search.return_value = {
-            "query_time_ms": 100,
-            "results": [],
-            "search_metadata": {"total_results": 0},
-        }
+        async def mock_async_search(**kwargs):
+            return {
+                "query_time_ms": 100,
+                "results": [],
+                "search_metadata": {"total_results": 0},
+            }
+        mock_search.side_effect = mock_async_search
 
-        results = search_by_theme(
+        results = await search_by_theme(
             db=test_db,
             theme="faith",
             translations=["TEV"],
