@@ -55,7 +55,7 @@ Bible RAG is a Retrieval-Augmented Generation (RAG) system that transforms Bible
 - **PostgreSQL + pgvector** - Vector similarity search
 - **Redis** - Query caching and performance optimization
 - **multilingual-e5-large** - Self-hosted embedding model (1024-dim)
-- **Google Gemini 2.5 Flash** - LLM for contextual responses (with Groq fallback)
+- **Groq Llama 3.3 70B** - LLM for contextual responses (with Gemini fallback)
 
 ### Frontend
 - **Next.js 15** - React framework with Turbopack bundler
