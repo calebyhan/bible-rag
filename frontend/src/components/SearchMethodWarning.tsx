@@ -23,21 +23,38 @@ export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarn
       setHasSeenWarning(seen === 'true');
     }
 
-    // Check if we're in production by checking the API health endpoint on mount
+    // Detect production by checking API URL (localhost = development)
     const checkEnvironment = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const isLocalhost = apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1');
+
+      // If not localhost, we're in production
+      if (!isLocalhost) {
+        setIsProduction(true);
+        if (!sessionStorage.getItem('search-warning-seen')) {
+          setShowWarning(true);
+        }
+        return;
+      }
+
+      // If localhost, try health check to verify
+      // If health check fails (backend down), assume production as safety measure
       try {
         const health = await checkHealth();
-        // Check if the environment is using Gemini embeddings mode (production)
+        // Backend is up - check if it's using Gemini embeddings mode
         const isProd = health.services?.embedding_mode === 'gemini';
         setIsProduction(isProd);
 
-        // Show warning immediately if production and not seen yet
         if (isProd && !sessionStorage.getItem('search-warning-seen')) {
           setShowWarning(true);
         }
       } catch (error) {
-        // If health check fails, don't show warning
-        console.error('Failed to check environment:', error);
+        // Backend is down - assume production and show warning
+        console.warn('Backend health check failed, assuming production environment:', error);
+        setIsProduction(true);
+        if (!sessionStorage.getItem('search-warning-seen')) {
+          setShowWarning(true);
+        }
       }
     };
 
@@ -89,9 +106,9 @@ export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarn
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Limited Search Functionality
+                Production Version Notice
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">제한된 검색 기능</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">프로덕션 버전 알림</p>
             </div>
           </div>
         </div>
@@ -100,37 +117,50 @@ export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarn
         <div className="px-6 py-5 space-y-4">
           <div className="space-y-2">
             <p className="text-gray-700 dark:text-gray-200">
-              This production environment uses <strong>Gemini embeddings</strong> instead of the
-              multilingual-e5 model. As a result:
+              You're using the <strong>production version</strong> of Bible RAG. Please note:
             </p>
             <ul className="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300 text-sm ml-2">
               <li>
-                <strong>Semantic search is not available</strong> - meaning-based queries won't work
+                This version is <strong>not the most actively maintained</strong> (blame free hosting limitations 😔)
               </li>
               <li>
-                <strong>Full-text search is used instead</strong> - only keyword matching is available
+                Processing will be <strong>significantly slower</strong> than local instances
               </li>
-              <li>Search quality and relevance may be lower than expected</li>
+              <li>
+                Limited resources may result in longer wait times
+              </li>
+              <li>
+                <strong>Semantic search is not available</strong> - only keyword matching works
+              </li>
             </ul>
           </div>
 
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
             <p className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-2">
-              To enable semantic search:
+              For the best performance and accuracy:
             </p>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              Go to <strong>Settings</strong> and configure your Gemini and Groq API keys. This will
-              enable AI-powered semantic search and contextual responses.
+            <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+              We recommend running Bible RAG locally for full semantic search capabilities and faster performance.
             </p>
+            <a
+              href="https://github.com/calebyhan/bible-rag"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+              View on GitHub
+            </a>
           </div>
 
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-slate-700">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              이 프로덕션 환경은 multilingual-e5 대신 <strong>Gemini 임베딩</strong>을 사용합니다.
-              결과적으로 의미 기반 검색이 불가능하며, 키워드 검색만 가능합니다.
+              <strong>프로덕션 버전</strong>을 사용하고 있습니다. 무료 호스팅 제한으로 인해 처리 속도가 느리고 의미 기반 검색이 불가능합니다.
             </p>
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              의미 검색을 활성화하려면 <strong>설정</strong>에서 API 키를 구성하세요.
+              최상의 성능을 위해 로컬에서 실행하는 것을 권장합니다.
             </p>
           </div>
         </div>
@@ -141,7 +171,7 @@ export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarn
             onClick={handleClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
           >
-            Close / 닫기
+            Got it, continue anyway
           </button>
         </div>
       </div>

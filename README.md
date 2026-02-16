@@ -207,49 +207,6 @@ bible-rag/
 └── README.md                             # This file
 ```
 
-## Documentation
-
-- [Architecture](docs/ARCHITECTURE.md) - System design and technical details
-- [Database Schema](docs/DATABASE.md) - Complete database documentation
-- [API Reference](docs/API.md) - Endpoint specifications
-- [Setup Guide](docs/SETUP.md) - Detailed installation instructions
-- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment
-- [Features](docs/FEATURES.md) - Comprehensive feature documentation
-- [Development Guide](docs/DEVELOPMENT.md) - Contributing guidelines
-- [Data Sources](docs/DATA_SOURCES.md) - Licensing and attribution
-- [Korean Documentation](docs/KOREAN.md) - 한국어 문서
-
-## API Endpoints
-
-### Search
-```
-POST /api/search
-{
-  "query": "사랑과 용서",
-  "languages": ["ko", "en"],
-  "translations": ["개역개정", "NIV"],
-  "include_original": true,
-  "max_results": 10
-}
-```
-
-### Verse Lookup
-```
-GET /api/verse/{book}/{chapter}/{verse}?translations=NIV,개역개정
-```
-
-### Thematic Search
-```
-POST /api/themes
-{
-  "theme": "covenant",
-  "testament": "both",
-  "languages": ["en", "ko"]
-}
-```
-
-See [API Documentation](docs/API.md) for complete reference.
-
 ## Performance
 
 - **Query Response Time**: < 2 seconds for initial search, < 500ms for cached queries
