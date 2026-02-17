@@ -36,7 +36,14 @@ class Settings(BaseSettings):
     # Search
     max_results_default: int = 10
     vector_search_lists: int = 100
-    similarity_threshold: float = 0.7
+    similarity_threshold: float = 0.55  # Lowered from 0.7 for better recall
+    overretrieve_factor: int = 3  # Fetch 3x max_results internally before RRF
+    rrf_k: int = 60  # RRF smoothing constant
+    enable_query_expansion: bool = True
+    enable_hybrid_search: bool = True
+    enable_reranking: bool = True
+    reranker_model: str = "BAAI/bge-reranker-v2-m3"
+    rerank_top_n: int = 30  # Rerank top N candidates from RRF
 
     # Server
     debug: bool = False

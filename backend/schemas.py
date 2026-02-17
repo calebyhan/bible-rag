@@ -28,6 +28,13 @@ class SearchFilters(BaseModel):
     )
 
 
+class ConversationTurn(BaseModel):
+    """A single turn in the conversation history."""
+
+    role: str = Field(..., pattern="^(user|assistant)$")
+    content: str = Field(..., max_length=2000)
+
+
 class SearchRequest(BaseModel):
     """Request schema for semantic search."""
 
@@ -64,6 +71,10 @@ class SearchRequest(BaseModel):
     filters: Optional[SearchFilters] = Field(
         default=None,
         description="Optional filters",
+    )
+    conversation_history: Optional[list[ConversationTurn]] = Field(
+        default=None,
+        description="Previous conversation turns for context-aware responses",
     )
 
     model_config = {

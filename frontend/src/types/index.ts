@@ -50,6 +50,11 @@ export interface SearchFilters {
   books?: string[];
 }
 
+export interface ConversationTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface SearchRequest {
   query: string;
   languages: string[];
@@ -58,6 +63,7 @@ export interface SearchRequest {
   max_results?: number;
   search_type?: 'semantic' | 'keyword';
   filters?: SearchFilters;
+  conversation_history?: ConversationTurn[];
 }
 
 export interface SearchResult {
@@ -163,6 +169,29 @@ export interface HealthResponse {
   stats?: Record<string, number>;
   errors?: string[];
 }
+
+// --- Chat Types ---
+
+export interface ChatMessageUser {
+  id: string;
+  role: 'user';
+  content: string;
+  translations: string[];
+  defaultTranslation: string;
+  timestamp: number;
+}
+
+export interface ChatMessageAssistant {
+  id: string;
+  role: 'assistant';
+  results: SearchResponse | null;
+  aiText: string;
+  isStreaming: boolean;
+  error: string | null;
+  timestamp: number;
+}
+
+export type ChatMessage = ChatMessageUser | ChatMessageAssistant;
 
 // --- Error Types ---
 

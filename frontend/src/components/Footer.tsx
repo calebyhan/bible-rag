@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-border-light dark:border-border-dark-light mt-space-xl py-space-lg bg-surface dark:bg-surface-dark transition-colors">
+    <footer className="border-t border-border-light dark:border-border-dark-light py-space-lg bg-surface dark:bg-surface-dark transition-colors">
       <div className="max-w-content mx-auto px-6 text-center">
         <p className="font-ui text-xs tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-2">
           Bible RAG • Multilingual Bible Study Platform

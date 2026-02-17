@@ -17,11 +17,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from tqdm import tqdm
 
 from config import get_settings
-from database import Embedding, SessionLocal, Verse, create_vector_index
+from database import Book, Embedding, SessionLocal, Verse
 
 settings = get_settings()
 
@@ -102,7 +102,7 @@ def get_verses_without_embeddings(
     Returns:
         List of Verse objects
     """
-    query = db.query(Verse).outerjoin(Embedding).filter(Embedding.id.is_(None))
+    query = db.query(Verse).options(joinedload(Verse.book)).outerjoin(Embedding).filter(Embedding.id.is_(None))
 
     if translation_id:
         query = query.filter(Verse.translation_id == translation_id)
@@ -115,17 +115,28 @@ def get_verses_without_embeddings(
     return query.all()
 
 
+def _build_contextual_text(verse: Verse) -> str:
+    """Build contextual embedding text with book/chapter/testament metadata."""
+    book = verse.book
+    if book:
+        return f"[{book.name} {verse.chapter}:{verse.verse}, {book.testament}, {book.genre}] {verse.text}"
+    return verse.text
+
+
 def embed_verses_batch(
     db: Session,
     verses: list[Verse],
     batch_size: int = 32,
-    model_version: str = "multilingual-e5-large",
+    model_version: str = "multilingual-e5-large-ctx",
 ) -> int:
     """Generate embeddings for a batch of verses.
 
+    Embeds verses with contextual metadata (book name, chapter:verse,
+    testament, genre) prepended to improve semantic understanding.
+
     Args:
         db: Database session
-        verses: List of Verse objects to embed
+        verses: List of Verse objects to embed (must have book relationship loaded)
         batch_size: Number of verses to embed at once
         model_version: Model version string for tracking
 
@@ -137,7 +148,7 @@ def embed_verses_batch(
 
     for i in tqdm(range(0, len(verses), batch_size), total=total_batches, desc="Embedding"):
         batch_verses = verses[i : i + batch_size]
-        texts = [verse.text for verse in batch_verses]
+        texts = [_build_contextual_text(verse) for verse in batch_verses]
 
         # Generate embeddings
         embeddings = embed_texts(texts)
@@ -189,7 +200,7 @@ def embed_all_verses(
     try:
         # Get verses to embed
         if force:
-            query = db.query(Verse)
+            query = db.query(Verse).options(joinedload(Verse.book))
             if translation_id:
                 query = query.filter(Verse.translation_id == translation_id)
             verses = query.all()
@@ -221,7 +232,15 @@ def embed_all_verses(
         # Build vector index
         if build_index:
             print("Building vector index...")
-            create_vector_index(db)
+            db.execute(text("DROP INDEX IF EXISTS idx_embeddings_vector"))
+            db.execute(
+                text(
+                    "CREATE INDEX idx_embeddings_vector "
+                    "ON embeddings USING hnsw (vector vector_cosine_ops)"
+                )
+            )
+            db.commit()
+            print("Vector index created successfully!")
 
         # Verify
         total_embeddings = db.query(Embedding).count()

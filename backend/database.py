@@ -17,8 +17,9 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 import os
@@ -56,6 +57,20 @@ AsyncSessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False
 )
+
+# Sync session for batch scripts (e.g., embedding generation)
+def _get_sync_db_url():
+    url = settings.database_url
+    if "+asyncpg" in url:
+        url = url.replace("+asyncpg", "")
+    return url
+
+_sync_engine = create_engine(
+    _get_sync_db_url(),
+    pool_pre_ping=True,
+    echo=settings.debug,
+)
+SessionLocal = sessionmaker(bind=_sync_engine, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):

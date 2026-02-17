@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { Crimson_Pro, Crimson_Text, Noto_Serif_KR } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import TranslationsPreloader from '@/components/TranslationsPreloader';
+import Footer from '@/components/Footer';
 
 const crimsonPro = Crimson_Pro({
   subsets: ['latin'],
@@ -47,7 +47,7 @@ export default function RootLayout({
       <body className="min-h-screen font-body antialiased flex flex-col bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary transition-colors">
         <TranslationsPreloader />
         <Navbar />
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 flex flex-col">{children}</div>
         <Footer />
       </body>
     </html>

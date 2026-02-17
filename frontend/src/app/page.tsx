@@ -1,157 +1,185 @@
 'use client';
 
-import { useState } from 'react';
-import SearchBar from '@/components/SearchBar';
-import SearchResults from '@/components/SearchResults';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import ChatInput from '@/components/ChatInput';
+import ChatMessageBubble from '@/components/ChatMessageBubble';
+import WelcomeScreen from '@/components/WelcomeScreen';
 import SearchMethodWarning from '@/components/SearchMethodWarning';
-import { searchVerses } from '@/lib/api';
-import { SearchResponse } from '@/types';
+import { ChatMessage, ChatMessageUser, ChatMessageAssistant, SearchMetadata } from '@/types';
 
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useCallback, Suspense } from 'react';
-
-// Wrap content in Suspense for useSearchParams
-function HomeContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const initialQuery = searchParams.get('q') || '';
-  const initialTranslations = searchParams.get('t')?.split(',') || ['NIV', 'KRV'];
-  const initialDefaultTranslation = searchParams.get('dt') || 'NIV';
-
-  const [results, setResults] = useState<SearchResponse | null>(null);
+export default function Home() {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentQuery, setCurrentQuery] = useState(initialQuery);
-  const [defaultTranslation, setDefaultTranslation] = useState<string>(initialDefaultTranslation);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedTranslations, setSelectedTranslations] = useState<string[]>(['NIV', 'KRV']);
+  const [defaultTranslation, setDefaultTranslation] = useState<string>('NIV');
+  const [latestSearchMetadata, setLatestSearchMetadata] = useState<SearchMetadata | undefined>();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const userScrolledRef = useRef(false);
 
-  // Perform search
-  const performSearch = useCallback(async (query: string, translations: string[], defaultTrans: string) => {
-    if (!query) return;
+  // Auto-scroll to bottom unless user has scrolled up
+  const scrollToBottom = useCallback(() => {
+    if (!userScrolledRef.current && bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
 
+  // Detect if user scrolled away from bottom
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const threshold = 100;
+    const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
+    userScrolledRef.current = !isAtBottom;
+  }, []);
+
+  // Scroll on new messages or streaming updates
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
+  const handleSend = useCallback(async (query: string) => {
+    const userMsg: ChatMessageUser = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: query,
+      translations: [...selectedTranslations],
+      defaultTranslation,
+      timestamp: Date.now(),
+    };
+
+    const assistantMsg: ChatMessageAssistant = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      results: null,
+      aiText: '',
+      isStreaming: true,
+      error: null,
+      timestamp: Date.now(),
+    };
+
+    const assistantId = assistantMsg.id;
+
+    setMessages(prev => [...prev, userMsg, assistantMsg]);
     setIsLoading(true);
-    setError(null);
-    setCurrentQuery(query);
-    setDefaultTranslation(defaultTrans);
-    setResults(null);
+    userScrolledRef.current = false;
+
+    // Build conversation history from prior messages (last 10 messages = ~5 turns)
+    const history = messages
+      .slice(-10)
+      .map(m => {
+        if (m.role === 'user') {
+          return { role: 'user' as const, content: m.content };
+        }
+        return { role: 'assistant' as const, content: (m as ChatMessageAssistant).aiText };
+      })
+      .filter(m => m.content);
 
     try {
-      // Use streaming API
       const { streamSearchVerses } = await import('@/lib/api');
 
       await streamSearchVerses({
         query,
         languages: ['en', 'ko'],
-        translations,
+        translations: selectedTranslations,
         max_results: 10,
         include_original: false,
+        conversation_history: history.length > 0 ? history : undefined,
       }, {
         onResults: (data) => {
-          setResults(data);
+          setLatestSearchMetadata(data.search_metadata);
+          setMessages(prev => prev.map(m =>
+            m.id === assistantId ? { ...m, results: data } as ChatMessageAssistant : m
+          ));
         },
         onToken: (token) => {
-          setResults((prev) => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              ai_response: (prev.ai_response || '') + token
-            };
-          });
+          setMessages(prev => prev.map(m =>
+            m.id === assistantId
+              ? { ...m, aiText: (m as ChatMessageAssistant).aiText + token } as ChatMessageAssistant
+              : m
+          ));
         },
         onError: (msg) => {
-          setError(msg);
+          setMessages(prev => prev.map(m =>
+            m.id === assistantId
+              ? { ...m, error: msg, isStreaming: false } as ChatMessageAssistant
+              : m
+          ));
           setIsLoading(false);
         },
         onComplete: () => {
+          setMessages(prev => prev.map(m =>
+            m.id === assistantId ? { ...m, isStreaming: false } as ChatMessageAssistant : m
+          ));
           setIsLoading(false);
-        }
+        },
       });
-
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setMessages(prev => prev.map(m =>
+        m.id === assistantId
+          ? { ...m, error: err instanceof Error ? err.message : 'An error occurred', isStreaming: false } as ChatMessageAssistant
+          : m
+      ));
       setIsLoading(false);
     }
-  }, []);
+  }, [selectedTranslations, defaultTranslation, messages]);
 
-  // Initial search from URL
-  useEffect(() => {
-    if (initialQuery && !results && !isLoading) {
-      performSearch(initialQuery, initialTranslations, initialDefaultTranslation);
+  // Find the user query for a given assistant message index
+  const getUserQueryForAssistant = (index: number): string => {
+    for (let i = index - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        return (messages[i] as ChatMessageUser).content;
+      }
     }
-  }, [initialQuery, initialTranslations, initialDefaultTranslation, performSearch, results, isLoading]);
+    return '';
+  };
 
-  const handleSearch = async (query: string, translations: string[], defaultTrans: string) => {
-    // Update URL
-    const params = new URLSearchParams();
-    params.set('q', query);
-    params.set('t', translations.join(','));
-    params.set('dt', defaultTrans);
-    router.push(`/?${params.toString()}`);
-
-    // Perform search
-    await performSearch(query, translations, defaultTrans);
+  const getDefaultTranslationForAssistant = (index: number): string => {
+    for (let i = index - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        return (messages[i] as ChatMessageUser).defaultTranslation;
+      }
+    }
+    return defaultTranslation;
   };
 
   return (
-    <main className="min-h-screen bg-background dark:bg-background-dark transition-colors">
-      {/* Search Method Warning */}
-      <SearchMethodWarning searchMetadata={results?.search_metadata} />
+    <main className="flex-1 flex flex-col min-h-0 overflow-hidden bg-background dark:bg-background-dark transition-colors">
+      {/* Production warning */}
+      <SearchMethodWarning searchMetadata={latestSearchMetadata} />
 
-      {/* Hero section - Minimal, Typography-Focused */}
-      <div className="bg-surface dark:bg-surface-dark transition-colors">
-        <div className="container-content py-space-xl">
-          <div className="text-center mb-space-lg">
-            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl tracking-tight text-text-primary dark:text-text-dark-primary mb-4">
-              Bible RAG
-            </h1>
-            <p className="font-serif text-lg sm:text-xl text-text-secondary dark:text-text-dark-secondary mb-2">
-              Semantic search across English and Korean translations
-            </p>
-            <p className="font-korean text-base sm:text-lg text-text-tertiary dark:text-text-dark-tertiary">
-              다국어 의미 검색
-            </p>
-          </div>
-
-          {/* Search bar */}
-          <SearchBar
-            onSearch={handleSearch}
-            isLoading={isLoading}
-            placeholder="What does the Bible say about..."
-          />
-        </div>
-      </div>
-
-      {/* Results section */}
-      <div className="container-content py-space-lg">
-        {error && (
-          <div className="mb-space-md p-4 border-2 border-error dark:border-error-dark bg-surface dark:bg-surface-dark transition-colors">
-            <p className="font-ui text-sm font-medium text-error dark:text-error-dark uppercase tracking-wide">Error / 오류</p>
-            <p className="font-body text-sm text-text-secondary dark:text-text-dark-secondary mt-1">{error}</p>
-          </div>
-        )}
-
-        <SearchResults results={results} isLoading={isLoading} query={currentQuery} defaultTranslation={defaultTranslation} />
-
-        {/* Initial state - no search yet */}
-        {!results && !isLoading && !error && (
-          <div className="text-center py-space-xl">
-            <p className="font-body text-lg text-text-secondary dark:text-text-dark-secondary italic">
-              Enter a question or topic to search the Scriptures.
-            </p>
-            <p className="font-korean text-base text-text-tertiary dark:text-text-dark-tertiary mt-2">
-              질문이나 주제를 입력하여 성경을 검색하세요.
-            </p>
+      {/* Scrollable message area */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto"
+      >
+        {messages.length === 0 ? (
+          <WelcomeScreen onExampleClick={handleSend} />
+        ) : (
+          <div className="max-w-[1000px] mx-auto px-4 py-6">
+            {messages.map((msg, index) => (
+              <ChatMessageBubble
+                key={msg.id}
+                message={msg}
+                userQuery={msg.role === 'assistant' ? getUserQueryForAssistant(index) : undefined}
+                defaultTranslation={msg.role === 'assistant' ? getDefaultTranslationForAssistant(index) : undefined}
+              />
+            ))}
+            <div ref={bottomRef} />
           </div>
         )}
       </div>
+
+      {/* Bottom-fixed input */}
+      <ChatInput
+        onSend={handleSend}
+        isLoading={isLoading}
+        selectedTranslations={selectedTranslations}
+        defaultTranslation={defaultTranslation}
+        onTranslationsChange={setSelectedTranslations}
+        onDefaultTranslationChange={setDefaultTranslation}
+      />
     </main>
-  );
-}
-
-export default function Home() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center text-text-primary dark:text-text-dark-primary">Loading...</div>}>
-      <HomeContent />
-    </Suspense>
   );
 }

@@ -269,7 +269,7 @@ function BrowsePageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
+      <div className="flex-1 bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
         <div className="text-center">
           <div className="spinner mx-auto mb-space-sm"></div>
           <p className="font-ui text-sm text-text-secondary dark:text-text-dark-secondary">Loading... / 로딩 중...</p>
@@ -280,7 +280,7 @@ function BrowsePageContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
+      <div className="flex-1 bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
         <div className="text-center max-w-md border-2 border-text-tertiary dark:border-text-dark-tertiary p-space-lg bg-surface dark:bg-surface-dark transition-colors">
           <h2 className="font-heading text-2xl text-text-primary dark:text-text-dark-primary mb-space-sm">Error / 오류</h2>
           <p className="font-body text-text-secondary dark:text-text-dark-secondary mb-space-md">{error}</p>
@@ -296,7 +296,7 @@ function BrowsePageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background-dark transition-colors">
+    <div className="bg-background dark:bg-background-dark transition-colors">
       {/* Toast Notification */}
       {toast && (
         <Toast
@@ -630,7 +630,7 @@ function BrowsePageContent() {
 export default function BrowsePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-background dark:bg-background-dark transition-colors">
+      <div className="flex-1 bg-background dark:bg-background-dark transition-colors">
         <div className="max-w-content mx-auto px-space-md py-space-lg">
           <div className="text-center font-ui text-sm text-text-secondary dark:text-text-dark-secondary">Loading... / 로딩 중...</div>
         </div>

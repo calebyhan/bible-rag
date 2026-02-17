@@ -154,7 +154,7 @@ export default function VerseDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
+      <div className="flex-1 bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
         <div className="text-center">
           <div className="inline-block w-12 h-12 border-4 border-text-tertiary dark:border-text-dark-tertiary border-t-text-primary dark:border-t-text-dark-primary animate-spin mb-space-md"></div>
           <p className="font-body text-base text-text-primary dark:text-text-dark-primary">Loading verse...</p>
@@ -165,7 +165,7 @@ export default function VerseDetailPage() {
 
   if (error || !verseData) {
     return (
-      <div className="min-h-screen bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
+      <div className="flex-1 bg-background dark:bg-background-dark flex items-center justify-center transition-colors">
         <div className="text-center max-w-md">
           <h2 className="font-heading text-3xl font-bold text-text-primary dark:text-text-dark-primary mb-space-md">Verse Not Found</h2>
           <p className="font-body text-base text-text-secondary dark:text-text-dark-secondary mb-space-lg">{error || 'The requested verse could not be found.'}</p>
@@ -183,7 +183,7 @@ export default function VerseDetailPage() {
   const { reference, translations, original, cross_references, context } = verseData;
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background-dark transition-colors">
+    <div className="bg-background dark:bg-background-dark transition-colors">
       {/* Header */}
       <header className="bg-surface dark:bg-surface-dark border-b-2 border-text-tertiary dark:border-text-dark-tertiary transition-colors">
         <div className="max-w-content mx-auto px-space-md py-space-md sm:px-space-lg lg:px-space-xl">

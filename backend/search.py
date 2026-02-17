@@ -2,8 +2,11 @@
 
 This module provides vector similarity search across Bible verses
 with support for filtering by translation, testament, and genre.
+Enhanced with hybrid search (vector + full-text), RRF fusion, and
+query expansion support for improved retrieval quality.
 """
 
+import logging
 import time
 from typing import Optional
 from uuid import UUID
@@ -19,6 +22,7 @@ from database import Book, CrossReference, Embedding, OriginalWord, Translation,
 from embeddings import embed_query
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 async def fulltext_search_verses(
@@ -493,6 +497,222 @@ async def search_by_theme(
     return results
 
 
+def rrf_merge(
+    ranked_lists: list[list[tuple[str, float]]],
+    k: int = 60,
+) -> list[tuple[str, float]]:
+    """Merge multiple ranked lists using Reciprocal Rank Fusion.
+
+    Args:
+        ranked_lists: List of ranked results, each is [(ref_key, score), ...]
+                      sorted by score descending.
+        k: Smoothing constant (default 60, standard in literature).
+
+    Returns:
+        Merged list of (ref_key, rrf_score) sorted by RRF score descending.
+    """
+    scores: dict[str, float] = {}
+    for ranked_list in ranked_lists:
+        for rank, (ref_key, _score) in enumerate(ranked_list):
+            scores[ref_key] = scores.get(ref_key, 0.0) + 1.0 / (rank + k)
+    return sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+
+async def _vector_search(
+    db: AsyncSession,
+    query_embedding,
+    translation_ids: list,
+    filters: Optional[dict],
+    similarity_threshold: float,
+    limit: int,
+) -> list[tuple[str, float, dict]]:
+    """Run vector similarity search.
+
+    Returns:
+        List of (ref_key, similarity, row_data) tuples sorted by similarity desc.
+    """
+    query_vector_str = str(query_embedding.tolist())
+
+    await db.execute(text("SET ivfflat.probes = 20"))
+
+    sql_template = f"""
+        WITH top_verses AS (
+            SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
+                v.id as verse_id,
+                v.book_id,
+                v.chapter,
+                v.verse,
+                v.text,
+                v.translation_id,
+                1 - (e.vector <=> '{query_vector_str}'::vector) as similarity,
+                b.name as book_name,
+                b.name_korean as book_name_korean,
+                b.abbreviation as book_abbrev,
+                b.testament,
+                b.genre
+            FROM embeddings e
+            JOIN verses v ON e.verse_id = v.id
+            JOIN books b ON v.book_id = b.id
+            WHERE v.translation_id = ANY(:translation_ids)
+                AND (1 - (e.vector <=> '{query_vector_str}'::vector)) > :similarity_threshold
+    """
+
+    bindparams_list = [
+        bindparam("translation_ids", value=translation_ids, type_=ARRAY(PGUUID)),
+        bindparam("similarity_threshold", value=similarity_threshold, type_=Float),
+        bindparam("limit", value=limit, type_=Integer),
+    ]
+
+    if filters:
+        if filters.get("testament"):
+            sql_template += " AND b.testament = :testament"
+            bindparams_list.append(bindparam("testament", value=filters["testament"]))
+        if filters.get("genre"):
+            sql_template += " AND b.genre = :genre"
+            bindparams_list.append(bindparam("genre", value=filters["genre"]))
+        if filters.get("books"):
+            sql_template += " AND b.abbreviation = ANY(:book_abbrevs)"
+            bindparams_list.append(
+                bindparam("book_abbrevs", value=filters["books"], type_=ARRAY(PGUUID))
+            )
+
+    sql_template += """
+            ORDER BY v.book_id, v.chapter, v.verse, similarity DESC
+        )
+        SELECT * FROM top_verses
+        ORDER BY similarity DESC
+        LIMIT :limit
+    """
+
+    stmt = text(sql_template).bindparams(*bindparams_list)
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    results = []
+    for row in rows:
+        ref_key = f"{row.book_id}:{row.chapter}:{row.verse}"
+        row_data = {
+            "verse_id": str(row.verse_id),
+            "book_id": row.book_id,
+            "chapter": row.chapter,
+            "verse": row.verse,
+            "text": row.text,
+            "translation_id": row.translation_id,
+            "similarity": row.similarity,
+            "book_name": row.book_name,
+            "book_name_korean": row.book_name_korean,
+            "book_abbrev": row.book_abbrev,
+            "testament": row.testament,
+            "genre": row.genre,
+        }
+        results.append((ref_key, float(row.similarity), row_data))
+    return results
+
+
+async def _fulltext_search(
+    db: AsyncSession,
+    query: str,
+    translation_ids: list,
+    filters: Optional[dict],
+    limit: int,
+) -> list[tuple[str, float, dict]]:
+    """Run PostgreSQL full-text search.
+
+    Returns:
+        List of (ref_key, rank, row_data) tuples sorted by rank desc.
+    """
+    # Extract keywords (remove stopwords)
+    stopwords = {
+        'what', 'does', 'the', 'bible', 'say', 'about', 'teach', 'us', 'tell',
+        'me', 'can', 'you', 'how', 'why', 'when', 'where', 'who', 'is', 'are',
+        'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'did',
+        'will', 'would', 'should', 'could', 'may', 'might', 'must', 'in', 'on',
+        'at', 'to', 'for', 'of', 'with', 'from', 'by', 'as', 'that', 'this',
+        'these', 'those', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 'so', 'than',
+    }
+    words = query.lower().split()
+    keywords = [w for w in words if w not in stopwords and len(w) > 2]
+    search_query = ' '.join(keywords) if keywords else query
+
+    sql_template = """
+        WITH ranked_verses AS (
+            SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
+                v.id as verse_id,
+                v.book_id,
+                v.chapter,
+                v.verse,
+                v.text,
+                v.translation_id,
+                b.name as book_name,
+                b.name_korean as book_name_korean,
+                b.abbreviation as book_abbrev,
+                b.testament,
+                b.genre,
+                ts_rank(to_tsvector('english', v.text), plainto_tsquery('english', :search_query)) as rank
+            FROM verses v
+            JOIN books b ON v.book_id = b.id
+            WHERE v.translation_id = ANY(:translation_ids)
+                AND (
+                    to_tsvector('english', v.text) @@ plainto_tsquery('english', :search_query)
+                    OR v.text ILIKE '%' || :query_like || '%'
+                )
+    """
+
+    bindparams_list = [
+        bindparam("translation_ids", value=translation_ids, type_=ARRAY(PGUUID)),
+        bindparam("search_query", value=search_query),
+        bindparam("query_like", value=search_query),
+        bindparam("limit", value=limit, type_=Integer),
+    ]
+
+    if filters:
+        if filters.get("testament"):
+            sql_template += " AND b.testament = :testament"
+            bindparams_list.append(bindparam("testament", value=filters["testament"]))
+        if filters.get("genre"):
+            sql_template += " AND b.genre = :genre"
+            bindparams_list.append(bindparam("genre", value=filters["genre"]))
+        if filters.get("books"):
+            sql_template += " AND b.abbreviation = ANY(:book_abbrevs)"
+            bindparams_list.append(
+                bindparam("book_abbrevs", value=filters["books"], type_=ARRAY(PGUUID))
+            )
+
+    sql_template += """
+            ORDER BY v.book_id, v.chapter, v.verse, rank DESC
+        )
+        SELECT *
+        FROM ranked_verses
+        WHERE rank > 0
+        ORDER BY rank DESC
+        LIMIT :limit
+    """
+
+    stmt = text(sql_template).bindparams(*bindparams_list)
+    result = await db.execute(stmt)
+    rows = result.fetchall()
+
+    results = []
+    for row in rows:
+        ref_key = f"{row.book_id}:{row.chapter}:{row.verse}"
+        row_data = {
+            "verse_id": str(row.verse_id),
+            "book_id": row.book_id,
+            "chapter": row.chapter,
+            "verse": row.verse,
+            "text": row.text,
+            "translation_id": row.translation_id,
+            "similarity": float(row.rank),
+            "book_name": row.book_name,
+            "book_name_korean": row.book_name_korean,
+            "book_abbrev": row.book_abbrev,
+            "testament": row.testament,
+            "genre": row.genre,
+        }
+        results.append((ref_key, float(row.rank), row_data))
+    return results
+
+
 async def search_verses(
     db: AsyncSession,
     query: str,
@@ -503,8 +723,12 @@ async def search_verses(
     include_cross_refs: bool = True,
     use_cache: bool = True,
     api_key: str | None = None,
+    expanded_queries: list[str] | None = None,
 ) -> dict:
-    """Perform semantic search across Bible verses.
+    """Perform enhanced semantic search across Bible verses.
+
+    Uses hybrid search (vector + full-text) with RRF fusion and
+    optional query expansion for improved retrieval quality.
 
     Args:
         db: Database session
@@ -516,6 +740,7 @@ async def search_verses(
         include_cross_refs: Include cross-references
         use_cache: Whether to use caching
         api_key: Gemini API key (required if EMBEDDING_MODE=gemini)
+        expanded_queries: Additional search queries from query expansion
 
     Returns:
         Dictionary with search results and metadata
@@ -523,7 +748,7 @@ async def search_verses(
     start_time = time.time()
     cache = get_cache()
 
-    # Generate cache key
+    # Generate cache key (include expanded queries for cache differentiation)
     cache_key = cache.generate_cache_key(query, translations, filters)
 
     # Check cache
@@ -572,134 +797,156 @@ async def search_verses(
             start_time=start_time,
         )
 
-    # Generate query embedding
+    # --- Enhanced retrieval pipeline ---
+    internal_limit = max_results * settings.overretrieve_factor
+    ranked_lists: list[list[tuple[str, float]]] = []
+    # Store row data keyed by ref_key for later assembly
+    all_row_data: dict[str, dict] = {}
+
+    # 1. Vector search on original query
     query_embedding = embed_query(query, api_key=api_key)
+    vector_results = await _vector_search(
+        db, query_embedding, translation_ids, filters,
+        settings.similarity_threshold, internal_limit,
+    )
+    if vector_results:
+        ranked_lists.append([(ref, score) for ref, score, _ in vector_results])
+        for ref, _score, row_data in vector_results:
+            all_row_data[ref] = row_data
 
-    # Build the SQL query for vector similarity search
-    # Using raw SQL for pgvector operations
-    # Convert query_embedding to string format for PostgreSQL
-    query_vector_str = str(query_embedding.tolist())
-
-    # Set ivfflat/hnsw probes for better accuracy
-    await db.execute(text("SET ivfflat.probes = 20"))
-
-    # Build SQL query - embed vector directly, use bindparams for UUIDs/scalars
-    sql_template = f"""
-        WITH top_verses AS (
-            SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
-                v.book_id,
-                v.chapter,
-                v.verse,
-                1 - (e.vector <=> '{query_vector_str}'::vector) as similarity
-            FROM embeddings e
-            JOIN verses v ON e.verse_id = v.id
-            JOIN books b ON v.book_id = b.id
-            WHERE v.translation_id = ANY(:translation_ids)
-    """
-
-    bindparams_list = [
-        bindparam("translation_ids", value=translation_ids, type_=ARRAY(PGUUID)),
-        bindparam("similarity_threshold", value=settings.similarity_threshold, type_=Float),
-        bindparam("max_results", value=max_results, type_=Integer),
-    ]
-
-    # Apply filters
-    if filters:
-        if filters.get("testament"):
-            sql_template += " AND b.testament = :testament"
-            bindparams_list.append(bindparam("testament", value=filters["testament"]))
-
-        if filters.get("genre"):
-            sql_template += " AND b.genre = :genre"
-            bindparams_list.append(bindparam("genre", value=filters["genre"]))
-
-        if filters.get("books"):
-            sql_template += " AND b.abbreviation = ANY(:book_abbrevs)"
-            bindparams_list.append(
-                bindparam("book_abbrevs", value=filters["books"], type_=ARRAY(PGUUID))
-            )
-
-    # Add similarity threshold and get top N unique verses
-    sql_template += f"""
-            AND (1 - (e.vector <=> '{query_vector_str}'::vector)) > :similarity_threshold
-            ORDER BY v.book_id, v.chapter, v.verse, similarity DESC
+    # 2. Full-text search on original query (hybrid)
+    if settings.enable_hybrid_search:
+        ft_results = await _fulltext_search(
+            db, query, translation_ids, filters, internal_limit,
         )
-        SELECT
-            v.id as verse_id,
-            v.book_id,
-            v.chapter,
-            v.verse,
-            v.text,
-            v.translation_id,
-            tv.similarity,
-            b.name as book_name,
-            b.name_korean as book_name_korean,
-            b.abbreviation as book_abbrev,
-            b.testament,
-            b.genre
-        FROM (
-            SELECT * FROM top_verses
-            ORDER BY similarity DESC
-            LIMIT :max_results
-        ) tv
-        JOIN verses v ON v.book_id = tv.book_id AND v.chapter = tv.chapter AND v.verse = tv.verse
-        JOIN books b ON v.book_id = b.id
-        WHERE v.translation_id = ANY(:translation_ids)
-        ORDER BY tv.similarity DESC, v.translation_id
-    """
+        if ft_results:
+            ranked_lists.append([(ref, score) for ref, score, _ in ft_results])
+            for ref, _score, row_data in ft_results:
+                if ref not in all_row_data:
+                    all_row_data[ref] = row_data
 
-    # Execute query with bindparams
-    stmt = text(sql_template).bindparams(*bindparams_list)
-    result = await db.execute(stmt)
-    rows = result.fetchall()
+    # 3. Vector search on expanded queries
+    if expanded_queries:
+        for eq in expanded_queries:
+            try:
+                eq_embedding = embed_query(eq, api_key=api_key)
+                eq_results = await _vector_search(
+                    db, eq_embedding, translation_ids, filters,
+                    settings.similarity_threshold, internal_limit,
+                )
+                if eq_results:
+                    ranked_lists.append([(ref, score) for ref, score, _ in eq_results])
+                    for ref, _score, row_data in eq_results:
+                        if ref not in all_row_data:
+                            all_row_data[ref] = row_data
+            except Exception as e:
+                logger.warning(f"Expanded query search failed for {eq!r}: {e}")
 
-    # Group results by verse reference
+    # 4. RRF merge all ranked lists
+    if len(ranked_lists) > 1:
+        merged = rrf_merge(ranked_lists, k=settings.rrf_k)
+        search_method = "hybrid-rrf"
+    elif ranked_lists:
+        merged = ranked_lists[0]
+        search_method = "semantic"
+    else:
+        merged = []
+        search_method = "none"
+
+    # 4b. Cross-encoder reranking
+    if settings.enable_reranking and merged:
+        from reranker import rerank
+
+        rerank_count = min(len(merged), settings.rerank_top_n)
+        candidates = []
+        for ref_key, rrf_score in merged[:rerank_count]:
+            row_data = all_row_data.get(ref_key)
+            if row_data:
+                candidates.append({
+                    "ref_key": ref_key,
+                    "text": row_data["text"],
+                    "rrf_score": rrf_score,
+                })
+
+        if candidates:
+            try:
+                reranked = rerank(query, candidates, top_k=max_results)
+                top_refs = [(c["ref_key"], c["rerank_score"]) for c in reranked]
+                search_method += "+rerank"
+            except Exception as e:
+                logger.warning(f"Reranking failed, falling back to RRF order: {e}")
+                top_refs = merged[:max_results]
+        else:
+            top_refs = merged[:max_results]
+    else:
+        top_refs = merged[:max_results]
+
+    # 5. Assemble results with translation grouping
+    # Need to fetch all translations for the selected verses
     verse_groups = {}
-    for row in rows:
-        ref_key = f"{row.book_id}:{row.chapter}:{row.verse}"
+    for ref_key, rrf_score in top_refs:
+        row_data = all_row_data.get(ref_key)
+        if not row_data:
+            continue
+        verse_groups[ref_key] = {
+            "reference": {
+                "book": row_data["book_name"],
+                "book_korean": row_data["book_name_korean"],
+                "book_abbrev": row_data["book_abbrev"],
+                "chapter": row_data["chapter"],
+                "verse": row_data["verse"],
+                "testament": row_data["testament"],
+                "genre": row_data["genre"],
+            },
+            "translations": {},
+            "relevance_score": rrf_score,
+            "verse_id": row_data["verse_id"],
+        }
+        trans_abbrev = translation_map.get(str(row_data["translation_id"]), "Unknown")
+        verse_groups[ref_key]["translations"][trans_abbrev] = row_data["text"]
 
-        if ref_key not in verse_groups:
-            verse_groups[ref_key] = {
-                "reference": {
-                    "book": row.book_name,
-                    "book_korean": row.book_name_korean,
-                    "book_abbrev": row.book_abbrev,
-                    "chapter": row.chapter,
-                    "verse": row.verse,
-                    "testament": row.testament,
-                    "genre": row.genre,
-                },
-                "translations": {},
-                "relevance_score": row.similarity,
-                "verse_id": str(row.verse_id),
-            }
+    # Fetch additional translations for each result
+    for ref_key, group in verse_groups.items():
+        row_data = all_row_data[ref_key]
+        extra_verses = (
+            await db.execute(
+                select(Verse, Translation)
+                .join(Translation)
+                .where(
+                    Verse.book_id == row_data["book_id"],
+                    Verse.chapter == row_data["chapter"],
+                    Verse.verse == row_data["verse"],
+                    Verse.translation_id.in_(translation_ids),
+                )
+            )
+        ).all()
+        for v, t in extra_verses:
+            group["translations"][t.abbreviation] = v.text
+            if not group.get("verse_id"):
+                group["verse_id"] = str(v.id)
 
-        trans_abbrev = translation_map.get(str(row.translation_id), "Unknown")
-        verse_groups[ref_key]["translations"][trans_abbrev] = row.text
+    # Maintain order from RRF ranking
+    results = [verse_groups[ref] for ref, _ in top_refs if ref in verse_groups]
 
-    # Convert to list
-    results = list(verse_groups.values())
-
-    # Fetch additional data if requested
+    # 6. Fetch enrichment data
     for result_item in results:
         verse_id = UUID(result_item["verse_id"])
-
-        # Get cross-references
         if include_cross_refs:
             result_item["cross_references"] = await get_cross_references(db, verse_id)
-
-        # Get original language data
         if include_original:
             result_item["original"] = await get_original_words(db, verse_id)
 
     query_time_ms = int((time.time() - start_time) * 1000)
 
+    expanded_count = len(expanded_queries) if expanded_queries else 0
     response = {
         "query_time_ms": query_time_ms,
         "results": results,
         "search_metadata": {
             "total_results": len(results),
             "embedding_model": settings.embedding_model,
+            "search_method": search_method,
+            "expanded_queries": expanded_queries or [],
             "cached": False,
         },
     }

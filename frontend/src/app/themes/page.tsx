@@ -126,7 +126,7 @@ export default function ThemesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background dark:bg-background-dark transition-colors">
+    <main className="bg-background dark:bg-background-dark transition-colors">
       {/* Header */}
       <div className="bg-surface dark:bg-surface-dark border-b border-border-light dark:border-border-dark-light transition-colors">
         <div className="container mx-auto px-space-md py-space-xl md:py-space-2xl">

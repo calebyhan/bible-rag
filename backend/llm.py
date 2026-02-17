@@ -48,13 +48,128 @@ def _check_rate_limit(provider: str, limit: int) -> bool:
     return True
 
 
-def _build_prompt(query: str, verses: list[dict], language: str = "en") -> str:
+async def expand_query(
+    query: str,
+    language: str = "en",
+    groq_api_key: str | None = None,
+    gemini_api_key: str | None = None,
+) -> list[str]:
+    """Expand a user query into multiple search-optimized sub-queries.
+
+    Uses LLM to generate alternative phrasings that capture different
+    semantic aspects of the question, improving retrieval recall.
+
+    Args:
+        query: Original user query
+        language: Query language ('en' or 'ko')
+        groq_api_key: Groq API key
+        gemini_api_key: Gemini API key
+
+    Returns:
+        List of 3 alternative search queries, or empty list on failure.
+    """
+    import json as _json
+
+    prompt = (
+        "Generate exactly 3 short search queries (3-8 words each) that capture "
+        "different aspects of this Bible study question. Focus on biblical concepts, "
+        "theological terms, and key scripture themes that would match relevant verses.\n\n"
+        f"Question: {query}\n\n"
+        "Respond with ONLY a JSON array of 3 strings, no other text. Example:\n"
+        '["origin of sin and death", "God purpose for suffering", "trials produce faith"]'
+    )
+
+    # Try Groq first (faster)
+    groq_key = groq_api_key or settings.groq_api_key
+    if groq_key and _check_rate_limit("groq", settings.groq_rpm):
+        try:
+            from groq import AsyncGroq
+
+            client = AsyncGroq(api_key=groq_key)
+            response = await client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=200,
+                temperature=0.3,
+            )
+            text = response.choices[0].message.content.strip()
+            # Parse JSON array from response
+            parsed = _json.loads(text)
+            if isinstance(parsed, list) and all(isinstance(q, str) for q in parsed):
+                logger.info(f"Query expansion (Groq): {query!r} → {parsed}")
+                return parsed[:3]
+        except Exception as e:
+            logger.warning(f"Groq query expansion failed: {e}")
+
+    # Fallback to Gemini
+    gemini_key = gemini_api_key or settings.gemini_api_key
+    if gemini_key and _check_rate_limit("gemini", settings.gemini_rpm):
+        try:
+            import google.generativeai as genai
+
+            genai.configure(api_key=gemini_key)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = await model.generate_content_async(
+                prompt,
+                generation_config=genai.GenerationConfig(
+                    max_output_tokens=200,
+                    temperature=0.3,
+                ),
+            )
+            text = response.text.strip()
+            parsed = _json.loads(text)
+            if isinstance(parsed, list) and all(isinstance(q, str) for q in parsed):
+                logger.info(f"Query expansion (Gemini): {query!r} → {parsed}")
+                return parsed[:3]
+        except Exception as e:
+            logger.warning(f"Gemini query expansion failed: {e}")
+
+    logger.info(f"Query expansion skipped for: {query!r}")
+    return []
+
+
+def _format_conversation_history(
+    conversation_history: list[dict] | None, language: str = "en"
+) -> str:
+    """Format conversation history for inclusion in the prompt.
+
+    Takes the last 5 turns and truncates long messages.
+    """
+    if not conversation_history:
+        return ""
+
+    recent = conversation_history[-10:]  # last 5 pairs max
+    lines = []
+    for turn in recent:
+        role = turn.get("role", "user")
+        content = turn.get("content", "")
+        # Truncate long assistant responses
+        if len(content) > 200:
+            content = content[:200] + "..."
+        label = "User" if role == "user" else "Assistant"
+        lines.append(f"{label}: {content}")
+
+    history_text = "\n".join(lines)
+
+    if language == "ko":
+        return f"\n이전 대화:\n{history_text}\n"
+    else:
+        return f"\nPrevious conversation:\n{history_text}\n"
+
+
+def _build_prompt(
+    query: str,
+    verses: list[dict],
+    language: str = "en",
+    conversation_history: list[dict] | None = None,
+) -> str:
     """Build the prompt for LLM response generation.
 
     Args:
         query: User's search query
         verses: List of verse result dictionaries
         language: Response language ('en' or 'ko')
+        conversation_history: Previous conversation turns for context
 
     Returns:
         Formatted prompt string
@@ -76,10 +191,11 @@ def _build_prompt(query: str, verses: list[dict], language: str = "en") -> str:
 
     verses_text = "\n".join(verse_context)
     verse_count = len(verses[:8])
+    history_section = _format_conversation_history(conversation_history, language)
 
     if language == "ko":
         prompt = f"""다음 성경 구절들을 바탕으로 질문에 대해 포괄적인 답변을 제공해 주세요.
-
+{history_section}
 질문: {query}
 
 관련 성경 구절 ({verse_count}개):
@@ -90,10 +206,11 @@ def _build_prompt(query: str, verses: list[dict], language: str = "en") -> str:
 - 특정 구절을 인용할 때는 책 이름과 장:절을 명시해 주세요 (예: "로마서 12:9에 따르면...")
 - 성경적 맥락과 신학적 의미를 설명해 주세요
 - 실제 적용이나 핵심 교훈으로 마무리해 주세요
-- 답변이 완전한 문장으로 끝나도록 해 주세요"""
+- 답변이 완전한 문장으로 끝나도록 해 주세요
+- 이전 대화가 있다면 맥락을 고려하여 답변해 주세요"""
     else:
         prompt = f"""Based on the following Bible verses, please provide a comprehensive answer to the question.
-
+{history_section}
 Question: {query}
 
 Relevant verses ({verse_count} total):
@@ -104,7 +221,8 @@ Instructions:
 - Cite specific verses by reference (e.g., 'According to Romans 12:9...')
 - Explain the biblical context and theological significance
 - Conclude with practical application or key takeaway
-- Ensure your response is complete and ends with proper punctuation"""
+- Ensure your response is complete and ends with proper punctuation
+- If there is previous conversation context, take it into account in your response"""
 
     return prompt
 
@@ -114,6 +232,7 @@ async def generate_response_stream_gemini(
     verses: list[dict],
     language: str = "en",
     api_key: str | None = None,
+    conversation_history: list[dict] | None = None,
 ) -> any:  # Returns an async generator
     """Generate a streaming response using Google Gemini."""
     gemini_key = api_key or settings.gemini_api_key
@@ -123,14 +242,14 @@ async def generate_response_stream_gemini(
 
     try:
         import google.generativeai as genai
-        
+
         genai.configure(api_key=gemini_key)
         model = genai.GenerativeModel(
             "gemini-1.5-flash", # Use 1.5-flash for speed
             system_instruction="You are a knowledgeable Bible study assistant. Provide thoughtful, contextual answers that help users understand biblical teachings. Always cite specific verse references and explain theological significance. Your responses should be complete, ending with proper punctuation."
         )
 
-        prompt = _build_prompt(query, verses, language)
+        prompt = _build_prompt(query, verses, language, conversation_history)
         
         # Async streaming is supported in newer genai versions or we can use ThreadPool
         # For true async in Python with genai, check library support. 
@@ -161,6 +280,7 @@ async def generate_response_stream_groq(
     verses: list[dict],
     language: str = "en",
     api_key: str | None = None,
+    conversation_history: list[dict] | None = None,
 ) -> any:  # Returns an async generator
     """Generate a streaming response using Groq."""
     groq_key = api_key or settings.groq_api_key
@@ -170,19 +290,29 @@ async def generate_response_stream_groq(
 
     try:
         from groq import AsyncGroq
-        
+
         client = AsyncGroq(api_key=groq_key)
-        prompt = _build_prompt(query, verses, language)
+        prompt = _build_prompt(query, verses, language, conversation_history)
+
+        # Build messages array with conversation history for Groq's chat format
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a knowledgeable Bible study assistant. Provide thoughtful, contextual answers that help users understand biblical teachings. Always cite specific verse references and explain theological significance. Your responses should be complete, ending with proper punctuation.",
+            },
+        ]
+        # Inject conversation history as prior messages
+        if conversation_history:
+            for turn in conversation_history[-10:]:
+                messages.append({
+                    "role": turn.get("role", "user"),
+                    "content": turn.get("content", "")[:500],
+                })
+        messages.append({"role": "user", "content": prompt})
 
         stream = await client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a knowledgeable Bible study assistant. Provide thoughtful, contextual answers that help users understand biblical teachings. Always cite specific verse references and explain theological significance. Your responses should be complete, ending with proper punctuation.",
-                },
-                {"role": "user", "content": prompt},
-            ],
+            messages=messages,
             max_tokens=1024,
             temperature=0.7,
             stream=True,
@@ -204,6 +334,7 @@ async def generate_contextual_response_stream(
     language: str = "en",
     gemini_api_key: str | None = None,
     groq_api_key: str | None = None,
+    conversation_history: list[dict] | None = None,
 ):
     """Generate a streaming contextual response."""
     if not verses:
@@ -212,7 +343,7 @@ async def generate_contextual_response_stream(
 
     # Try Groq first
     try:
-        groq_gen = generate_response_stream_groq(query, verses, language, api_key=groq_api_key)
+        groq_gen = generate_response_stream_groq(query, verses, language, api_key=groq_api_key, conversation_history=conversation_history)
         
         # Check if we get any content effectively
         # Since it is a generator, we iterate. Use a flag.
@@ -231,7 +362,7 @@ async def generate_contextual_response_stream(
 
     # Fallback to Gemini
     try:
-        gemini_gen = generate_response_stream_gemini(query, verses, language, api_key=gemini_api_key)
+        gemini_gen = generate_response_stream_gemini(query, verses, language, api_key=gemini_api_key, conversation_history=conversation_history)
         async for chunk in gemini_gen:
             if chunk is None:
                 break

@@ -84,8 +84,14 @@ export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarn
   if (!showWarning) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="max-w-lg mx-4 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-amber-200 dark:border-amber-700">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={handleClose}
+    >
+      <div
+        className="max-w-lg mx-4 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-amber-200 dark:border-amber-700"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Warning Icon Header */}
         <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-700 px-6 py-4 rounded-t-xl">
           <div className="flex items-center gap-3">
