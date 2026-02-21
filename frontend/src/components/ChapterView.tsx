@@ -113,10 +113,13 @@ export default function ChapterView({
             <div key={verse.verse} id={`verse-${verse.verse}`}>
               {/* Verse Text */}
               <div
+                role="button"
+                tabIndex={0}
                 className={`group hover:bg-background dark:hover:bg-background-dark -mx-space-sm px-space-sm py-space-sm transition-all cursor-pointer ${
                   isExpanded ? 'bg-background dark:bg-background-dark border-l-4 border-accent-scripture dark:border-accent-dark-scripture' : ''
                 }`}
                 onClick={() => handleVerseClick(verse.verse)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleVerseClick(verse.verse); }}
               >
                 <div className="flex items-start gap-space-sm">
                   {/* Verse Number */}
@@ -197,7 +200,7 @@ export default function ChapterView({
                           <div className="space-y-space-xs">
                             {details.cross_references.map((ref, idx) => (
                               <button
-                                key={idx}
+                                key={`${ref.book}-${ref.chapter}-${ref.verse}`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigateToVerse(ref.book, ref.chapter, ref.verse);

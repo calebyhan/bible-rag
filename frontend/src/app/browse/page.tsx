@@ -322,10 +322,11 @@ function BrowsePageContent() {
             <div className="flex flex-col sm:flex-row gap-space-sm items-start sm:items-end">
               {/* Book Input */}
               <div className="flex-1 relative" ref={bookInputRef}>
-                <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
+                <label htmlFor="browse-book" className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
                   Book / 책
                 </label>
                 <input
+                  id="browse-book"
                   type="text"
                   value={searchBook}
                   onChange={(e) => {
@@ -405,10 +406,11 @@ function BrowsePageContent() {
 
               {/* Chapter Input */}
               <div className="w-24">
-                <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
+                <label htmlFor="browse-chapter" className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
                   Chapter / 장
                 </label>
                 <input
+                  id="browse-chapter"
                   type="number"
                   value={searchChapter}
                   onChange={(e) => setSearchChapter(e.target.value)}
@@ -425,10 +427,11 @@ function BrowsePageContent() {
 
               {/* Verse Input (Optional) */}
               <div className="w-24">
-                <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
+                <label htmlFor="browse-verse" className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
                   Verse / 절
                 </label>
                 <input
+                  id="browse-verse"
                   type="number"
                   value={searchVerse}
                   onChange={(e) => setSearchVerse(e.target.value)}
@@ -445,9 +448,9 @@ function BrowsePageContent() {
 
               {/* Translation Selector */}
               <div className="relative" ref={translationInputRef}>
-                <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
+                <span className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
                   Translation / 번역
-                </label>
+                </span>
                 <button
                   onClick={() => setShowTranslationDropdown(!showTranslationDropdown)}
                   className="px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture text-left flex items-center justify-between gap-2 min-w-[80px] transition-colors"

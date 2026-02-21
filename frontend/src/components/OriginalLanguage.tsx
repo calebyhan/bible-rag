@@ -93,16 +93,15 @@ const parseMorphology = (code: string, language: string): string => {
   return code;
 };
 
-/**
- * OriginalLanguage component displays Greek, Hebrew, or Aramaic text
- * with transliteration, Strong's numbers, and interlinear analysis.
- */
+const EMPTY_WORDS: OriginalWord[] = [];
+const EMPTY_STRONGS: string[] = [];
+
 export default function OriginalLanguage({
   language,
   text,
   transliteration,
-  words = [],
-  strongs = [],
+  words = EMPTY_WORDS,
+  strongs = EMPTY_STRONGS,
   showInterlinear = true,
 }: OriginalLanguageProps) {
   const [selectedWord, setSelectedWord] = useState<OriginalWord | null>(null);
@@ -206,9 +205,9 @@ export default function OriginalLanguage({
       {/* Transliteration */}
       {transliteration && (
         <div className="mb-space-sm pb-space-sm border-b border-border-light dark:border-border-dark-light">
-          <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
+          <span className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">
             Transliteration
-          </label>
+          </span>
           <p className="font-body text-base italic text-text-secondary dark:text-text-dark-secondary">{transliteration}</p>
         </div>
       )}
@@ -216,13 +215,13 @@ export default function OriginalLanguage({
       {/* Strong's Numbers */}
       {strongs.length > 0 && (
         <div className="mb-space-sm pb-space-sm border-b border-border-light dark:border-border-dark-light">
-          <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-2">
+          <span className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-2">
             Strong's Concordance Numbers
-          </label>
+          </span>
           <div className="flex flex-wrap gap-x-3 gap-y-1">
-            {strongs.map((num, index) => (
+            {strongs.map((num, i) => (
               <a
-                key={index}
+                key={`${num}-${i}`}
                 href={`https://www.blueletterbible.org/lexicon/${num}/kjv/tr/0-1/`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -243,14 +242,16 @@ export default function OriginalLanguage({
           </summary>
 
           <div className={`mt-space-sm space-y-2 ${info.direction === 'rtl' ? 'direction-rtl' : ''}`}>
-            {words.map((word, index) => {
+            {words.map((word, i) => {
               const isSelected = selectedWord === word;
               const isHighlighted = highlightedStrongs && word.strongs_number === highlightedStrongs;
               const wordCount = word.strongs_number ? getStrongsCount(word.strongs_number) : 0;
 
               return (
                 <div
-                  key={index}
+                  key={word.word_order ?? i}
+                  role="button"
+                  tabIndex={0}
                   className={`relative p-space-sm border-2 transition-all cursor-pointer ${
                     isSelected
                       ? 'border-text-primary dark:border-text-dark-primary bg-surface dark:bg-surface-dark'
@@ -259,11 +260,12 @@ export default function OriginalLanguage({
                       : 'border-border-light dark:border-border-dark-light hover:border-border-medium dark:hover:border-border-dark-medium bg-surface dark:bg-surface-dark'
                   }`}
                   onClick={() => handleWordClick(word)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(word); }}
                 >
                   <div className="flex items-start gap-3">
                     {/* Word Number */}
                     <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center font-ui text-xs font-semibold text-text-tertiary dark:text-text-dark-tertiary">
-                      {word.word_order || index + 1}
+                      {word.word_order || i + 1}
                     </div>
 
                     <div className="flex-1 space-y-1">
@@ -363,39 +365,3 @@ export default function OriginalLanguage({
   );
 }
 
-/**
- * CompactOriginalLanguage - A condensed version for inline display
- */
-export function CompactOriginalLanguage({
-  language,
-  text,
-  transliteration,
-}: Pick<OriginalLanguageProps, 'language' | 'text' | 'transliteration'>) {
-  const directions = {
-    greek: 'ltr',
-    hebrew: 'rtl',
-    aramaic: 'rtl',
-  };
-
-  const colors = {
-    greek: 'text-accent-greek dark:text-accent-dark-greek',
-    hebrew: 'text-accent-hebrew dark:text-accent-dark-hebrew',
-    aramaic: 'text-accent-reference dark:text-accent-dark-reference',
-  };
-
-  return (
-    <div className="inline-flex items-center gap-3 p-space-sm border-l-4 border-text-tertiary dark:border-text-dark-tertiary bg-surface dark:bg-surface-dark transition-colors">
-      <div className="flex-1">
-        <p
-          className={`original-text ${colors[language]}`}
-          dir={directions[language]}
-        >
-          {text}
-        </p>
-        {transliteration && (
-          <p className="font-body text-sm italic text-text-tertiary dark:text-text-dark-tertiary mt-1">{transliteration}</p>
-        )}
-      </div>
-    </div>
-  );
-}

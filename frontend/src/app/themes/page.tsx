@@ -375,7 +375,7 @@ export default function ThemesPage() {
             <div className="space-y-space-md">
               {results.results.map((result: SearchResult, idx: number) => (
                 <VerseCard
-                  key={`${result.reference.book}-${result.reference.chapter}-${result.reference.verse}-${idx}`}
+                  key={`${result.reference.book}-${result.reference.chapter}-${result.reference.verse}`}
                   result={result}
                   showAllTranslations={showLanguage === 'all'}
                   defaultTranslation={defaultTranslation}

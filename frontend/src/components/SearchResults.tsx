@@ -94,7 +94,7 @@ export default function SearchResults({ results, isLoading = false, query, defau
         <div className="space-y-4">
           {verses.map((verse, index) => (
             <VerseCard
-              key={`${verse.reference.book}-${verse.reference.chapter}-${verse.reference.verse}-${index}`}
+              key={`${verse.reference.book}-${verse.reference.chapter}-${verse.reference.verse}`}
               result={verse}
               showAllTranslations={showLanguage === 'all'}
               defaultTranslation={defaultTranslation}

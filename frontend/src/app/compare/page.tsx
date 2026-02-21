@@ -156,7 +156,7 @@ export default function ComparePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-space-sm mb-space-md">
             {/* Book selector */}
             <div className="relative book-dropdown-container">
-              <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Book / 책</label>
+              <span className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Book / 책</span>
               <button
                 onClick={() => setShowBookDropdown(!showBookDropdown)}
                 className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture text-left flex items-center justify-between transition-colors"
@@ -232,8 +232,9 @@ export default function ComparePage() {
 
             {/* Chapter selector */}
             <div>
-              <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Chapter / 장</label>
+              <label htmlFor="compare-chapter" className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Chapter / 장</label>
               <input
+                id="compare-chapter"
                 type="number"
                 min="1"
                 max={getMaxChapter()}
@@ -248,8 +249,9 @@ export default function ComparePage() {
 
             {/* Verse selector */}
             <div>
-              <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Verse / 절</label>
+              <label htmlFor="compare-verse" className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Verse / 절</label>
               <input
+                id="compare-verse"
                 type="number"
                 min="1"
                 max="200"
@@ -264,8 +266,9 @@ export default function ComparePage() {
 
             {/* Quick reference input */}
             <div>
-              <label className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Quick Reference / 빠른 참조</label>
+              <label htmlFor="compare-quick-ref" className="block font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary mb-1">Quick Reference / 빠른 참조</label>
               <input
+                id="compare-quick-ref"
                 type="text"
                 placeholder="e.g., John 3:16"
                 className="w-full px-space-sm py-space-xs border-2 border-text-primary dark:border-text-dark-primary bg-background dark:bg-background-dark text-text-primary dark:text-text-dark-primary placeholder:text-text-tertiary dark:placeholder:text-text-dark-tertiary placeholder:italic font-body text-sm focus:outline-none focus:border-text-scripture dark:focus:border-accent-dark-scripture transition-colors"
@@ -333,7 +336,7 @@ export default function ComparePage() {
             <div className="flex items-center gap-space-sm flex-wrap">
               {/* Layout selector */}
               <div className="flex items-center gap-space-xs">
-                <label className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary">Layout / 레이아웃:</label>
+                <span className="font-ui text-xs uppercase tracking-wide text-text-tertiary dark:text-text-dark-tertiary">Layout / 레이아웃:</span>
                 <div className="inline-flex border-2 border-text-primary dark:border-text-dark-primary">
                   {(['grid', 'vertical'] as const).map(l => (
                     <button

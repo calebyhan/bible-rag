@@ -354,7 +354,7 @@ export default function VerseDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
               {cross_references.map((ref, idx) => (
                 <button
-                  key={idx}
+                  key={`${ref.book}-${ref.chapter}-${ref.verse}`}
                   onClick={() => navigateToVerse({
                     book: ref.book,
                     chapter: ref.chapter,
@@ -399,7 +399,7 @@ export default function VerseDetailPage() {
             <div className="space-y-space-sm">
               {relatedVerses.map((verse, idx) => (
                 <button
-                  key={idx}
+                  key={`${verse.reference.book}-${verse.reference.chapter}-${verse.reference.verse}`}
                   onClick={() => navigateToVerse(verse.reference)}
                   className="w-full text-left p-space-sm border-2 border-text-tertiary dark:border-text-dark-tertiary hover:border-text-primary dark:hover:border-text-dark-primary hover:bg-background dark:hover:bg-background-dark transition-all"
                 >

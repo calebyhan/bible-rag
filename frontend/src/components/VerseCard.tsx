@@ -117,7 +117,7 @@ export default function VerseCard({ result, showAllTranslations = false, default
               {cross_references.map((ref, idx) => {
                 const crossRefUrl = `/verse/${encodeURIComponent(ref.book)}/${ref.chapter}/${ref.verse}`;
                 return (
-                  <span key={idx}>
+                  <span key={`${ref.book}-${ref.chapter}-${ref.verse}`}>
                     <Link
                       href={crossRefUrl}
                       className="verse-ref dark:text-accent-dark-reference dark:hover:border-accent-dark-reference"

@@ -12,85 +12,62 @@ interface SearchMethodWarningProps {
 }
 
 export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarningProps) {
-  const [showWarning, setShowWarning] = useState(false);
   const [hasSeenWarning, setHasSeenWarning] = useState(false);
   const [isProduction, setIsProduction] = useState(false);
 
   useEffect(() => {
-    // Check if user has already dismissed this warning in this session
     if (typeof window !== 'undefined') {
       const seen = sessionStorage.getItem('search-warning-seen');
       setHasSeenWarning(seen === 'true');
     }
 
-    // Detect production by checking API URL (localhost = development)
     const checkEnvironment = async () => {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       const isLocalhost = apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1');
 
-      // If not localhost, we're in production
       if (!isLocalhost) {
         setIsProduction(true);
-        if (!sessionStorage.getItem('search-warning-seen')) {
-          setShowWarning(true);
-        }
         return;
       }
 
-      // If localhost, try health check to verify
-      // If health check fails (backend down), assume production as safety measure
       try {
         const health = await checkHealth();
-        // Backend is up - check if it's using Gemini embeddings mode
-        const isProd = health.services?.embedding_mode === 'gemini';
-        setIsProduction(isProd);
-
-        if (isProd && !sessionStorage.getItem('search-warning-seen')) {
-          setShowWarning(true);
-        }
+        setIsProduction(health.services?.embedding_mode === 'gemini');
       } catch (error) {
-        // Backend is down - assume production and show warning
         console.warn('Backend health check failed, assuming production environment:', error);
         setIsProduction(true);
-        if (!sessionStorage.getItem('search-warning-seen')) {
-          setShowWarning(true);
-        }
       }
     };
 
     checkEnvironment();
   }, []);
 
-  useEffect(() => {
-    // Also show warning if we get search results with Gemini embeddings
-    if (
-      searchMetadata &&
-      !hasSeenWarning &&
-      searchMetadata.embedding_model &&
-      searchMetadata.embedding_model.toLowerCase().includes('gemini')
-    ) {
-      setShowWarning(true);
-    }
-  }, [searchMetadata, hasSeenWarning]);
-
   const handleClose = () => {
-    setShowWarning(false);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('search-warning-seen', 'true');
-      setHasSeenWarning(true);
     }
+    setHasSeenWarning(true);
   };
 
-  if (!showWarning) return null;
+  const isGeminiEmbedding = !!(searchMetadata?.embedding_model?.toLowerCase().includes('gemini'));
+  const isVisible = !hasSeenWarning && (isProduction || isGeminiEmbedding);
+
+  if (!isVisible) return null;
 
   return (
     <div
+      role="presentation"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={handleClose}
+      onKeyDown={(e) => { if (e.key === 'Escape') handleClose(); }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="warning-title"
         className="max-w-lg mx-4 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-amber-200 dark:border-amber-700"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         {/* Warning Icon Header */}
         <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-700 px-6 py-4 rounded-t-xl">
@@ -111,7 +88,7 @@ export default function SearchMethodWarning({ searchMetadata }: SearchMethodWarn
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h3 id="warning-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Production Version Notice
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-300">프로덕션 버전 알림</p>

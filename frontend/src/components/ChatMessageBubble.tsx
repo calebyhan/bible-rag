@@ -65,7 +65,7 @@ function VerseResultsDropdown({ results, defaultTranslation }: { results: Search
           <div className="space-y-3">
             {verses.map((verse, index) => (
               <VerseCard
-                key={`${verse.reference.book}-${verse.reference.chapter}-${verse.reference.verse}-${index}`}
+                key={`${verse.reference.book}-${verse.reference.chapter}-${verse.reference.verse}`}
                 result={verse}
                 showAllTranslations={showLanguage === 'all'}
                 defaultTranslation={defaultTranslation}
