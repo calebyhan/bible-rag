@@ -1,0 +1,522 @@
+{
+  "translations": ["NIV", "NKRV"],
+  "queries": [
+    {
+      "id": "T01",
+      "category": "thematic",
+      "language": "en",
+      "query": "What does Jesus say about forgiveness?",
+      "relevant": [
+        {"book": "Matt", "chapter": 6, "verse": 14},
+        {"book": "Matt", "chapter": 6, "verse": 15},
+        {"book": "Matt", "chapter": 18, "verse": 21},
+        {"book": "Matt", "chapter": 18, "verse": 22},
+        {"book": "Mark", "chapter": 11, "verse": 25},
+        {"book": "Luke", "chapter": 17, "verse": 3},
+        {"book": "Luke", "chapter": 17, "verse": 4}
+      ]
+    },
+    {
+      "id": "T02",
+      "category": "thematic",
+      "language": "en",
+      "query": "Verses about faith during suffering",
+      "relevant": [
+        {"book": "Jas", "chapter": 1, "verse": 2},
+        {"book": "Jas", "chapter": 1, "verse": 3},
+        {"book": "Jas", "chapter": 1, "verse": 4},
+        {"book": "Rom", "chapter": 5, "verse": 3},
+        {"book": "Rom", "chapter": 5, "verse": 4},
+        {"book": "1Pet", "chapter": 1, "verse": 6},
+        {"book": "1Pet", "chapter": 1, "verse": 7},
+        {"book": "2Cor", "chapter": 4, "verse": 17}
+      ]
+    },
+    {
+      "id": "T03",
+      "category": "thematic",
+      "language": "en",
+      "query": "What is love according to the Bible?",
+      "relevant": [
+        {"book": "1Cor", "chapter": 13, "verse": 4},
+        {"book": "1Cor", "chapter": 13, "verse": 5},
+        {"book": "1Cor", "chapter": 13, "verse": 6},
+        {"book": "1Cor", "chapter": 13, "verse": 7},
+        {"book": "1John", "chapter": 4, "verse": 8},
+        {"book": "John", "chapter": 3, "verse": 16}
+      ]
+    },
+    {
+      "id": "T04",
+      "category": "thematic",
+      "language": "en",
+      "query": "How to deal with anxiety and worry",
+      "relevant": [
+        {"book": "Phil", "chapter": 4, "verse": 6},
+        {"book": "Phil", "chapter": 4, "verse": 7},
+        {"book": "Matt", "chapter": 6, "verse": 25},
+        {"book": "Matt", "chapter": 6, "verse": 34},
+        {"book": "1Pet", "chapter": 5, "verse": 7}
+      ]
+    },
+    {
+      "id": "T05",
+      "category": "thematic",
+      "language": "en",
+      "query": "What does the Bible say about hope?",
+      "relevant": [
+        {"book": "Rom", "chapter": 15, "verse": 13},
+        {"book": "Jer", "chapter": 29, "verse": 11},
+        {"book": "Heb", "chapter": 11, "verse": 1}
+      ]
+    },
+    {
+      "id": "T06",
+      "category": "thematic",
+      "language": "en",
+      "query": "Verses about God's grace",
+      "relevant": [
+        {"book": "Eph", "chapter": 2, "verse": 8},
+        {"book": "Eph", "chapter": 2, "verse": 9},
+        {"book": "2Cor", "chapter": 12, "verse": 9},
+        {"book": "Titus", "chapter": 2, "verse": 11}
+      ]
+    },
+    {
+      "id": "T07",
+      "category": "thematic",
+      "language": "en",
+      "query": "What is the fruit of the Spirit?",
+      "relevant": [
+        {"book": "Gal", "chapter": 5, "verse": 22},
+        {"book": "Gal", "chapter": 5, "verse": 23}
+      ]
+    },
+    {
+      "id": "T08",
+      "category": "thematic",
+      "language": "en",
+      "query": "Bible verses about wisdom",
+      "relevant": [
+        {"book": "Jas", "chapter": 1, "verse": 5},
+        {"book": "Prov", "chapter": 3, "verse": 5},
+        {"book": "Prov", "chapter": 3, "verse": 6},
+        {"book": "Prov", "chapter": 9, "verse": 10}
+      ]
+    },
+    {
+      "id": "T09",
+      "category": "thematic",
+      "language": "en",
+      "query": "What does the Bible teach about humility?",
+      "relevant": [
+        {"book": "Phil", "chapter": 2, "verse": 3},
+        {"book": "Phil", "chapter": 2, "verse": 4},
+        {"book": "Jas", "chapter": 4, "verse": 6},
+        {"book": "1Pet", "chapter": 5, "verse": 6}
+      ]
+    },
+    {
+      "id": "T10",
+      "category": "thematic",
+      "language": "en",
+      "query": "Verses about perseverance and endurance",
+      "relevant": [
+        {"book": "Jas", "chapter": 1, "verse": 12},
+        {"book": "Heb", "chapter": 12, "verse": 1},
+        {"book": "Gal", "chapter": 6, "verse": 9}
+      ]
+    },
+    {
+      "id": "T11",
+      "category": "thematic",
+      "language": "en",
+      "query": "What does the Bible say about prayer?",
+      "relevant": [
+        {"book": "Matt", "chapter": 6, "verse": 9},
+        {"book": "Matt", "chapter": 6, "verse": 10},
+        {"book": "Matt", "chapter": 6, "verse": 11},
+        {"book": "Phil", "chapter": 4, "verse": 6},
+        {"book": "1Thess", "chapter": 5, "verse": 17}
+      ]
+    },
+    {
+      "id": "T12",
+      "category": "thematic",
+      "language": "en",
+      "query": "Bible verses about peace",
+      "relevant": [
+        {"book": "John", "chapter": 14, "verse": 27},
+        {"book": "Phil", "chapter": 4, "verse": 7},
+        {"book": "Isa", "chapter": 26, "verse": 3}
+      ]
+    },
+    {
+      "id": "N01",
+      "category": "narrative",
+      "language": "en",
+      "query": "Jesus feeding the five thousand",
+      "relevant": [
+        {"book": "Matt", "chapter": 14, "verse": 17},
+        {"book": "Matt", "chapter": 14, "verse": 19},
+        {"book": "Matt", "chapter": 14, "verse": 20},
+        {"book": "Matt", "chapter": 14, "verse": 21},
+        {"book": "John", "chapter": 6, "verse": 9},
+        {"book": "John", "chapter": 6, "verse": 11},
+        {"book": "John", "chapter": 6, "verse": 13}
+      ]
+    },
+    {
+      "id": "N02",
+      "category": "narrative",
+      "language": "en",
+      "query": "The story of Noah's ark",
+      "relevant": [
+        {"book": "Gen", "chapter": 6, "verse": 14},
+        {"book": "Gen", "chapter": 6, "verse": 19},
+        {"book": "Gen", "chapter": 7, "verse": 1},
+        {"book": "Gen", "chapter": 7, "verse": 7},
+        {"book": "Gen", "chapter": 7, "verse": 17},
+        {"book": "Gen", "chapter": 7, "verse": 24}
+      ]
+    },
+    {
+      "id": "N03",
+      "category": "narrative",
+      "language": "en",
+      "query": "David and Goliath",
+      "relevant": [
+        {"book": "1Sam", "chapter": 17, "verse": 4},
+        {"book": "1Sam", "chapter": 17, "verse": 23},
+        {"book": "1Sam", "chapter": 17, "verse": 32},
+        {"book": "1Sam", "chapter": 17, "verse": 45},
+        {"book": "1Sam", "chapter": 17, "verse": 49},
+        {"book": "1Sam", "chapter": 17, "verse": 50}
+      ]
+    },
+    {
+      "id": "N04",
+      "category": "narrative",
+      "language": "en",
+      "query": "The crucifixion of Jesus",
+      "relevant": [
+        {"book": "Matt", "chapter": 27, "verse": 35},
+        {"book": "Matt", "chapter": 27, "verse": 46},
+        {"book": "Matt", "chapter": 27, "verse": 50},
+        {"book": "Luke", "chapter": 23, "verse": 33},
+        {"book": "Luke", "chapter": 23, "verse": 34},
+        {"book": "John", "chapter": 19, "verse": 18},
+        {"book": "John", "chapter": 19, "verse": 30}
+      ]
+    },
+    {
+      "id": "N05",
+      "category": "narrative",
+      "language": "en",
+      "query": "The resurrection of Jesus",
+      "relevant": [
+        {"book": "Matt", "chapter": 28, "verse": 1},
+        {"book": "Matt", "chapter": 28, "verse": 5},
+        {"book": "Matt", "chapter": 28, "verse": 6},
+        {"book": "Luke", "chapter": 24, "verse": 1},
+        {"book": "Luke", "chapter": 24, "verse": 6},
+        {"book": "John", "chapter": 20, "verse": 1}
+      ]
+    },
+    {
+      "id": "N06",
+      "category": "narrative",
+      "language": "en",
+      "query": "Moses parting the Red Sea",
+      "relevant": [
+        {"book": "Exod", "chapter": 14, "verse": 21},
+        {"book": "Exod", "chapter": 14, "verse": 22},
+        {"book": "Exod", "chapter": 14, "verse": 26},
+        {"book": "Exod", "chapter": 14, "verse": 27},
+        {"book": "Exod", "chapter": 14, "verse": 29}
+      ]
+    },
+    {
+      "id": "N07",
+      "category": "narrative",
+      "language": "en",
+      "query": "The prodigal son parable",
+      "relevant": [
+        {"book": "Luke", "chapter": 15, "verse": 11},
+        {"book": "Luke", "chapter": 15, "verse": 12},
+        {"book": "Luke", "chapter": 15, "verse": 18},
+        {"book": "Luke", "chapter": 15, "verse": 20},
+        {"book": "Luke", "chapter": 15, "verse": 22},
+        {"book": "Luke", "chapter": 15, "verse": 24}
+      ]
+    },
+    {
+      "id": "N08",
+      "category": "narrative",
+      "language": "en",
+      "query": "Jesus turning water into wine",
+      "relevant": [
+        {"book": "John", "chapter": 2, "verse": 1},
+        {"book": "John", "chapter": 2, "verse": 3},
+        {"book": "John", "chapter": 2, "verse": 7},
+        {"book": "John", "chapter": 2, "verse": 9},
+        {"book": "John", "chapter": 2, "verse": 11}
+      ]
+    },
+    {
+      "id": "K01",
+      "category": "korean",
+      "language": "ko",
+      "query": "예수님이 용서에 대해 무엇을 말씀하셨나요?",
+      "relevant": [
+        {"book": "Matt", "chapter": 6, "verse": 14},
+        {"book": "Matt", "chapter": 6, "verse": 15},
+        {"book": "Matt", "chapter": 18, "verse": 21},
+        {"book": "Matt", "chapter": 18, "verse": 22},
+        {"book": "Luke", "chapter": 17, "verse": 3},
+        {"book": "Luke", "chapter": 17, "verse": 4}
+      ]
+    },
+    {
+      "id": "K02",
+      "category": "korean",
+      "language": "ko",
+      "query": "사랑에 대한 성경 구절",
+      "relevant": [
+        {"book": "1Cor", "chapter": 13, "verse": 4},
+        {"book": "1Cor", "chapter": 13, "verse": 5},
+        {"book": "1Cor", "chapter": 13, "verse": 6},
+        {"book": "1Cor", "chapter": 13, "verse": 7},
+        {"book": "1John", "chapter": 4, "verse": 8},
+        {"book": "John", "chapter": 3, "verse": 16}
+      ]
+    },
+    {
+      "id": "K03",
+      "category": "korean",
+      "language": "ko",
+      "query": "오병이어 기적",
+      "relevant": [
+        {"book": "Matt", "chapter": 14, "verse": 17},
+        {"book": "Matt", "chapter": 14, "verse": 19},
+        {"book": "Matt", "chapter": 14, "verse": 20},
+        {"book": "Matt", "chapter": 14, "verse": 21},
+        {"book": "John", "chapter": 6, "verse": 9},
+        {"book": "John", "chapter": 6, "verse": 11}
+      ]
+    },
+    {
+      "id": "K04",
+      "category": "korean",
+      "language": "ko",
+      "query": "노아의 방주 이야기",
+      "relevant": [
+        {"book": "Gen", "chapter": 6, "verse": 14},
+        {"book": "Gen", "chapter": 6, "verse": 19},
+        {"book": "Gen", "chapter": 7, "verse": 1},
+        {"book": "Gen", "chapter": 7, "verse": 7},
+        {"book": "Gen", "chapter": 7, "verse": 17}
+      ]
+    },
+    {
+      "id": "K05",
+      "category": "korean",
+      "language": "ko",
+      "query": "다윗과 골리앗",
+      "relevant": [
+        {"book": "1Sam", "chapter": 17, "verse": 4},
+        {"book": "1Sam", "chapter": 17, "verse": 23},
+        {"book": "1Sam", "chapter": 17, "verse": 45},
+        {"book": "1Sam", "chapter": 17, "verse": 49},
+        {"book": "1Sam", "chapter": 17, "verse": 50}
+      ]
+    },
+    {
+      "id": "K06",
+      "category": "korean",
+      "language": "ko",
+      "query": "예수님의 부활",
+      "relevant": [
+        {"book": "Matt", "chapter": 28, "verse": 1},
+        {"book": "Matt", "chapter": 28, "verse": 5},
+        {"book": "Matt", "chapter": 28, "verse": 6},
+        {"book": "Luke", "chapter": 24, "verse": 1},
+        {"book": "Luke", "chapter": 24, "verse": 6},
+        {"book": "John", "chapter": 20, "verse": 1}
+      ]
+    },
+    {
+      "id": "K07",
+      "category": "korean",
+      "language": "ko",
+      "query": "두려움을 이기는 방법",
+      "relevant": [
+        {"book": "Isa", "chapter": 41, "verse": 10},
+        {"book": "2Tim", "chapter": 1, "verse": 7},
+        {"book": "Ps", "chapter": 23, "verse": 4}
+      ]
+    },
+    {
+      "id": "K08",
+      "category": "korean",
+      "language": "ko",
+      "query": "감사에 관한 성경 말씀",
+      "relevant": [
+        {"book": "1Thess", "chapter": 5, "verse": 18},
+        {"book": "Phil", "chapter": 4, "verse": 6},
+        {"book": "Ps", "chapter": 100, "verse": 4}
+      ]
+    },
+    {
+      "id": "K09",
+      "category": "korean",
+      "language": "ko",
+      "query": "탕자의 비유",
+      "relevant": [
+        {"book": "Luke", "chapter": 15, "verse": 11},
+        {"book": "Luke", "chapter": 15, "verse": 12},
+        {"book": "Luke", "chapter": 15, "verse": 18},
+        {"book": "Luke", "chapter": 15, "verse": 20},
+        {"book": "Luke", "chapter": 15, "verse": 22},
+        {"book": "Luke", "chapter": 15, "verse": 24}
+      ]
+    },
+    {
+      "id": "K10",
+      "category": "korean",
+      "language": "ko",
+      "query": "성령의 열매",
+      "relevant": [
+        {"book": "Gal", "chapter": 5, "verse": 22},
+        {"book": "Gal", "chapter": 5, "verse": 23}
+      ]
+    },
+    {
+      "id": "X01",
+      "category": "cross_lingual",
+      "language": "ko",
+      "query": "고난 중에 믿음을 지키는 방법",
+      "relevant": [
+        {"book": "Jas", "chapter": 1, "verse": 2},
+        {"book": "Jas", "chapter": 1, "verse": 3},
+        {"book": "Jas", "chapter": 1, "verse": 4},
+        {"book": "Rom", "chapter": 5, "verse": 3},
+        {"book": "Rom", "chapter": 5, "verse": 4},
+        {"book": "1Pet", "chapter": 1, "verse": 6}
+      ]
+    },
+    {
+      "id": "X02",
+      "category": "cross_lingual",
+      "language": "mixed",
+      "query": "What does the Bible say about 사랑 (love)?",
+      "relevant": [
+        {"book": "1Cor", "chapter": 13, "verse": 4},
+        {"book": "1Cor", "chapter": 13, "verse": 5},
+        {"book": "1Cor", "chapter": 13, "verse": 6},
+        {"book": "1Cor", "chapter": 13, "verse": 7},
+        {"book": "1John", "chapter": 4, "verse": 8},
+        {"book": "John", "chapter": 3, "verse": 16}
+      ]
+    },
+    {
+      "id": "X03",
+      "category": "cross_lingual",
+      "language": "ko",
+      "query": "예수님의 십자가 죽음",
+      "relevant": [
+        {"book": "Matt", "chapter": 27, "verse": 35},
+        {"book": "Matt", "chapter": 27, "verse": 46},
+        {"book": "Matt", "chapter": 27, "verse": 50},
+        {"book": "Luke", "chapter": 23, "verse": 33},
+        {"book": "Luke", "chapter": 23, "verse": 34},
+        {"book": "John", "chapter": 19, "verse": 30}
+      ]
+    },
+    {
+      "id": "X04",
+      "category": "cross_lingual",
+      "language": "ko",
+      "query": "하나님의 은혜란 무엇인가?",
+      "relevant": [
+        {"book": "Eph", "chapter": 2, "verse": 8},
+        {"book": "Eph", "chapter": 2, "verse": 9},
+        {"book": "2Cor", "chapter": 12, "verse": 9},
+        {"book": "Titus", "chapter": 2, "verse": 11}
+      ]
+    },
+    {
+      "id": "X05",
+      "category": "cross_lingual",
+      "language": "ko",
+      "query": "겸손에 대한 가르침",
+      "relevant": [
+        {"book": "Phil", "chapter": 2, "verse": 3},
+        {"book": "Phil", "chapter": 2, "verse": 4},
+        {"book": "Jas", "chapter": 4, "verse": 6},
+        {"book": "1Pet", "chapter": 5, "verse": 6}
+      ]
+    },
+    {
+      "id": "X06",
+      "category": "cross_lingual",
+      "language": "mixed",
+      "query": "What does the Bible say about 평안 (peace)?",
+      "relevant": [
+        {"book": "John", "chapter": 14, "verse": 27},
+        {"book": "Phil", "chapter": 4, "verse": 7},
+        {"book": "Isa", "chapter": 26, "verse": 3}
+      ]
+    },
+    {
+      "id": "X07",
+      "category": "cross_lingual",
+      "language": "ko",
+      "query": "예수님의 첫 번째 기적, 물로 포도주를 만드심",
+      "relevant": [
+        {"book": "John", "chapter": 2, "verse": 1},
+        {"book": "John", "chapter": 2, "verse": 3},
+        {"book": "John", "chapter": 2, "verse": 7},
+        {"book": "John", "chapter": 2, "verse": 9},
+        {"book": "John", "chapter": 2, "verse": 11}
+      ]
+    },
+    {
+      "id": "X08",
+      "category": "cross_lingual",
+      "language": "ko",
+      "query": "모세가 홍해를 가르다",
+      "relevant": [
+        {"book": "Exod", "chapter": 14, "verse": 21},
+        {"book": "Exod", "chapter": 14, "verse": 22},
+        {"book": "Exod", "chapter": 14, "verse": 26},
+        {"book": "Exod", "chapter": 14, "verse": 27},
+        {"book": "Exod", "chapter": 14, "verse": 29}
+      ]
+    },
+    {
+      "id": "X09",
+      "category": "cross_lingual",
+      "language": "ko",
+      "query": "기도하는 방법",
+      "relevant": [
+        {"book": "Matt", "chapter": 6, "verse": 9},
+        {"book": "Matt", "chapter": 6, "verse": 10},
+        {"book": "Matt", "chapter": 6, "verse": 11},
+        {"book": "Phil", "chapter": 4, "verse": 6},
+        {"book": "1Thess", "chapter": 5, "verse": 17}
+      ]
+    },
+    {
+      "id": "X10",
+      "category": "cross_lingual",
+      "language": "ko",
+      "query": "인내에 관한 말씀",
+      "relevant": [
+        {"book": "Jas", "chapter": 1, "verse": 12},
+        {"book": "Heb", "chapter": 12, "verse": 1},
+        {"book": "Gal", "chapter": 6, "verse": 9}
+      ]
+    }
+  ]
+}

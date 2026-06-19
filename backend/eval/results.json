@@ -1,0 +1,6273 @@
+{
+  "bm25": {
+    "summary": {
+      "overall": {
+        "precision@k": 0.04458333333333333,
+        "recall@k": 0.03482142857142857,
+        "mrr": 0.04930555555555556,
+        "ndcg@k": 0.029530848237900302,
+        "avg_latency_ms": 392.75461435317993
+      },
+      "by_category": {
+        "thematic": {
+          "precision@k": 0.12083333333333333,
+          "recall@k": 0.1021825396825397,
+          "mrr": 0.12268518518518519,
+          "ndcg@k": 0.08252608861142312,
+          "avg_latency_ms": 865.2833501497904
+        },
+        "narrative": {
+          "precision@k": 0.041666666666666664,
+          "recall@k": 0.020833333333333332,
+          "mrr": 0.0625,
+          "ndcg@k": 0.023865108272366837,
+          "avg_latency_ms": 168.33823919296265
+        },
+        "korean": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0,
+          "avg_latency_ms": 210.16573905944824
+        },
+        "cross_lingual": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0,
+          "avg_latency_ms": 187.84210681915283
+        }
+      }
+    },
+    "per_query": [
+      {
+        "id": "T01",
+        "category": "thematic",
+        "query": "What does Jesus say about forgiveness?",
+        "retrieved": [
+          "Acts:13:38",
+          "Luke:23:34",
+          "Acts:2:38",
+          "Matt:18:21"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Mark:11:25",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.25,
+          "recall@k": 0.14285714285714285,
+          "mrr": 0.25,
+          "ndcg@k": 0.11838279295536293
+        },
+        "latency_ms": 7181.456804275513,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T02",
+        "category": "thematic",
+        "query": "Verses about faith during suffering",
+        "retrieved": [],
+        "relevant": [
+          "1Pet:1:6",
+          "1Pet:1:7",
+          "2Cor:4:17",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 648.5817432403564,
+        "search_method": "none"
+      },
+      {
+        "id": "T03",
+        "category": "thematic",
+        "query": "What is love according to the Bible?",
+        "retrieved": [],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 445.0562000274658,
+        "search_method": "none"
+      },
+      {
+        "id": "T04",
+        "category": "thematic",
+        "query": "How to deal with anxiety and worry",
+        "retrieved": [],
+        "relevant": [
+          "1Pet:5:7",
+          "Matt:6:25",
+          "Matt:6:34",
+          "Phil:4:6",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 426.90420150756836,
+        "search_method": "none"
+      },
+      {
+        "id": "T05",
+        "category": "thematic",
+        "query": "What does the Bible say about hope?",
+        "retrieved": [
+          "Rom:8:24",
+          "1Tim:6:17",
+          "1Pet:1:3",
+          "Prov:23:18",
+          "Rom:4:18",
+          "Acts:26:7",
+          "Job:17:15",
+          "Prov:24:14",
+          "Rom:15:13",
+          "Dan:2:9"
+        ],
+        "relevant": [
+          "Heb:11:1",
+          "Jer:29:11",
+          "Rom:15:13"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.1111111111111111,
+          "ndcg@k": 0.14126697285982898
+        },
+        "latency_ms": 195.53709030151367,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T06",
+        "category": "thematic",
+        "query": "Verses about God's grace",
+        "retrieved": [],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 178.56216430664062,
+        "search_method": "none"
+      },
+      {
+        "id": "T07",
+        "category": "thematic",
+        "query": "What is the fruit of the Spirit?",
+        "retrieved": [
+          "Gal:5:22"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 1.0,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 173.57802391052246,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T08",
+        "category": "thematic",
+        "query": "Bible verses about wisdom",
+        "retrieved": [],
+        "relevant": [
+          "Jas:1:5",
+          "Prov:3:5",
+          "Prov:3:6",
+          "Prov:9:10"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 438.19594383239746,
+        "search_method": "none"
+      },
+      {
+        "id": "T09",
+        "category": "thematic",
+        "query": "What does the Bible teach about humility?",
+        "retrieved": [
+          "Col:2:18",
+          "Col:2:23",
+          "Col:3:12",
+          "Zeph:2:3",
+          "Ps:45:4",
+          "Titus:3:2",
+          "Phil:2:1",
+          "Phil:2:2",
+          "Phil:2:3",
+          "Jas:3:13",
+          "Acts:20:19"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.25,
+          "mrr": 0.1111111111111111,
+          "ndcg@k": 0.11751610475642714
+        },
+        "latency_ms": 182.58213996887207,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T10",
+        "category": "thematic",
+        "query": "Verses about perseverance and endurance",
+        "retrieved": [],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 162.20998764038086,
+        "search_method": "none"
+      },
+      {
+        "id": "T11",
+        "category": "thematic",
+        "query": "What does the Bible say about prayer?",
+        "retrieved": [
+          "Neh:1:11",
+          "1Kgs:8:28",
+          "Isa:1:15",
+          "Isa:56:7",
+          "Ps:102:1",
+          "Hab:3:1",
+          "2Chr:6:19",
+          "2Cor:1:11",
+          "Ps:17:1",
+          "Phlm:1:4"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 190.25707244873047,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T12",
+        "category": "thematic",
+        "query": "Bible verses about peace",
+        "retrieved": [],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 160.4788303375244,
+        "search_method": "none"
+      },
+      {
+        "id": "N01",
+        "category": "narrative",
+        "query": "Jesus feeding the five thousand",
+        "retrieved": [
+          "Matt:14:13",
+          "John:6:1",
+          "Mark:6:30",
+          "Luke:9:10"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:13",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 179.91900444030762,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N02",
+        "category": "narrative",
+        "query": "The story of Noah's ark",
+        "retrieved": [],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:24",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 167.4368381500244,
+        "search_method": "none"
+      },
+      {
+        "id": "N03",
+        "category": "narrative",
+        "query": "David and Goliath",
+        "retrieved": [
+          "1Sam:17:1",
+          "1Sam:17:23",
+          "1Sam:21:9"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:32",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.3333333333333333,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.5,
+          "ndcg@k": 0.1909208661789347
+        },
+        "latency_ms": 172.562837600708,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N04",
+        "category": "narrative",
+        "query": "The crucifixion of Jesus",
+        "retrieved": [
+          "John:19:16",
+          "Luke:23:26"
+        ],
+        "relevant": [
+          "John:19:18",
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 182.0201873779297,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N05",
+        "category": "narrative",
+        "query": "The resurrection of Jesus",
+        "retrieved": [
+          "Matt:27:53",
+          "1Pet:1:3",
+          "1Pet:3:21",
+          "Acts:4:2",
+          "Acts:17:18",
+          "Luke:20:27",
+          "Acts:4:33",
+          "Rom:1:4",
+          "John:11:25",
+          "Acts:1:22"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 187.15190887451172,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N06",
+        "category": "narrative",
+        "query": "Moses parting the Red Sea",
+        "retrieved": [],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 150.3732204437256,
+        "search_method": "none"
+      },
+      {
+        "id": "N07",
+        "category": "narrative",
+        "query": "The prodigal son parable",
+        "retrieved": [],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 156.5859317779541,
+        "search_method": "none"
+      },
+      {
+        "id": "N08",
+        "category": "narrative",
+        "query": "Jesus turning water into wine",
+        "retrieved": [],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 150.65598487854004,
+        "search_method": "none"
+      },
+      {
+        "id": "K01",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc774 \uc6a9\uc11c\uc5d0 \ub300\ud574 \ubb34\uc5c7\uc744 \ub9d0\uc500\ud558\uc168\ub098\uc694?",
+        "retrieved": [],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 316.31994247436523,
+        "search_method": "none"
+      },
+      {
+        "id": "K02",
+        "category": "korean",
+        "query": "\uc0ac\ub791\uc5d0 \ub300\ud55c \uc131\uacbd \uad6c\uc808",
+        "retrieved": [],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 159.11102294921875,
+        "search_method": "none"
+      },
+      {
+        "id": "K03",
+        "category": "korean",
+        "query": "\uc624\ubcd1\uc774\uc5b4 \uae30\uc801",
+        "retrieved": [],
+        "relevant": [
+          "John:6:11",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 165.53902626037598,
+        "search_method": "none"
+      },
+      {
+        "id": "K04",
+        "category": "korean",
+        "query": "\ub178\uc544\uc758 \ubc29\uc8fc \uc774\uc57c\uae30",
+        "retrieved": [],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 161.81588172912598,
+        "search_method": "none"
+      },
+      {
+        "id": "K05",
+        "category": "korean",
+        "query": "\ub2e4\uc717\uacfc \uace8\ub9ac\uc557",
+        "retrieved": [],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 166.7318344116211,
+        "search_method": "none"
+      },
+      {
+        "id": "K06",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc758 \ubd80\ud65c",
+        "retrieved": [],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 470.0489044189453,
+        "search_method": "none"
+      },
+      {
+        "id": "K07",
+        "category": "korean",
+        "query": "\ub450\ub824\uc6c0\uc744 \uc774\uae30\ub294 \ubc29\ubc95",
+        "retrieved": [],
+        "relevant": [
+          "2Tim:1:7",
+          "Isa:41:10",
+          "Ps:23:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 180.05609512329102,
+        "search_method": "none"
+      },
+      {
+        "id": "K08",
+        "category": "korean",
+        "query": "\uac10\uc0ac\uc5d0 \uad00\ud55c \uc131\uacbd \ub9d0\uc500",
+        "retrieved": [],
+        "relevant": [
+          "1Thess:5:18",
+          "Phil:4:6",
+          "Ps:100:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 160.355806350708,
+        "search_method": "none"
+      },
+      {
+        "id": "K09",
+        "category": "korean",
+        "query": "\ud0d5\uc790\uc758 \ube44\uc720",
+        "retrieved": [],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 157.20677375793457,
+        "search_method": "none"
+      },
+      {
+        "id": "K10",
+        "category": "korean",
+        "query": "\uc131\ub839\uc758 \uc5f4\ub9e4",
+        "retrieved": [],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 164.47210311889648,
+        "search_method": "none"
+      },
+      {
+        "id": "X01",
+        "category": "cross_lingual",
+        "query": "\uace0\ub09c \uc911\uc5d0 \ubbff\uc74c\uc744 \uc9c0\ud0a4\ub294 \ubc29\ubc95",
+        "retrieved": [],
+        "relevant": [
+          "1Pet:1:6",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 164.841890335083,
+        "search_method": "none"
+      },
+      {
+        "id": "X02",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \uc0ac\ub791 (love)?",
+        "retrieved": [
+          "Hos:3:1",
+          "1John:4:7",
+          "John:14:21",
+          "1John:2:15",
+          "Mal:1:2",
+          "Luke:6:32",
+          "John:15:9",
+          "1John:4:10",
+          "Eph:5:28",
+          "1John:4:20"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 329.44512367248535,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X03",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uc2ed\uc790\uac00 \uc8fd\uc74c",
+        "retrieved": [],
+        "relevant": [
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 162.9319190979004,
+        "search_method": "none"
+      },
+      {
+        "id": "X04",
+        "category": "cross_lingual",
+        "query": "\ud558\ub098\ub2d8\uc758 \uc740\ud61c\ub780 \ubb34\uc5c7\uc778\uac00?",
+        "retrieved": [],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 174.3600368499756,
+        "search_method": "none"
+      },
+      {
+        "id": "X05",
+        "category": "cross_lingual",
+        "query": "\uacb8\uc190\uc5d0 \ub300\ud55c \uac00\ub974\uce68",
+        "retrieved": [],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 169.69990730285645,
+        "search_method": "none"
+      },
+      {
+        "id": "X06",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \ud3c9\uc548 (peace)?",
+        "retrieved": [
+          "Jer:8:11",
+          "Jer:6:14",
+          "Ezek:13:16",
+          "Luke:10:6",
+          "Isa:59:8",
+          "2Kgs:9:18",
+          "Matt:10:13",
+          "Col:3:15",
+          "Ezek:13:10",
+          "2Cor:13:11"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 191.33496284484863,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X07",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uccab \ubc88\uc9f8 \uae30\uc801, \ubb3c\ub85c \ud3ec\ub3c4\uc8fc\ub97c \ub9cc\ub4dc\uc2ec",
+        "retrieved": [],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 225.28839111328125,
+        "search_method": "none"
+      },
+      {
+        "id": "X08",
+        "category": "cross_lingual",
+        "query": "\ubaa8\uc138\uac00 \ud64d\ud574\ub97c \uac00\ub974\ub2e4",
+        "retrieved": [],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 147.69983291625977,
+        "search_method": "none"
+      },
+      {
+        "id": "X09",
+        "category": "cross_lingual",
+        "query": "\uae30\ub3c4\ud558\ub294 \ubc29\ubc95",
+        "retrieved": [],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 150.4509449005127,
+        "search_method": "none"
+      },
+      {
+        "id": "X10",
+        "category": "cross_lingual",
+        "query": "\uc778\ub0b4\uc5d0 \uad00\ud55c \ub9d0\uc500",
+        "retrieved": [],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 162.3680591583252,
+        "search_method": "none"
+      }
+    ]
+  },
+  "semantic": {
+    "summary": {
+      "overall": {
+        "precision@k": 0.07250000000000001,
+        "recall@k": 0.15553571428571428,
+        "mrr": 0.28896915584415583,
+        "ndcg@k": 0.15491970246555797,
+        "avg_latency_ms": 1168.6443269252777
+      },
+      "by_category": {
+        "thematic": {
+          "precision@k": 0.05833333333333334,
+          "recall@k": 0.14662698412698413,
+          "mrr": 0.25277777777777777,
+          "ndcg@k": 0.15111974066145,
+          "avg_latency_ms": 1586.644212404887
+        },
+        "narrative": {
+          "precision@k": 0.1375,
+          "recall@k": 0.2369047619047619,
+          "mrr": 0.49181547619047616,
+          "ndcg@k": 0.2475092185404167,
+          "avg_latency_ms": 1404.2642712593079
+        },
+        "korean": {
+          "precision@k": 0.04,
+          "recall@k": 0.12,
+          "mrr": 0.33333333333333337,
+          "ndcg@k": 0.14895491745492662,
+          "avg_latency_ms": 839.754319190979
+        },
+        "cross_lingual": {
+          "precision@k": 0.06999999999999999,
+          "recall@k": 0.13666666666666666,
+          "mrr": 0.12575757575757576,
+          "ndcg@k": 0.0913728287812319,
+          "avg_latency_ms": 807.4385166168213
+        }
+      }
+    },
+    "per_query": [
+      {
+        "id": "T01",
+        "category": "thematic",
+        "query": "What does Jesus say about forgiveness?",
+        "retrieved": [
+          "John:20:23",
+          "Luke:7:48",
+          "Luke:5:20",
+          "Luke:23:34",
+          "Mark:2:7",
+          "Acts:13:38",
+          "Mark:2:5",
+          "Mark:2:6",
+          "2Cor:2:10",
+          "Mark:11:25",
+          "Luke:11:4"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Mark:11:25",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.14285714285714285,
+          "mrr": 0.1,
+          "ndcg@k": 0.07945707943276742
+        },
+        "latency_ms": 1866.0809993743896,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T02",
+        "category": "thematic",
+        "query": "Verses about faith during suffering",
+        "retrieved": [
+          "Ps:116:10",
+          "Ps:32:10",
+          "Ps:107:10",
+          "Ps:69:3",
+          "Ps:31:10",
+          "Ps:42:10",
+          "Lam:3:47",
+          "Rom:12:12",
+          "Ps:10:14",
+          "Ps:119:82"
+        ],
+        "relevant": [
+          "1Pet:1:6",
+          "1Pet:1:7",
+          "2Cor:4:17",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1833.387851715088,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T03",
+        "category": "thematic",
+        "query": "What is love according to the Bible?",
+        "retrieved": [
+          "Rom:13:10",
+          "1Cor:13:4",
+          "Rom:8:35",
+          "Rom:12:9",
+          "Luke:10:27",
+          "Jas:2:8",
+          "Col:1:5",
+          "2John:1:6",
+          "Matt:5:46",
+          "Ps:88:11"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.5,
+          "ndcg@k": 0.1909208661789347
+        },
+        "latency_ms": 1604.978084564209,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T04",
+        "category": "thematic",
+        "query": "How to deal with anxiety and worry",
+        "retrieved": [
+          "Eccl:11:10",
+          "Job:15:24",
+          "1Pet:4:7",
+          "Luke:12:11",
+          "Jas:4:9",
+          "Luke:12:25",
+          "Eccl:7:18",
+          "1Pet:3:15",
+          "Luke:21:34",
+          "Luke:21:35",
+          "Luke:21:36"
+        ],
+        "relevant": [
+          "1Pet:5:7",
+          "Matt:6:25",
+          "Matt:6:34",
+          "Phil:4:6",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1647.8443145751953,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T05",
+        "category": "thematic",
+        "query": "What does the Bible say about hope?",
+        "retrieved": [
+          "Job:6:11",
+          "Heb:6:19",
+          "Rom:8:24",
+          "Col:1:5",
+          "Titus:2:13",
+          "Matt:12:21",
+          "1Pet:1:3",
+          "Job:27:8",
+          "Job:17:15",
+          "Rom:12:12"
+        ],
+        "relevant": [
+          "Heb:11:1",
+          "Jer:29:11",
+          "Rom:15:13"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1577.1782398223877,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T06",
+        "category": "thematic",
+        "query": "Verses about God's grace",
+        "retrieved": [
+          "Isa:30:18",
+          "Ps:139:17",
+          "Rev:22:21",
+          "Rom:15:15",
+          "Ps:136:2",
+          "Gal:6:18",
+          "Ps:136:26",
+          "Ps:69:30",
+          "Ps:68:35",
+          "Ps:77:13"
+        ],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1506.6921710968018,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T07",
+        "category": "thematic",
+        "query": "What is the fruit of the Spirit?",
+        "retrieved": [
+          "Gal:5:22",
+          "Phil:1:11",
+          "2Cor:3:8",
+          "Phil:1:22",
+          "Matt:7:16",
+          "John:3:6",
+          "Rom:8:23",
+          "Eccl:3:21",
+          "Isa:11:2",
+          "1John:4:2"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 1626.9161701202393,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T08",
+        "category": "thematic",
+        "query": "Bible verses about wisdom",
+        "retrieved": [
+          "Prov:8:12",
+          "Job:12:13",
+          "Prov:9:10",
+          "Prov:9:11",
+          "1Cor:3:19",
+          "Prov:17:24",
+          "Job:28:12",
+          "Prov:9:12",
+          "Eccl:7:19",
+          "Eccl:9:13",
+          "Prov:1:4"
+        ],
+        "relevant": [
+          "Jas:1:5",
+          "Prov:3:5",
+          "Prov:3:6",
+          "Prov:9:10"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.25,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.19519002499605084
+        },
+        "latency_ms": 1510.0421905517578,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T09",
+        "category": "thematic",
+        "query": "What does the Bible teach about humility?",
+        "retrieved": [
+          "Phil:2:3",
+          "Jas:4:6",
+          "1Pet:5:5",
+          "Phil:2:1",
+          "Phil:2:2",
+          "Rom:2:4",
+          "Prov:15:33",
+          "Gal:5:23",
+          "Mic:6:8",
+          "Rom:12:16",
+          "Luke:14:11"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6366824387328317
+        },
+        "latency_ms": 1477.2343635559082,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T10",
+        "category": "thematic",
+        "query": "Verses about perseverance and endurance",
+        "retrieved": [
+          "Rev:14:12",
+          "Rom:5:4",
+          "2Thess:1:4",
+          "Ps:136:20",
+          "Ps:136:18",
+          "Ps:136:19",
+          "Ps:6:6",
+          "Ps:93:5",
+          "Ps:121:3",
+          "Ps:119:40",
+          "Ps:90:13"
+        ],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1557.508945465088,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T11",
+        "category": "thematic",
+        "query": "What does the Bible say about prayer?",
+        "retrieved": [
+          "Jas:5:13",
+          "Jas:5:14",
+          "Matt:21:22",
+          "1Tim:2:1",
+          "Matt:26:41",
+          "Matt:6:5",
+          "Luke:22:40",
+          "Matt:21:13",
+          "Jas:5:15",
+          "Matt:6:9",
+          "Rom:14:11"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.2,
+          "mrr": 0.1,
+          "ndcg@k": 0.09803928583135704
+        },
+        "latency_ms": 1403.5451412200928,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T12",
+        "category": "thematic",
+        "query": "Bible verses about peace",
+        "retrieved": [
+          "Ps:122:6",
+          "Ps:128:6",
+          "Ps:122:7",
+          "Lev:26:6",
+          "Ezek:13:10",
+          "Isa:48:22",
+          "Ps:122:8",
+          "Matt:10:34",
+          "1Cor:14:33",
+          "Isa:57:19"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1428.3220767974854,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N01",
+        "category": "narrative",
+        "query": "Jesus feeding the five thousand",
+        "retrieved": [
+          "Mark:6:30",
+          "John:6:1",
+          "Luke:9:10",
+          "Matt:14:13",
+          "John:6:5",
+          "Matt:15:29",
+          "Mark:8:1",
+          "John:6:11",
+          "Mark:6:44",
+          "Matt:14:19"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:13",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.2857142857142857,
+          "mrr": 0.125,
+          "ndcg@k": 0.16617090792688716
+        },
+        "latency_ms": 1388.7159824371338,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N02",
+        "category": "narrative",
+        "query": "The story of Noah's ark",
+        "retrieved": [
+          "Neh:12:20",
+          "Heb:11:7",
+          "Gen:7:1",
+          "Gen:6:9",
+          "Gen:8:6",
+          "1Chr:13:7",
+          "1Pet:3:20",
+          "Neh:12:15",
+          "Luke:17:27",
+          "Gen:8:9"
+        ],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:24",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.15130120674940675
+        },
+        "latency_ms": 1363.8181686401367,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N03",
+        "category": "narrative",
+        "query": "David and Goliath",
+        "retrieved": [
+          "1Sam:17:23",
+          "1Sam:21:9",
+          "1Sam:17:1",
+          "1Sam:17:4",
+          "Deut:11:26",
+          "2Sam:19:22",
+          "2Sam:21:19",
+          "1Sam:17:8",
+          "1Sam:17:14",
+          "Matt:20:30"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:32",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.3333333333333333,
+          "mrr": 1.0,
+          "ndcg@k": 0.43292617940918415
+        },
+        "latency_ms": 1434.7507953643799,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N04",
+        "category": "narrative",
+        "query": "The crucifixion of Jesus",
+        "retrieved": [
+          "John:19:18",
+          "Mark:15:24",
+          "Matt:27:22",
+          "1Cor:1:23",
+          "Acts:2:36",
+          "John:19:16",
+          "John:19:17",
+          "John:19:23",
+          "Luke:23:21",
+          "Mark:15:13",
+          "Luke:24:7"
+        ],
+        "relevant": [
+          "John:19:18",
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.14285714285714285,
+          "mrr": 1.0,
+          "ndcg@k": 0.27487633291429087
+        },
+        "latency_ms": 1457.7689170837402,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N05",
+        "category": "narrative",
+        "query": "The resurrection of Jesus",
+        "retrieved": [
+          "John:11:24",
+          "John:11:25",
+          "1Thess:4:14",
+          "Acts:17:3",
+          "Luke:18:33",
+          "Rom:10:9",
+          "1Cor:15:1",
+          "Acts:5:30",
+          "Rom:4:24",
+          "Phil:3:10"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1363.6596202850342,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N06",
+        "category": "narrative",
+        "query": "Moses parting the Red Sea",
+        "retrieved": [
+          "Exod:14:27",
+          "Exod:14:21",
+          "Isa:11:15",
+          "Exod:13:18",
+          "Josh:3:16",
+          "Exod:9:33",
+          "Exod:35:20",
+          "Isa:63:12",
+          "Josh:15:4",
+          "Exod:15:22"
+        ],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 1.0,
+          "ndcg@k": 0.5531464700081437
+        },
+        "latency_ms": 1607.686996459961,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N07",
+        "category": "narrative",
+        "query": "The prodigal son parable",
+        "retrieved": [
+          "Ezek:17:2",
+          "Neh:3:25",
+          "Prov:19:13",
+          "Isa:9:6",
+          "Matt:25:14",
+          "Prov:6:3",
+          "Luke:15:11",
+          "Prov:1:4",
+          "Prov:10:1",
+          "Ps:127:4"
+        ],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.14285714285714285,
+          "ndcg@k": 0.10086747116627115
+        },
+        "latency_ms": 1307.4917793273926,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N08",
+        "category": "narrative",
+        "query": "Jesus turning water into wine",
+        "retrieved": [
+          "John:19:29",
+          "John:4:46",
+          "John:2:1",
+          "Matt:27:48",
+          "John:2:9",
+          "Mark:15:36",
+          "Rev:14:10",
+          "Luke:1:15",
+          "Rev:14:19",
+          "John:19:30"
+        ],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.30078518014914984
+        },
+        "latency_ms": 1310.2219104766846,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K01",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc774 \uc6a9\uc11c\uc5d0 \ub300\ud574 \ubb34\uc5c7\uc744 \ub9d0\uc500\ud558\uc168\ub098\uc694?",
+        "retrieved": [
+          "Luke:5:20",
+          "Luke:7:48",
+          "Luke:23:34",
+          "Rom:2:4",
+          "Mark:2:5",
+          "John:20:23",
+          "Rom:9:15",
+          "Luke:18:38",
+          "Ps:78:38",
+          "Luke:7:49"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1241.7631149291992,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K02",
+        "category": "korean",
+        "query": "\uc0ac\ub791\uc5d0 \ub300\ud55c \uc131\uacbd \uad6c\uc808",
+        "retrieved": [
+          "1Cor:13:4",
+          "1Cor:13:8",
+          "Jer:32:18",
+          "Song:8:6",
+          "1Cor:16:24",
+          "Rom:12:9",
+          "Ps:118:4",
+          "Hos:3:1",
+          "Mark:12:33",
+          "Ps:118:3"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 1.0,
+          "ndcg@k": 0.3026024134988135
+        },
+        "latency_ms": 830.5249214172363,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K03",
+        "category": "korean",
+        "query": "\uc624\ubcd1\uc774\uc5b4 \uae30\uc801",
+        "retrieved": [
+          "Amos:6:13",
+          "Neh:7:29",
+          "Ezra:2:25",
+          "Acts:19:11",
+          "Ezra:2:11",
+          "Neh:7:16",
+          "Jer:14:9",
+          "Judg:15:18",
+          "Ezra:2:20",
+          "John:4:54"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 933.4242343902588,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K04",
+        "category": "korean",
+        "query": "\ub178\uc544\uc758 \ubc29\uc8fc \uc774\uc57c\uae30",
+        "retrieved": [
+          "Gen:8:1",
+          "Gen:8:15",
+          "Ezra:2:29",
+          "Gen:9:28",
+          "Gen:7:15",
+          "Ezra:2:22",
+          "Neh:7:30",
+          "Neh:7:8",
+          "Neh:7:33",
+          "1Chr:8:2"
+        ],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 749.769926071167,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K05",
+        "category": "korean",
+        "query": "\ub2e4\uc717\uacfc \uace8\ub9ac\uc557",
+        "retrieved": [
+          "1Sam:17:23",
+          "1Chr:13:6",
+          "1Chr:2:15",
+          "1Chr:23:1",
+          "Hos:3:5",
+          "2Sam:17:27",
+          "1Chr:21:2",
+          "Dan:5:23",
+          "2Sam:19:22",
+          "Gen:35:25"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.2,
+          "mrr": 1.0,
+          "ndcg@k": 0.3391602052736161
+        },
+        "latency_ms": 784.6310138702393,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K06",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc758 \ubd80\ud65c",
+        "retrieved": [
+          "2Tim:2:8",
+          "Luke:18:33",
+          "1Thess:4:14",
+          "Rom:6:9",
+          "Acts:26:23",
+          "1Thess:1:10",
+          "Heb:13:20",
+          "Phil:3:10",
+          "2Tim:1:10",
+          "Rom:14:9"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 758.6178779602051,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K07",
+        "category": "korean",
+        "query": "\ub450\ub824\uc6c0\uc744 \uc774\uae30\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "Eccl:7:18",
+          "Job:28:28",
+          "Isa:35:4",
+          "Ps:2:11",
+          "Rom:11:20",
+          "Josh:1:9",
+          "Job:9:34",
+          "Deut:32:27",
+          "Prov:8:13",
+          "Deut:31:6"
+        ],
+        "relevant": [
+          "2Tim:1:7",
+          "Isa:41:10",
+          "Ps:23:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 764.13893699646,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K08",
+        "category": "korean",
+        "query": "\uac10\uc0ac\uc5d0 \uad00\ud55c \uc131\uacbd \ub9d0\uc500",
+        "retrieved": [
+          "Heb:12:28",
+          "1Cor:1:4",
+          "1Thess:5:18",
+          "1Cor:10:30",
+          "Phil:1:3",
+          "2Cor:9:15",
+          "1Chr:23:30",
+          "Ps:69:30",
+          "Rom:14:6",
+          "Jer:33:11"
+        ],
+        "relevant": [
+          "1Thess:5:18",
+          "Phil:4:6",
+          "Ps:100:4"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.23463936301137822
+        },
+        "latency_ms": 743.046760559082,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K09",
+        "category": "korean",
+        "query": "\ud0d5\uc790\uc758 \ube44\uc720",
+        "retrieved": [
+          "Luke:3:11",
+          "Isa:25:4",
+          "Prov:27:3",
+          "Prov:30:33",
+          "1Tim:4:9",
+          "Prov:26:9",
+          "Eccl:7:6",
+          "Judg:14:18",
+          "Prov:10:14",
+          "Luke:6:29"
+        ],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 778.5992622375488,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K10",
+        "category": "korean",
+        "query": "\uc131\ub839\uc758 \uc5f4\ub9e4",
+        "retrieved": [
+          "Gal:5:22",
+          "Phil:1:11",
+          "Deut:26:2",
+          "Ezek:44:30",
+          "1Pet:2:2",
+          "Isa:62:9",
+          "Matt:3:8",
+          "Rom:8:23",
+          "Luke:22:18",
+          "Matt:21:43"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 813.0271434783936,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X01",
+        "category": "cross_lingual",
+        "query": "\uace0\ub09c \uc911\uc5d0 \ubbff\uc74c\uc744 \uc9c0\ud0a4\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "1Cor:16:13",
+          "Rom:12:12",
+          "2Tim:2:3",
+          "Prov:3:5",
+          "1Tim:1:19",
+          "Luke:21:36",
+          "1Tim:6:12",
+          "2Tim:1:12",
+          "1John:3:21",
+          "Heb:3:14"
+        ],
+        "relevant": [
+          "1Pet:1:6",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 761.4259719848633,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X02",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \uc0ac\ub791 (love)?",
+        "retrieved": [
+          "Rom:13:10",
+          "Rom:8:35",
+          "Rom:12:9",
+          "1Cor:13:4",
+          "Luke:10:27",
+          "Jas:2:8",
+          "Ps:88:11",
+          "1Cor:13:8",
+          "Col:1:5",
+          "Mark:12:30"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.25,
+          "ndcg@k": 0.13032376591037065
+        },
+        "latency_ms": 775.3207683563232,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X03",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uc2ed\uc790\uac00 \uc8fd\uc74c",
+        "retrieved": [
+          "Matt:27:45",
+          "Matt:26:52",
+          "John:19:23",
+          "Luke:23:44",
+          "Matt:16:21",
+          "Mark:15:33",
+          "Mark:15:32",
+          "John:19:34",
+          "John:19:18",
+          "John:19:1"
+        ],
+        "relevant": [
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 910.5868339538574,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X04",
+        "category": "cross_lingual",
+        "query": "\ud558\ub098\ub2d8\uc758 \uc740\ud61c\ub780 \ubb34\uc5c7\uc778\uac00?",
+        "retrieved": [
+          "Ps:116:12",
+          "Eccl:5:19",
+          "Eccl:3:13",
+          "Eccl:6:2",
+          "Rom:2:4",
+          "2Cor:9:15",
+          "Luke:1:78",
+          "Rom:11:35",
+          "Rev:22:21",
+          "Ps:84:11"
+        ],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 720.5150127410889,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X05",
+        "category": "cross_lingual",
+        "query": "\uacb8\uc190\uc5d0 \ub300\ud55c \uac00\ub974\uce68",
+        "retrieved": [
+          "Prov:15:33",
+          "Prov:3:34",
+          "Col:3:12",
+          "1Pet:5:5",
+          "Rom:12:16",
+          "Eph:4:2",
+          "Titus:3:2",
+          "Ps:25:9",
+          "Phil:2:1",
+          "Phil:2:2",
+          "Phil:2:3"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.09090909090909091,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 751.5988349914551,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X06",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \ud3c9\uc548 (peace)?",
+        "retrieved": [
+          "Isa:30:15",
+          "Rom:3:17",
+          "Col:3:15",
+          "2Kgs:9:18",
+          "1Sam:29:7",
+          "Isa:48:22",
+          "Num:6:26",
+          "Mark:9:50",
+          "Luke:19:38",
+          "Ezek:13:16"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 768.7070369720459,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X07",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uccab \ubc88\uc9f8 \uae30\uc801, \ubb3c\ub85c \ud3ec\ub3c4\uc8fc\ub97c \ub9cc\ub4dc\uc2ec",
+        "retrieved": [
+          "Luke:1:15",
+          "Matt:27:48",
+          "Matt:27:34",
+          "John:2:9",
+          "Joel:1:5",
+          "Mark:15:36",
+          "Isa:5:22",
+          "John:19:29",
+          "Isa:29:9",
+          "Isa:1:22"
+        ],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.2,
+          "mrr": 0.25,
+          "ndcg@k": 0.14606834984270645
+        },
+        "latency_ms": 875.7820129394531,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X08",
+        "category": "cross_lingual",
+        "query": "\ubaa8\uc138\uac00 \ud64d\ud574\ub97c \uac00\ub974\ub2e4",
+        "retrieved": [
+          "Exod:3:1",
+          "Isa:11:15",
+          "Exod:14:27",
+          "Num:33:50",
+          "Josh:13:32",
+          "Num:36:13",
+          "Exod:3:11",
+          "Mark:1:16",
+          "Exod:14:26",
+          "Exod:14:21"
+        ],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.6,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.36971678359107674
+        },
+        "latency_ms": 764.9259567260742,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X09",
+        "category": "cross_lingual",
+        "query": "\uae30\ub3c4\ud558\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "1Kgs:8:28",
+          "1Tim:2:1",
+          "Phil:4:6",
+          "Jas:5:16",
+          "Joel:1:14",
+          "Eph:6:18",
+          "Mal:1:9",
+          "2Chr:6:19",
+          "1Cor:14:15",
+          "Matt:6:9"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.26761938846816513
+        },
+        "latency_ms": 767.3230171203613,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X10",
+        "category": "cross_lingual",
+        "query": "\uc778\ub0b4\uc5d0 \uad00\ud55c \ub9d0\uc500",
+        "retrieved": [
+          "Rev:14:12",
+          "Jas:5:10",
+          "Rom:12:12",
+          "Isa:30:15",
+          "Rom:15:5",
+          "Rom:5:4",
+          "2Pet:3:15",
+          "Prov:25:15",
+          "Ps:27:14",
+          "Lam:3:26"
+        ],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 978.1997203826904,
+        "search_method": "semantic"
+      }
+    ]
+  },
+  "hybrid_rrf": {
+    "summary": {
+      "overall": {
+        "precision@k": 0.07,
+        "recall@k": 0.1526190476190476,
+        "mrr": 0.2733739177489177,
+        "ndcg@k": 0.14668770403285764,
+        "avg_latency_ms": 950.2979815006256
+      },
+      "by_category": {
+        "thematic": {
+          "precision@k": 0.05000000000000001,
+          "recall@k": 0.1369047619047619,
+          "mrr": 0.27579365079365076,
+          "ndcg@k": 0.14029187853310637,
+          "avg_latency_ms": 939.2624100049337
+        },
+        "narrative": {
+          "precision@k": 0.1375,
+          "recall@k": 0.2369047619047619,
+          "mrr": 0.39806547619047616,
+          "ndcg@k": 0.2279475260455507,
+          "avg_latency_ms": 1034.8691642284393
+        },
+        "korean": {
+          "precision@k": 0.04,
+          "recall@k": 0.12,
+          "mrr": 0.33333333333333337,
+          "ndcg@k": 0.14895491745492662,
+          "avg_latency_ms": 927.9700994491577
+        },
+        "cross_lingual": {
+          "precision@k": 0.06999999999999999,
+          "recall@k": 0.13666666666666666,
+          "mrr": 0.11075757575757575,
+          "ndcg@k": 0.08708762360033565,
+          "avg_latency_ms": 918.2116031646729
+        }
+      }
+    },
+    "per_query": [
+      {
+        "id": "T01",
+        "category": "thematic",
+        "query": "What does Jesus say about forgiveness?",
+        "retrieved": [
+          "Luke:23:34",
+          "Acts:13:38",
+          "Matt:18:21",
+          "John:20:23",
+          "Luke:7:48",
+          "Luke:5:20",
+          "Acts:2:38",
+          "Mark:2:7",
+          "Mark:2:5",
+          "Mark:2:6",
+          "2Cor:2:10"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Mark:11:25",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.14285714285714285,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.13743816645714543
+        },
+        "latency_ms": 953.0045986175537,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "T02",
+        "category": "thematic",
+        "query": "Verses about faith during suffering",
+        "retrieved": [
+          "Ps:116:10",
+          "Ps:32:10",
+          "Ps:107:10",
+          "Ps:69:3",
+          "Ps:31:10",
+          "Ps:42:10",
+          "Lam:3:47",
+          "Rom:12:12",
+          "Ps:10:14",
+          "Ps:119:82"
+        ],
+        "relevant": [
+          "1Pet:1:6",
+          "1Pet:1:7",
+          "2Cor:4:17",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 921.8049049377441,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T03",
+        "category": "thematic",
+        "query": "What is love according to the Bible?",
+        "retrieved": [
+          "Rom:13:10",
+          "1Cor:13:4",
+          "Rom:8:35",
+          "Rom:12:9",
+          "Luke:10:27",
+          "Jas:2:8",
+          "Col:1:5",
+          "2John:1:6",
+          "Matt:5:46",
+          "Ps:88:11"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.5,
+          "ndcg@k": 0.1909208661789347
+        },
+        "latency_ms": 998.3229637145996,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T04",
+        "category": "thematic",
+        "query": "How to deal with anxiety and worry",
+        "retrieved": [
+          "Eccl:11:10",
+          "Job:15:24",
+          "1Pet:4:7",
+          "Luke:12:11",
+          "Jas:4:9",
+          "Luke:12:25",
+          "Eccl:7:18",
+          "1Pet:3:15",
+          "Luke:21:34",
+          "Luke:21:35",
+          "Luke:21:36"
+        ],
+        "relevant": [
+          "1Pet:5:7",
+          "Matt:6:25",
+          "Matt:6:34",
+          "Phil:4:6",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 996.849775314331,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T05",
+        "category": "thematic",
+        "query": "What does the Bible say about hope?",
+        "retrieved": [
+          "Rom:8:24",
+          "1Pet:1:3",
+          "Job:17:15",
+          "Col:1:5",
+          "Matt:12:21",
+          "Rom:4:18",
+          "Rom:15:13",
+          "Job:6:11",
+          "Heb:6:19",
+          "1Tim:6:17"
+        ],
+        "relevant": [
+          "Heb:11:1",
+          "Jer:29:11",
+          "Rom:15:13"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.14285714285714285,
+          "ndcg@k": 0.15642624200758548
+        },
+        "latency_ms": 944.1149234771729,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "T06",
+        "category": "thematic",
+        "query": "Verses about God's grace",
+        "retrieved": [
+          "Isa:30:18",
+          "Ps:139:17",
+          "Rev:22:21",
+          "Rom:15:15",
+          "Ps:136:2",
+          "Gal:6:18",
+          "Ps:136:26",
+          "Ps:69:30",
+          "Ps:68:35",
+          "Ps:77:13"
+        ],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 860.9828948974609,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T07",
+        "category": "thematic",
+        "query": "What is the fruit of the Spirit?",
+        "retrieved": [
+          "Gal:5:22",
+          "Phil:1:11",
+          "2Cor:3:8",
+          "Phil:1:22",
+          "Matt:7:16",
+          "John:3:6",
+          "Rom:8:23",
+          "Eccl:3:21",
+          "Isa:11:2",
+          "1John:4:2"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 936.2950325012207,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "T08",
+        "category": "thematic",
+        "query": "Bible verses about wisdom",
+        "retrieved": [
+          "Prov:8:12",
+          "Job:12:13",
+          "Prov:9:10",
+          "Prov:9:11",
+          "1Cor:3:19",
+          "Prov:17:24",
+          "Job:28:12",
+          "Prov:9:12",
+          "Eccl:7:19",
+          "Eccl:9:13",
+          "Prov:1:4"
+        ],
+        "relevant": [
+          "Jas:1:5",
+          "Prov:3:5",
+          "Prov:3:6",
+          "Prov:9:10"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.25,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.19519002499605084
+        },
+        "latency_ms": 863.8489246368408,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T09",
+        "category": "thematic",
+        "query": "What does the Bible teach about humility?",
+        "retrieved": [
+          "Phil:2:3",
+          "Phil:2:1",
+          "Phil:2:2",
+          "Titus:3:2",
+          "1Pet:5:5",
+          "Prov:15:33",
+          "Col:3:12",
+          "Prov:18:12",
+          "Prov:11:2",
+          "Prov:22:4",
+          "Col:2:18"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.25,
+          "mrr": 1.0,
+          "ndcg@k": 0.3903800499921017
+        },
+        "latency_ms": 870.1310157775879,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "T10",
+        "category": "thematic",
+        "query": "Verses about perseverance and endurance",
+        "retrieved": [
+          "Rev:14:12",
+          "Rom:5:4",
+          "2Thess:1:4",
+          "Ps:136:20",
+          "Ps:136:18",
+          "Ps:136:19",
+          "Ps:6:6",
+          "Ps:93:5",
+          "Ps:121:3",
+          "Ps:119:40",
+          "Ps:90:13"
+        ],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 871.920108795166,
+        "search_method": "semantic"
+      },
+      {
+        "id": "T11",
+        "category": "thematic",
+        "query": "What does the Bible say about prayer?",
+        "retrieved": [
+          "Isa:1:15",
+          "Matt:21:22",
+          "Matt:21:13",
+          "Jas:5:13",
+          "Neh:1:11",
+          "1Kgs:8:28",
+          "1Tim:2:1",
+          "Matt:26:41",
+          "Isa:56:7",
+          "Matt:6:5"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 910.1319313049316,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "T12",
+        "category": "thematic",
+        "query": "Bible verses about peace",
+        "retrieved": [
+          "Ps:122:6",
+          "Ps:128:6",
+          "Ps:122:7",
+          "Lev:26:6",
+          "Ezek:13:10",
+          "Isa:48:22",
+          "Ps:122:8",
+          "Matt:10:34",
+          "1Cor:14:33",
+          "Isa:57:19"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1143.7418460845947,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N01",
+        "category": "narrative",
+        "query": "Jesus feeding the five thousand",
+        "retrieved": [
+          "Mark:6:30",
+          "John:6:1",
+          "Matt:14:13",
+          "Luke:9:10",
+          "John:6:5",
+          "Matt:15:29",
+          "Mark:8:1",
+          "John:6:11",
+          "Mark:6:44",
+          "Matt:14:19"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:13",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.2857142857142857,
+          "mrr": 0.125,
+          "ndcg@k": 0.16617090792688716
+        },
+        "latency_ms": 1291.8295860290527,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "N02",
+        "category": "narrative",
+        "query": "The story of Noah's ark",
+        "retrieved": [
+          "Neh:12:20",
+          "Heb:11:7",
+          "Gen:7:1",
+          "Gen:6:9",
+          "Gen:8:6",
+          "1Chr:13:7",
+          "1Pet:3:20",
+          "Neh:12:15",
+          "Luke:17:27",
+          "Gen:8:9"
+        ],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:24",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.15130120674940675
+        },
+        "latency_ms": 1138.061761856079,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N03",
+        "category": "narrative",
+        "query": "David and Goliath",
+        "retrieved": [
+          "1Sam:17:23",
+          "1Sam:17:1",
+          "1Sam:21:9",
+          "1Sam:17:4",
+          "Deut:11:26",
+          "2Sam:19:22",
+          "2Sam:21:19",
+          "1Sam:17:8",
+          "1Sam:17:14",
+          "Matt:20:30"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:32",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.3333333333333333,
+          "mrr": 1.0,
+          "ndcg@k": 0.43292617940918415
+        },
+        "latency_ms": 1199.4311809539795,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "N04",
+        "category": "narrative",
+        "query": "The crucifixion of Jesus",
+        "retrieved": [
+          "John:19:16",
+          "John:19:17",
+          "Luke:23:26",
+          "John:19:18",
+          "Mark:15:24",
+          "Matt:27:22",
+          "1Cor:1:23",
+          "Acts:2:36",
+          "John:19:23",
+          "Luke:23:21",
+          "Mark:15:13"
+        ],
+        "relevant": [
+          "John:19:18",
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.14285714285714285,
+          "mrr": 0.25,
+          "ndcg@k": 0.11838279295536293
+        },
+        "latency_ms": 997.4658489227295,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "N05",
+        "category": "narrative",
+        "query": "The resurrection of Jesus",
+        "retrieved": [
+          "John:11:25",
+          "John:11:24",
+          "Matt:27:53",
+          "1Pet:1:3",
+          "1Thess:4:14",
+          "1Pet:3:21",
+          "Acts:17:3",
+          "Acts:4:2",
+          "Luke:18:33",
+          "Acts:17:18"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1014.8589611053467,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "N06",
+        "category": "narrative",
+        "query": "Moses parting the Red Sea",
+        "retrieved": [
+          "Exod:14:27",
+          "Exod:14:21",
+          "Isa:11:15",
+          "Exod:13:18",
+          "Josh:3:16",
+          "Exod:9:33",
+          "Exod:35:20",
+          "Isa:63:12",
+          "Josh:15:4",
+          "Exod:15:22"
+        ],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 1.0,
+          "ndcg@k": 0.5531464700081437
+        },
+        "latency_ms": 905.1620960235596,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N07",
+        "category": "narrative",
+        "query": "The prodigal son parable",
+        "retrieved": [
+          "Ezek:17:2",
+          "Neh:3:25",
+          "Prov:19:13",
+          "Isa:9:6",
+          "Matt:25:14",
+          "Prov:6:3",
+          "Luke:15:11",
+          "Prov:1:4",
+          "Prov:10:1",
+          "Ps:127:4"
+        ],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.14285714285714285,
+          "ndcg@k": 0.10086747116627115
+        },
+        "latency_ms": 877.6099681854248,
+        "search_method": "semantic"
+      },
+      {
+        "id": "N08",
+        "category": "narrative",
+        "query": "Jesus turning water into wine",
+        "retrieved": [
+          "John:19:29",
+          "John:4:46",
+          "John:2:1",
+          "Matt:27:48",
+          "John:2:9",
+          "Mark:15:36",
+          "Rev:14:10",
+          "Luke:1:15",
+          "Rev:14:19",
+          "John:19:30"
+        ],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.30078518014914984
+        },
+        "latency_ms": 854.5339107513428,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K01",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc774 \uc6a9\uc11c\uc5d0 \ub300\ud574 \ubb34\uc5c7\uc744 \ub9d0\uc500\ud558\uc168\ub098\uc694?",
+        "retrieved": [
+          "Luke:5:20",
+          "Luke:7:48",
+          "Luke:23:34",
+          "Rom:2:4",
+          "Mark:2:5",
+          "John:20:23",
+          "Rom:9:15",
+          "Luke:18:38",
+          "Ps:78:38",
+          "Luke:7:49"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1144.953966140747,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K02",
+        "category": "korean",
+        "query": "\uc0ac\ub791\uc5d0 \ub300\ud55c \uc131\uacbd \uad6c\uc808",
+        "retrieved": [
+          "1Cor:13:4",
+          "1Cor:13:8",
+          "Jer:32:18",
+          "Song:8:6",
+          "1Cor:16:24",
+          "Rom:12:9",
+          "Ps:118:4",
+          "Hos:3:1",
+          "Mark:12:33",
+          "Ps:118:3"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 1.0,
+          "ndcg@k": 0.3026024134988135
+        },
+        "latency_ms": 989.1300201416016,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K03",
+        "category": "korean",
+        "query": "\uc624\ubcd1\uc774\uc5b4 \uae30\uc801",
+        "retrieved": [
+          "Amos:6:13",
+          "Neh:7:29",
+          "Ezra:2:25",
+          "Acts:19:11",
+          "Ezra:2:11",
+          "Neh:7:16",
+          "Jer:14:9",
+          "Judg:15:18",
+          "Ezra:2:20",
+          "John:4:54"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 870.6362247467041,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K04",
+        "category": "korean",
+        "query": "\ub178\uc544\uc758 \ubc29\uc8fc \uc774\uc57c\uae30",
+        "retrieved": [
+          "Gen:8:1",
+          "Gen:8:15",
+          "Ezra:2:29",
+          "Gen:9:28",
+          "Gen:7:15",
+          "Ezra:2:22",
+          "Neh:7:30",
+          "Neh:7:8",
+          "Neh:7:33",
+          "1Chr:8:2"
+        ],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 887.3951435089111,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K05",
+        "category": "korean",
+        "query": "\ub2e4\uc717\uacfc \uace8\ub9ac\uc557",
+        "retrieved": [
+          "1Sam:17:23",
+          "1Chr:13:6",
+          "1Chr:2:15",
+          "1Chr:23:1",
+          "Hos:3:5",
+          "2Sam:17:27",
+          "1Chr:21:2",
+          "Dan:5:23",
+          "2Sam:19:22",
+          "Gen:35:25"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.2,
+          "mrr": 1.0,
+          "ndcg@k": 0.3391602052736161
+        },
+        "latency_ms": 1025.974988937378,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K06",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc758 \ubd80\ud65c",
+        "retrieved": [
+          "2Tim:2:8",
+          "Luke:18:33",
+          "1Thess:4:14",
+          "Rom:6:9",
+          "Acts:26:23",
+          "1Thess:1:10",
+          "Heb:13:20",
+          "Phil:3:10",
+          "2Tim:1:10",
+          "Rom:14:9"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 893.477201461792,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K07",
+        "category": "korean",
+        "query": "\ub450\ub824\uc6c0\uc744 \uc774\uae30\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "Eccl:7:18",
+          "Job:28:28",
+          "Isa:35:4",
+          "Ps:2:11",
+          "Rom:11:20",
+          "Josh:1:9",
+          "Job:9:34",
+          "Deut:32:27",
+          "Prov:8:13",
+          "Deut:31:6"
+        ],
+        "relevant": [
+          "2Tim:1:7",
+          "Isa:41:10",
+          "Ps:23:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 876.5711784362793,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K08",
+        "category": "korean",
+        "query": "\uac10\uc0ac\uc5d0 \uad00\ud55c \uc131\uacbd \ub9d0\uc500",
+        "retrieved": [
+          "Heb:12:28",
+          "1Cor:1:4",
+          "1Thess:5:18",
+          "1Cor:10:30",
+          "Phil:1:3",
+          "2Cor:9:15",
+          "1Chr:23:30",
+          "Ps:69:30",
+          "Rom:14:6",
+          "Jer:33:11"
+        ],
+        "relevant": [
+          "1Thess:5:18",
+          "Phil:4:6",
+          "Ps:100:4"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.23463936301137822
+        },
+        "latency_ms": 878.122091293335,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K09",
+        "category": "korean",
+        "query": "\ud0d5\uc790\uc758 \ube44\uc720",
+        "retrieved": [
+          "Luke:3:11",
+          "Isa:25:4",
+          "Prov:27:3",
+          "Prov:30:33",
+          "1Tim:4:9",
+          "Prov:26:9",
+          "Eccl:7:6",
+          "Judg:14:18",
+          "Prov:10:14",
+          "Luke:6:29"
+        ],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 847.3770618438721,
+        "search_method": "semantic"
+      },
+      {
+        "id": "K10",
+        "category": "korean",
+        "query": "\uc131\ub839\uc758 \uc5f4\ub9e4",
+        "retrieved": [
+          "Gal:5:22",
+          "Phil:1:11",
+          "Deut:26:2",
+          "Ezek:44:30",
+          "1Pet:2:2",
+          "Isa:62:9",
+          "Matt:3:8",
+          "Rom:8:23",
+          "Luke:22:18",
+          "Matt:21:43"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 866.063117980957,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X01",
+        "category": "cross_lingual",
+        "query": "\uace0\ub09c \uc911\uc5d0 \ubbff\uc74c\uc744 \uc9c0\ud0a4\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "1Cor:16:13",
+          "Rom:12:12",
+          "2Tim:2:3",
+          "Prov:3:5",
+          "1Tim:1:19",
+          "Luke:21:36",
+          "1Tim:6:12",
+          "2Tim:1:12",
+          "1John:3:21",
+          "Heb:3:14"
+        ],
+        "relevant": [
+          "1Pet:1:6",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 874.9010562896729,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X02",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \uc0ac\ub791 (love)?",
+        "retrieved": [
+          "Rom:13:10",
+          "1John:4:18",
+          "Rom:13:8",
+          "Rom:13:9",
+          "Hos:3:1",
+          "Rom:8:35",
+          "1John:4:7",
+          "Rom:12:9",
+          "John:14:21",
+          "1Cor:13:4",
+          "1John:2:15"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.1,
+          "ndcg@k": 0.08747171410140821
+        },
+        "latency_ms": 863.847017288208,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "X03",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uc2ed\uc790\uac00 \uc8fd\uc74c",
+        "retrieved": [
+          "Matt:27:45",
+          "Matt:26:52",
+          "John:19:23",
+          "Luke:23:44",
+          "Matt:16:21",
+          "Mark:15:33",
+          "Mark:15:32",
+          "John:19:34",
+          "John:19:18",
+          "John:19:1"
+        ],
+        "relevant": [
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 925.1589775085449,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X04",
+        "category": "cross_lingual",
+        "query": "\ud558\ub098\ub2d8\uc758 \uc740\ud61c\ub780 \ubb34\uc5c7\uc778\uac00?",
+        "retrieved": [
+          "Ps:116:12",
+          "Eccl:5:19",
+          "Eccl:3:13",
+          "Eccl:6:2",
+          "Rom:2:4",
+          "2Cor:9:15",
+          "Luke:1:78",
+          "Rom:11:35",
+          "Rev:22:21",
+          "Ps:84:11"
+        ],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 823.8811492919922,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X05",
+        "category": "cross_lingual",
+        "query": "\uacb8\uc190\uc5d0 \ub300\ud55c \uac00\ub974\uce68",
+        "retrieved": [
+          "Prov:15:33",
+          "Prov:3:34",
+          "Col:3:12",
+          "1Pet:5:5",
+          "Rom:12:16",
+          "Eph:4:2",
+          "Titus:3:2",
+          "Ps:25:9",
+          "Phil:2:1",
+          "Phil:2:2",
+          "Phil:2:3"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.09090909090909091,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1062.7410411834717,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X06",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \ud3c9\uc548 (peace)?",
+        "retrieved": [
+          "2Kgs:9:18",
+          "Col:3:15",
+          "Jer:8:11",
+          "Ezek:13:16",
+          "Rom:3:17",
+          "Ezek:13:10",
+          "2Kgs:9:19",
+          "Isa:57:19",
+          "2Kgs:9:22",
+          "Isa:30:15"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 932.905912399292,
+        "search_method": "hybrid-rrf"
+      },
+      {
+        "id": "X07",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uccab \ubc88\uc9f8 \uae30\uc801, \ubb3c\ub85c \ud3ec\ub3c4\uc8fc\ub97c \ub9cc\ub4dc\uc2ec",
+        "retrieved": [
+          "Luke:1:15",
+          "Matt:27:48",
+          "Matt:27:34",
+          "John:2:9",
+          "Joel:1:5",
+          "Mark:15:36",
+          "Isa:5:22",
+          "John:19:29",
+          "Isa:29:9",
+          "Isa:1:22"
+        ],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.2,
+          "mrr": 0.25,
+          "ndcg@k": 0.14606834984270645
+        },
+        "latency_ms": 917.5848960876465,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X08",
+        "category": "cross_lingual",
+        "query": "\ubaa8\uc138\uac00 \ud64d\ud574\ub97c \uac00\ub974\ub2e4",
+        "retrieved": [
+          "Exod:3:1",
+          "Isa:11:15",
+          "Exod:14:27",
+          "Num:33:50",
+          "Josh:13:32",
+          "Num:36:13",
+          "Exod:3:11",
+          "Mark:1:16",
+          "Exod:14:26",
+          "Exod:14:21"
+        ],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.6,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.36971678359107674
+        },
+        "latency_ms": 904.0467739105225,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X09",
+        "category": "cross_lingual",
+        "query": "\uae30\ub3c4\ud558\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "1Kgs:8:28",
+          "1Tim:2:1",
+          "Phil:4:6",
+          "Jas:5:16",
+          "Joel:1:14",
+          "Eph:6:18",
+          "Mal:1:9",
+          "2Chr:6:19",
+          "1Cor:14:15",
+          "Matt:6:9"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 0.3333333333333333,
+          "ndcg@k": 0.26761938846816513
+        },
+        "latency_ms": 1018.6030864715576,
+        "search_method": "semantic"
+      },
+      {
+        "id": "X10",
+        "category": "cross_lingual",
+        "query": "\uc778\ub0b4\uc5d0 \uad00\ud55c \ub9d0\uc500",
+        "retrieved": [
+          "Rev:14:12",
+          "Jas:5:10",
+          "Rom:12:12",
+          "Isa:30:15",
+          "Rom:15:5",
+          "Rom:5:4",
+          "2Pet:3:15",
+          "Prov:25:15",
+          "Ps:27:14",
+          "Lam:3:26"
+        ],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 858.4461212158203,
+        "search_method": "semantic"
+      }
+    ]
+  },
+  "hybrid_rrf_rerank": {
+    "summary": {
+      "overall": {
+        "precision@k": 0.0925,
+        "recall@k": 0.19785714285714287,
+        "mrr": 0.3100595238095238,
+        "ndcg@k": 0.18469786587501447,
+        "avg_latency_ms": 2635.070079565048
+      },
+      "by_category": {
+        "thematic": {
+          "precision@k": 0.05000000000000001,
+          "recall@k": 0.14166666666666666,
+          "mrr": 0.24523809523809526,
+          "ndcg@k": 0.13511314603959967,
+          "avg_latency_ms": 3215.73805809021
+        },
+        "narrative": {
+          "precision@k": 0.1875,
+          "recall@k": 0.31845238095238093,
+          "mrr": 0.47619047619047616,
+          "ndcg@k": 0.302791950532553,
+          "avg_latency_ms": 2508.4154903888702
+        },
+        "korean": {
+          "precision@k": 0.05,
+          "recall@k": 0.13999999999999999,
+          "mrr": 0.24500000000000002,
+          "ndcg@k": 0.13784704700448494,
+          "avg_latency_ms": 2444.7097063064575
+        },
+        "cross_lingual": {
+          "precision@k": 0.11000000000000001,
+          "recall@k": 0.22666666666666666,
+          "mrr": 0.32,
+          "ndcg@k": 0.19657508082201086,
+          "avg_latency_ms": 2229.952549934387
+        }
+      }
+    },
+    "per_query": [
+      {
+        "id": "T01",
+        "category": "thematic",
+        "query": "What does Jesus say about forgiveness?",
+        "retrieved": [
+          "Luke:5:20",
+          "Luke:23:34",
+          "Mark:2:5",
+          "Acts:13:38",
+          "Matt:9:2",
+          "Luke:7:48",
+          "Acts:2:38",
+          "Luke:11:4",
+          "Mark:2:10",
+          "John:20:23"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Mark:11:25",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 5917.585134506226,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T02",
+        "category": "thematic",
+        "query": "Verses about faith during suffering",
+        "retrieved": [
+          "Ps:119:50",
+          "Isa:38:17",
+          "2Tim:1:12",
+          "Ps:18:6",
+          "Ps:42:5",
+          "Jas:5:7",
+          "Ps:42:11",
+          "Ps:43:5",
+          "Rom:12:12",
+          "2Thess:1:4"
+        ],
+        "relevant": [
+          "1Pet:1:6",
+          "1Pet:1:7",
+          "2Cor:4:17",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2747.7080821990967,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "T03",
+        "category": "thematic",
+        "query": "What is love according to the Bible?",
+        "retrieved": [
+          "2John:1:6",
+          "1John:3:16",
+          "1John:4:16",
+          "Rom:13:10",
+          "1Cor:13:4",
+          "Rom:12:9",
+          "1John:5:3",
+          "1John:4:7",
+          "Jas:2:8",
+          "1Cor:13:13"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.2,
+          "ndcg@k": 0.11706259313796355
+        },
+        "latency_ms": 2237.7209663391113,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "T04",
+        "category": "thematic",
+        "query": "How to deal with anxiety and worry",
+        "retrieved": [
+          "Eccl:11:10",
+          "Luke:21:34",
+          "Luke:21:35",
+          "1Pet:4:7",
+          "Prov:12:25",
+          "Mark:14:38",
+          "Job:15:24",
+          "Matt:6:31",
+          "1Pet:3:15",
+          "Matt:6:34",
+          "Luke:21:36"
+        ],
+        "relevant": [
+          "1Pet:5:7",
+          "Matt:6:25",
+          "Matt:6:34",
+          "Phil:4:6",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.2,
+          "mrr": 0.1,
+          "ndcg@k": 0.09803928583135704
+        },
+        "latency_ms": 2361.227035522461,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "T05",
+        "category": "thematic",
+        "query": "What does the Bible say about hope?",
+        "retrieved": [
+          "Jer:31:17",
+          "Rom:4:18",
+          "Rom:5:5",
+          "Col:1:5",
+          "Isa:40:31",
+          "Titus:2:13",
+          "Rom:15:13",
+          "1Pet:1:3",
+          "Isa:66:1",
+          "Acts:26:7"
+        ],
+        "relevant": [
+          "Heb:11:1",
+          "Jer:29:11",
+          "Rom:15:13"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.14285714285714285,
+          "ndcg@k": 0.15642624200758548
+        },
+        "latency_ms": 2329.739809036255,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T06",
+        "category": "thematic",
+        "query": "Verses about God's grace",
+        "retrieved": [
+          "Isa:33:2",
+          "Mal:1:9",
+          "Isa:30:18",
+          "Eph:3:2",
+          "Rev:22:21",
+          "Rom:15:9",
+          "Ps:90:17",
+          "Luke:2:14",
+          "Eph:3:8",
+          "Rom:15:15"
+        ],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2217.664957046509,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "T07",
+        "category": "thematic",
+        "query": "What is the fruit of the Spirit?",
+        "retrieved": [
+          "Gal:5:22",
+          "Rom:8:23",
+          "John:6:63",
+          "Prov:11:30",
+          "1Cor:12:8",
+          "John:3:6",
+          "Phil:1:11",
+          "Heb:13:15",
+          "Rev:2:7",
+          "Isa:11:2"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 3517.604112625122,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T08",
+        "category": "thematic",
+        "query": "Bible verses about wisdom",
+        "retrieved": [
+          "Prov:9:10",
+          "Prov:9:11",
+          "Prov:8:12",
+          "1Cor:3:19",
+          "Job:12:13",
+          "Prov:30:24",
+          "Ps:111:10",
+          "Prov:3:19",
+          "1Kgs:4:29",
+          "Isa:29:14",
+          "Prov:9:12"
+        ],
+        "relevant": [
+          "Jas:1:5",
+          "Prov:3:5",
+          "Prov:3:6",
+          "Prov:9:10"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.25,
+          "mrr": 1.0,
+          "ndcg@k": 0.3903800499921017
+        },
+        "latency_ms": 2947.955846786499,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "T09",
+        "category": "thematic",
+        "query": "What does the Bible teach about humility?",
+        "retrieved": [
+          "Prov:15:33",
+          "Jas:4:6",
+          "Prov:22:4",
+          "Zeph:2:3",
+          "Prov:11:2",
+          "Col:3:12",
+          "1Pet:5:5",
+          "Titus:2:12",
+          "Prov:18:12",
+          "Ps:45:4"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.25,
+          "mrr": 0.5,
+          "ndcg@k": 0.24630238874073
+        },
+        "latency_ms": 3071.406126022339,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T10",
+        "category": "thematic",
+        "query": "Verses about perseverance and endurance",
+        "retrieved": [
+          "2Thess:1:4",
+          "Rev:14:12",
+          "Col:1:11",
+          "Rom:5:4",
+          "1Thess:1:3",
+          "Rom:15:5",
+          "2Thess:3:5",
+          "Isa:57:10",
+          "Ps:121:3",
+          "Jas:1:4"
+        ],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2999.119758605957,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "T11",
+        "category": "thematic",
+        "query": "What does the Bible say about prayer?",
+        "retrieved": [
+          "Matt:6:5",
+          "Jas:5:15",
+          "Isa:1:15",
+          "Dan:9:17",
+          "Matt:26:41",
+          "Luke:11:2",
+          "Ps:17:1",
+          "1Kgs:8:28",
+          "Isa:56:7",
+          "2Chr:6:19"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 4683.089971542358,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T12",
+        "category": "thematic",
+        "query": "Bible verses about peace",
+        "retrieved": [
+          "Lev:26:6",
+          "Ps:122:6",
+          "Judg:5:31",
+          "Isa:57:19",
+          "Luke:2:14",
+          "Ezek:34:25",
+          "Luke:19:38",
+          "Isa:66:12",
+          "John:16:33",
+          "Matt:10:34"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 3558.034896850586,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "N01",
+        "category": "narrative",
+        "query": "Jesus feeding the five thousand",
+        "retrieved": [
+          "Mark:6:44",
+          "Matt:14:16",
+          "Mark:6:30",
+          "Luke:9:10",
+          "John:6:1",
+          "Matt:14:21",
+          "Matt:14:13",
+          "Luke:8:55",
+          "Matt:14:19",
+          "Matt:14:20",
+          "John:6:11"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:13",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.42857142857142855,
+          "mrr": 0.16666666666666666,
+          "ndcg@k": 0.2601160260880553
+        },
+        "latency_ms": 2898.8161087036133,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N02",
+        "category": "narrative",
+        "query": "The story of Noah's ark",
+        "retrieved": [
+          "Heb:11:7",
+          "Gen:7:7",
+          "Gen:7:1",
+          "Luke:17:27",
+          "Gen:8:13",
+          "Gen:9:18",
+          "Gen:8:9",
+          "Gen:8:6",
+          "1Pet:3:20",
+          "Gen:6:9"
+        ],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:24",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.5,
+          "ndcg@k": 0.34222207292834145
+        },
+        "latency_ms": 2405.1661491394043,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "N03",
+        "category": "narrative",
+        "query": "David and Goliath",
+        "retrieved": [
+          "1Sam:17:23",
+          "1Sam:17:1",
+          "1Sam:21:9",
+          "1Sam:17:4",
+          "1Sam:17:8",
+          "2Sam:12:24",
+          "2Sam:24:14",
+          "1Chr:21:16",
+          "Lev:16:8",
+          "1Sam:23:26"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:32",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.3333333333333333,
+          "mrr": 1.0,
+          "ndcg@k": 0.43292617940918415
+        },
+        "latency_ms": 2245.306968688965,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N04",
+        "category": "narrative",
+        "query": "The crucifixion of Jesus",
+        "retrieved": [
+          "John:19:1",
+          "John:19:18",
+          "Mark:15:15",
+          "Luke:23:26",
+          "John:19:23",
+          "Luke:23:33",
+          "Matt:27:31",
+          "Mark:15:20",
+          "John:19:16",
+          "John:19:17",
+          "John:19:19"
+        ],
+        "relevant": [
+          "John:19:18",
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.2857142857142857,
+          "mrr": 0.5,
+          "ndcg@k": 0.27134058233820724
+        },
+        "latency_ms": 3982.0871353149414,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N05",
+        "category": "narrative",
+        "query": "The resurrection of Jesus",
+        "retrieved": [
+          "Rom:1:4",
+          "John:11:25",
+          "1Pet:3:21",
+          "Acts:4:33",
+          "Luke:18:33",
+          "1Pet:1:3",
+          "Mark:16:1",
+          "Acts:5:30",
+          "John:21:14",
+          "2Tim:2:8"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2117.8579330444336,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N06",
+        "category": "narrative",
+        "query": "Moses parting the Red Sea",
+        "retrieved": [
+          "Exod:14:21",
+          "Exod:15:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:23:31",
+          "Isa:63:12",
+          "Josh:16:6",
+          "Exod:13:18",
+          "Josh:3:16",
+          "Num:33:10"
+        ],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.6,
+          "mrr": 1.0,
+          "ndcg@k": 0.6548086577531307
+        },
+        "latency_ms": 2071.539878845215,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "N07",
+        "category": "narrative",
+        "query": "The prodigal son parable",
+        "retrieved": [
+          "Ezek:17:2",
+          "Prov:13:1",
+          "Ezek:11:4",
+          "Prov:10:1",
+          "Ps:127:4",
+          "Luke:12:16",
+          "Luke:15:11",
+          "Matt:25:14",
+          "Matt:21:28",
+          "Ezek:24:3"
+        ],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.14285714285714285,
+          "ndcg@k": 0.10086747116627115
+        },
+        "latency_ms": 2269.4919109344482,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "N08",
+        "category": "narrative",
+        "query": "Jesus turning water into wine",
+        "retrieved": [
+          "John:4:46",
+          "John:2:9",
+          "Isa:1:22",
+          "John:2:1",
+          "John:19:29",
+          "Num:15:7",
+          "Mark:15:36",
+          "Joel:3:18",
+          "John:4:7",
+          "Rev:14:10"
+        ],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 0.5,
+          "ndcg@k": 0.36005461457723403
+        },
+        "latency_ms": 2077.0578384399414,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K01",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc774 \uc6a9\uc11c\uc5d0 \ub300\ud574 \ubb34\uc5c7\uc744 \ub9d0\uc500\ud558\uc168\ub098\uc694?",
+        "retrieved": [
+          "Luke:5:20",
+          "Luke:7:48",
+          "Luke:23:34",
+          "Mark:2:5",
+          "Matt:9:2",
+          "Acts:13:38",
+          "Mark:2:10",
+          "Luke:11:4",
+          "Ps:78:38",
+          "Luke:10:37"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2132.024049758911,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K02",
+        "category": "korean",
+        "query": "\uc0ac\ub791\uc5d0 \ub300\ud55c \uc131\uacbd \uad6c\uc808",
+        "retrieved": [
+          "Song:8:6",
+          "John:13:34",
+          "1Cor:13:8",
+          "Mark:12:30",
+          "1Cor:13:4",
+          "1John:4:7",
+          "Song:8:7",
+          "Rom:12:9",
+          "2John:1:6",
+          "Matt:22:37"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.2,
+          "ndcg@k": 0.11706259313796355
+        },
+        "latency_ms": 2550.7822036743164,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K03",
+        "category": "korean",
+        "query": "\uc624\ubcd1\uc774\uc5b4 \uae30\uc801",
+        "retrieved": [
+          "Ps:106:22",
+          "Ezra:2:20",
+          "Ezra:2:13",
+          "John:4:54",
+          "Neh:7:21",
+          "Acts:19:11",
+          "Ezek:9:3",
+          "Neh:7:15",
+          "Neh:7:16",
+          "1Chr:8:31"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2610.8429431915283,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K04",
+        "category": "korean",
+        "query": "\ub178\uc544\uc758 \ubc29\uc8fc \uc774\uc57c\uae30",
+        "retrieved": [
+          "Gen:8:1",
+          "Gen:8:15",
+          "Gen:7:15",
+          "Gen:7:9",
+          "2Kgs:14:25",
+          "Gen:7:6",
+          "Gen:9:20",
+          "1Chr:8:2",
+          "Gen:9:28",
+          "Ezra:2:22"
+        ],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2257.871150970459,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K05",
+        "category": "korean",
+        "query": "\ub2e4\uc717\uacfc \uace8\ub9ac\uc557",
+        "retrieved": [
+          "1Sam:17:23",
+          "Neh:7:56",
+          "Exod:1:4",
+          "1Chr:13:6",
+          "Luke:9:30",
+          "1Sam:21:9",
+          "1Sam:27:3",
+          "1Sam:17:4",
+          "2Sam:19:22",
+          "1Chr:2:15"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 1.0,
+          "ndcg@k": 0.44615333764087994
+        },
+        "latency_ms": 3607.525110244751,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K06",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc758 \ubd80\ud65c",
+        "retrieved": [
+          "Rom:14:9",
+          "Rom:3:24",
+          "1Cor:15:13",
+          "Rom:6:9",
+          "Luke:18:33",
+          "2Tim:2:8",
+          "John:21:14",
+          "Rom:1:4",
+          "John:2:22",
+          "1Thess:4:14"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2543.0281162261963,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K07",
+        "category": "korean",
+        "query": "\ub450\ub824\uc6c0\uc744 \uc774\uae30\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "Deut:31:6",
+          "Eccl:11:10",
+          "Isa:35:4",
+          "Josh:1:9",
+          "Josh:10:25",
+          "Isa:32:11",
+          "Job:6:14",
+          "Deut:1:21",
+          "Job:19:29",
+          "Eccl:7:18"
+        ],
+        "relevant": [
+          "2Tim:1:7",
+          "Isa:41:10",
+          "Ps:23:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2654.0820598602295,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K08",
+        "category": "korean",
+        "query": "\uac10\uc0ac\uc5d0 \uad00\ud55c \uc131\uacbd \ub9d0\uc500",
+        "retrieved": [
+          "Lev:22:29",
+          "2Chr:29:31",
+          "Jer:33:11",
+          "1Thess:5:18",
+          "Isa:12:4",
+          "Rom:14:6",
+          "Jonah:2:9",
+          "Ps:50:23",
+          "2Thess:1:3",
+          "2Cor:9:15"
+        ],
+        "relevant": [
+          "1Thess:5:18",
+          "Phil:4:6",
+          "Ps:100:4"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.25,
+          "ndcg@k": 0.20210734650054757
+        },
+        "latency_ms": 2511.319160461426,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K09",
+        "category": "korean",
+        "query": "\ud0d5\uc790\uc758 \ube44\uc720",
+        "retrieved": [
+          "Prov:26:9",
+          "Isa:1:31",
+          "Matt:13:22",
+          "Isa:32:6",
+          "Prov:27:3",
+          "Isa:25:4",
+          "Prov:12:16",
+          "Prov:14:3",
+          "Eccl:7:26",
+          "Prov:10:14"
+        ],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 2175.68302154541,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "K10",
+        "category": "korean",
+        "query": "\uc131\ub839\uc758 \uc5f4\ub9e4",
+        "retrieved": [
+          "Gal:5:22",
+          "Rom:8:23",
+          "Amos:8:1",
+          "Isa:4:2",
+          "Matt:3:8",
+          "Phil:1:11",
+          "Deut:26:2",
+          "Rom:11:16",
+          "1Pet:2:2",
+          "Heb:13:15"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 1403.9392471313477,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "X01",
+        "category": "cross_lingual",
+        "query": "\uace0\ub09c \uc911\uc5d0 \ubbff\uc74c\uc744 \uc9c0\ud0a4\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "Rom:12:12",
+          "1Pet:5:9",
+          "1Tim:1:19",
+          "1Cor:16:13",
+          "1Tim:6:12",
+          "2Tim:4:5",
+          "Luke:21:19",
+          "2Thess:1:4",
+          "1Pet:3:15",
+          "Phil:1:27"
+        ],
+        "relevant": [
+          "1Pet:1:6",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1474.2441177368164,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "X02",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \uc0ac\ub791 (love)?",
+        "retrieved": [
+          "1Cor:13:4",
+          "1John:4:10",
+          "1John:4:16",
+          "Jas:2:8",
+          "Rom:12:9",
+          "Hos:3:1",
+          "Matt:22:37",
+          "Rom:13:10",
+          "Col:1:5",
+          "Luke:10:27"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 1.0,
+          "ndcg@k": 0.3026024134988135
+        },
+        "latency_ms": 1629.194974899292,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X03",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uc2ed\uc790\uac00 \uc8fd\uc74c",
+        "retrieved": [
+          "John:19:1",
+          "Rom:5:6",
+          "Mark:15:37",
+          "Mark:15:38",
+          "Matt:16:21",
+          "Mark:15:39",
+          "Mark:8:31",
+          "Luke:24:20",
+          "Matt:26:52",
+          "Matt:27:45",
+          "Acts:2:23"
+        ],
+        "relevant": [
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1453.991174697876,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "X04",
+        "category": "cross_lingual",
+        "query": "\ud558\ub098\ub2d8\uc758 \uc740\ud61c\ub780 \ubb34\uc5c7\uc778\uac00?",
+        "retrieved": [
+          "Eccl:5:19",
+          "Eccl:3:13",
+          "Rev:22:21",
+          "Ps:84:11",
+          "Ps:116:5",
+          "Eph:2:4",
+          "Prov:10:22",
+          "Isa:30:18",
+          "Luke:1:78",
+          "Eccl:6:2"
+        ],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1434.8900318145752,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "X05",
+        "category": "cross_lingual",
+        "query": "\uacb8\uc190\uc5d0 \ub300\ud55c \uac00\ub974\uce68",
+        "retrieved": [
+          "Ps:25:9",
+          "Prov:15:33",
+          "Eph:4:2",
+          "Titus:3:2",
+          "Phil:2:3",
+          "1Pet:5:5",
+          "Zeph:2:3",
+          "Col:3:12",
+          "Jas:4:6",
+          "Prov:11:2"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.5,
+          "mrr": 0.2,
+          "ndcg@k": 0.2685357229842324
+        },
+        "latency_ms": 3028.8288593292236,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "X06",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \ud3c9\uc548 (peace)?",
+        "retrieved": [
+          "Isa:30:15",
+          "1Chr:22:9",
+          "1Cor:14:33",
+          "Isa:57:19",
+          "Rom:5:1",
+          "Luke:10:6",
+          "Ps:85:8",
+          "Ezek:13:10",
+          "Isa:48:22",
+          "Jer:6:14"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 3285.3100299835205,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X07",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uccab \ubc88\uc9f8 \uae30\uc801, \ubb3c\ub85c \ud3ec\ub3c4\uc8fc\ub97c \ub9cc\ub4dc\uc2ec",
+        "retrieved": [
+          "Exod:15:25",
+          "John:2:1",
+          "John:19:29",
+          "Mark:15:36",
+          "John:2:9",
+          "Matt:27:48",
+          "Ps:75:8",
+          "Matt:27:34",
+          "Isa:1:22",
+          "Isa:51:21"
+        ],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 0.5,
+          "ndcg@k": 0.34519134224686937
+        },
+        "latency_ms": 2356.2099933624268,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "X08",
+        "category": "cross_lingual",
+        "query": "\ubaa8\uc138\uac00 \ud64d\ud574\ub97c \uac00\ub974\ub2e4",
+        "retrieved": [
+          "Exod:14:27",
+          "Exod:3:1",
+          "Num:20:27",
+          "Num:13:17",
+          "Exod:14:26",
+          "Exod:14:21",
+          "Isa:11:15",
+          "Isa:63:12",
+          "Num:3:14",
+          "Num:33:50"
+        ],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.6,
+          "mrr": 1.0,
+          "ndcg@k": 0.591176585485452
+        },
+        "latency_ms": 3557.1069717407227,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "X09",
+        "category": "cross_lingual",
+        "query": "\uae30\ub3c4\ud558\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "Matt:6:6",
+          "Matt:6:9",
+          "Col:4:2",
+          "Jas:5:16",
+          "1Thess:5:17",
+          "Joel:1:14",
+          "Phil:4:6",
+          "Jer:42:3",
+          "Eph:6:18",
+          "Acts:8:22"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.6,
+          "mrr": 0.5,
+          "ndcg@k": 0.45824474400474136
+        },
+        "latency_ms": 2250.0622272491455,
+        "search_method": "semantic+rerank"
+      },
+      {
+        "id": "X10",
+        "category": "cross_lingual",
+        "query": "\uc778\ub0b4\uc5d0 \uad00\ud55c \ub9d0\uc500",
+        "retrieved": [
+          "Jude:1:17",
+          "Heb:10:19",
+          "1Cor:13:4",
+          "Jas:5:7",
+          "Rev:14:12",
+          "Jas:5:10",
+          "2Pet:3:15",
+          "Prov:25:15",
+          "Rev:3:10",
+          "Rom:5:4"
+        ],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 1829.6871185302734,
+        "search_method": "semantic+rerank"
+      }
+    ]
+  },
+  "hybrid_rrf_rerank_expansion": {
+    "summary": {
+      "overall": {
+        "precision@k": 0.0975,
+        "recall@k": 0.20976190476190476,
+        "mrr": 0.3151388888888889,
+        "ndcg@k": 0.1919014684894686,
+        "avg_latency_ms": 8214.839935302734
+      },
+      "by_category": {
+        "thematic": {
+          "precision@k": 0.05000000000000001,
+          "recall@k": 0.14166666666666666,
+          "mrr": 0.2523148148148148,
+          "ndcg@k": 0.13745093729148122,
+          "avg_latency_ms": 7872.565567493439
+        },
+        "narrative": {
+          "precision@k": 0.2,
+          "recall@k": 0.3363095238095238,
+          "mrr": 0.48333333333333334,
+          "ndcg@k": 0.3184883280733934,
+          "avg_latency_ms": 7914.00483250618
+        },
+        "korean": {
+          "precision@k": 0.05,
+          "recall@k": 0.13999999999999999,
+          "mrr": 0.24,
+          "ndcg@k": 0.1371723086413885,
+          "avg_latency_ms": 8628.122234344482
+        },
+        "cross_lingual": {
+          "precision@k": 0.12,
+          "recall@k": 0.26,
+          "mrr": 0.3311111111111111,
+          "ndcg@k": 0.21070177810799376,
+          "avg_latency_ms": 8452.954959869385
+        }
+      }
+    },
+    "per_query": [
+      {
+        "id": "T01",
+        "category": "thematic",
+        "query": "What does Jesus say about forgiveness?",
+        "retrieved": [
+          "Luke:5:20",
+          "Luke:23:34",
+          "Mark:2:5",
+          "Acts:13:38",
+          "Matt:9:2",
+          "Luke:7:48",
+          "Acts:2:38",
+          "Luke:11:4",
+          "John:20:23",
+          "Num:14:20"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Mark:11:25",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 12265.743970870972,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T02",
+        "category": "thematic",
+        "query": "Verses about faith during suffering",
+        "retrieved": [
+          "Ps:119:50",
+          "Job:30:27",
+          "Ps:42:5",
+          "Jas:5:7",
+          "1Pet:3:8",
+          "Ps:43:5",
+          "Ps:42:11",
+          "Rom:12:12",
+          "2Thess:1:4",
+          "Ps:10:14"
+        ],
+        "relevant": [
+          "1Pet:1:6",
+          "1Pet:1:7",
+          "2Cor:4:17",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 8876.742839813232,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T03",
+        "category": "thematic",
+        "query": "What is love according to the Bible?",
+        "retrieved": [
+          "2John:1:6",
+          "1John:4:16",
+          "Rom:13:10",
+          "1Cor:13:4",
+          "Rom:12:9",
+          "1John:5:3",
+          "Jas:2:8",
+          "1Cor:13:13",
+          "Luke:10:27",
+          "1Tim:1:5"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.25,
+          "ndcg@k": 0.13032376591037065
+        },
+        "latency_ms": 7646.383762359619,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T04",
+        "category": "thematic",
+        "query": "How to deal with anxiety and worry",
+        "retrieved": [
+          "Eccl:11:10",
+          "Luke:21:34",
+          "Luke:21:35",
+          "1Pet:4:7",
+          "Prov:12:25",
+          "Mark:14:38",
+          "Job:15:24",
+          "1Pet:3:15",
+          "Matt:6:34",
+          "Luke:21:36",
+          "Ruth:3:3"
+        ],
+        "relevant": [
+          "1Pet:5:7",
+          "Matt:6:25",
+          "Matt:6:34",
+          "Phil:4:6",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.2,
+          "mrr": 0.1111111111111111,
+          "ndcg@k": 0.10209739512291163
+        },
+        "latency_ms": 7578.819274902344,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T05",
+        "category": "thematic",
+        "query": "What does the Bible say about hope?",
+        "retrieved": [
+          "Jer:31:17",
+          "Rom:4:18",
+          "Rom:5:5",
+          "Col:1:5",
+          "Titus:2:13",
+          "Rom:15:13",
+          "1Pet:1:3",
+          "1Cor:13:13",
+          "Acts:26:7",
+          "Rom:8:20"
+        ],
+        "relevant": [
+          "Heb:11:1",
+          "Jer:29:11",
+          "Rom:15:13"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.16666666666666666,
+          "ndcg@k": 0.16716045496620227
+        },
+        "latency_ms": 7796.145915985107,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T06",
+        "category": "thematic",
+        "query": "Verses about God's grace",
+        "retrieved": [
+          "Mal:1:9",
+          "Isa:30:18",
+          "Eph:3:2",
+          "Rev:22:21",
+          "Rom:15:9",
+          "Ps:90:17",
+          "Luke:2:14",
+          "Eph:3:8",
+          "Rom:15:15",
+          "Gal:2:21"
+        ],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 7218.935012817383,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T07",
+        "category": "thematic",
+        "query": "What is the fruit of the Spirit?",
+        "retrieved": [
+          "Gal:5:22",
+          "Rom:8:23",
+          "John:6:63",
+          "1Cor:12:8",
+          "John:3:6",
+          "Phil:1:11",
+          "Heb:13:15",
+          "Rev:2:7",
+          "Isa:11:2",
+          "Rom:8:16"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 5081.835985183716,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T08",
+        "category": "thematic",
+        "query": "Bible verses about wisdom",
+        "retrieved": [
+          "Prov:9:10",
+          "Prov:8:12",
+          "1Cor:3:19",
+          "Job:12:13",
+          "Prov:30:24",
+          "Ps:111:10",
+          "Prov:3:19",
+          "1Kgs:4:29",
+          "Job:28:28",
+          "Isa:29:14"
+        ],
+        "relevant": [
+          "Jas:1:5",
+          "Prov:3:5",
+          "Prov:3:6",
+          "Prov:9:10"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.25,
+          "mrr": 1.0,
+          "ndcg@k": 0.3903800499921017
+        },
+        "latency_ms": 6718.652009963989,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T09",
+        "category": "thematic",
+        "query": "What does the Bible teach about humility?",
+        "retrieved": [
+          "Prov:15:33",
+          "Jas:4:6",
+          "Prov:22:4",
+          "Zeph:2:3",
+          "Prov:11:2",
+          "Col:3:12",
+          "1Pet:5:5",
+          "Titus:2:12",
+          "Prov:18:12",
+          "Ps:45:4"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.25,
+          "mrr": 0.5,
+          "ndcg@k": 0.24630238874073
+        },
+        "latency_ms": 8401.893854141235,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T10",
+        "category": "thematic",
+        "query": "Verses about perseverance and endurance",
+        "retrieved": [
+          "2Thess:1:4",
+          "Rev:14:12",
+          "Col:1:11",
+          "Rom:5:4",
+          "1Thess:1:3",
+          "Rom:15:5",
+          "Isa:42:3",
+          "2Thess:3:5",
+          "Isa:57:10",
+          "Ps:121:3"
+        ],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 7716.283082962036,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T11",
+        "category": "thematic",
+        "query": "What does the Bible say about prayer?",
+        "retrieved": [
+          "Matt:6:5",
+          "Jas:5:15",
+          "Jas:5:16",
+          "Isa:1:15",
+          "Matt:26:41",
+          "Ps:17:1",
+          "1Kgs:8:28",
+          "Isa:56:7",
+          "2Chr:6:19",
+          "Matt:21:22"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 7282.257080078125,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "T12",
+        "category": "thematic",
+        "query": "Bible verses about peace",
+        "retrieved": [
+          "Lev:26:6",
+          "Ps:122:6",
+          "Judg:5:31",
+          "Isa:57:19",
+          "Luke:2:14",
+          "Job:22:21",
+          "Ezek:34:25",
+          "Luke:19:38",
+          "Isa:66:12",
+          "Matt:10:34"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 7887.094020843506,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N01",
+        "category": "narrative",
+        "query": "Jesus feeding the five thousand",
+        "retrieved": [
+          "Mark:6:44",
+          "Mark:6:30",
+          "Luke:9:10",
+          "John:6:1",
+          "Matt:14:21",
+          "Matt:14:13",
+          "Luke:8:55",
+          "Matt:14:19",
+          "Matt:14:20",
+          "John:6:11",
+          "Acts:27:35"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:13",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.4,
+          "recall@k": 0.5714285714285714,
+          "mrr": 0.2,
+          "ndcg@k": 0.355253610262437
+        },
+        "latency_ms": 8237.393140792847,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N02",
+        "category": "narrative",
+        "query": "The story of Noah's ark",
+        "retrieved": [
+          "Heb:11:7",
+          "Gen:7:7",
+          "Gen:7:1",
+          "Luke:17:27",
+          "Gen:8:13",
+          "Gen:9:18",
+          "Gen:8:9",
+          "Gen:8:6",
+          "1Pet:3:20",
+          "Gen:6:9"
+        ],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:24",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.5,
+          "ndcg@k": 0.34222207292834145
+        },
+        "latency_ms": 7531.108856201172,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N03",
+        "category": "narrative",
+        "query": "David and Goliath",
+        "retrieved": [
+          "1Sam:17:23",
+          "1Sam:17:1",
+          "1Sam:21:9",
+          "1Sam:17:4",
+          "1Sam:17:8",
+          "2Sam:12:24",
+          "2Sam:24:14",
+          "1Chr:21:16",
+          "Lev:16:8",
+          "1Sam:23:26"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:32",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.3333333333333333,
+          "mrr": 1.0,
+          "ndcg@k": 0.43292617940918415
+        },
+        "latency_ms": 7448.616743087769,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N04",
+        "category": "narrative",
+        "query": "The crucifixion of Jesus",
+        "retrieved": [
+          "John:19:1",
+          "John:19:18",
+          "Mark:15:15",
+          "Luke:23:26",
+          "John:19:23",
+          "Luke:23:33",
+          "Matt:27:31",
+          "Mark:15:20",
+          "John:19:16",
+          "John:19:17",
+          "John:19:19"
+        ],
+        "relevant": [
+          "John:19:18",
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.2857142857142857,
+          "mrr": 0.5,
+          "ndcg@k": 0.27134058233820724
+        },
+        "latency_ms": 7592.867136001587,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N05",
+        "category": "narrative",
+        "query": "The resurrection of Jesus",
+        "retrieved": [
+          "Rom:1:4",
+          "John:11:25",
+          "1Pet:3:21",
+          "Acts:4:33",
+          "Luke:18:33",
+          "1Pet:1:3",
+          "Mark:16:1",
+          "Acts:5:30",
+          "2Tim:2:8",
+          "Rev:20:6"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 9620.945930480957,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N06",
+        "category": "narrative",
+        "query": "Moses parting the Red Sea",
+        "retrieved": [
+          "Exod:14:21",
+          "Exod:15:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:23:31",
+          "Isa:63:12",
+          "Exod:13:18",
+          "Josh:3:16",
+          "Num:33:10",
+          "Nah:1:4"
+        ],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.6,
+          "mrr": 1.0,
+          "ndcg@k": 0.6548086577531307
+        },
+        "latency_ms": 7678.853988647461,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N07",
+        "category": "narrative",
+        "query": "The prodigal son parable",
+        "retrieved": [
+          "Ezek:17:2",
+          "Prov:13:1",
+          "Ezek:11:4",
+          "Prov:10:1",
+          "Ps:127:4",
+          "Luke:15:11",
+          "Matt:25:14",
+          "Matt:21:28",
+          "Ezek:24:3",
+          "Ezek:28:12"
+        ],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.16666666666666666,
+          "ndcg@k": 0.10778915452451095
+        },
+        "latency_ms": 7538.42568397522,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "N08",
+        "category": "narrative",
+        "query": "Jesus turning water into wine",
+        "retrieved": [
+          "John:4:46",
+          "John:2:9",
+          "John:2:1",
+          "John:19:29",
+          "Num:15:7",
+          "Mark:15:36",
+          "Joel:3:18",
+          "John:4:7",
+          "Rev:14:10",
+          "1John:5:6"
+        ],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 0.5,
+          "ndcg@k": 0.38356636737133565
+        },
+        "latency_ms": 7663.827180862427,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K01",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc774 \uc6a9\uc11c\uc5d0 \ub300\ud574 \ubb34\uc5c7\uc744 \ub9d0\uc500\ud558\uc168\ub098\uc694?",
+        "retrieved": [
+          "Luke:5:20",
+          "Luke:7:48",
+          "Luke:23:34",
+          "Mark:2:5",
+          "Matt:9:2",
+          "Acts:13:38",
+          "Mark:2:10",
+          "Luke:11:4",
+          "Ps:78:38",
+          "Luke:10:37"
+        ],
+        "relevant": [
+          "Luke:17:3",
+          "Luke:17:4",
+          "Matt:18:21",
+          "Matt:18:22",
+          "Matt:6:14",
+          "Matt:6:15"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 8566.061973571777,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K02",
+        "category": "korean",
+        "query": "\uc0ac\ub791\uc5d0 \ub300\ud55c \uc131\uacbd \uad6c\uc808",
+        "retrieved": [
+          "Song:8:6",
+          "John:13:34",
+          "1Cor:13:8",
+          "Mark:12:30",
+          "1Cor:13:4",
+          "Song:8:7",
+          "Rom:12:9",
+          "2John:1:6",
+          "Matt:22:37",
+          "Hos:3:1"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 0.2,
+          "ndcg@k": 0.11706259313796355
+        },
+        "latency_ms": 8124.699831008911,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K03",
+        "category": "korean",
+        "query": "\uc624\ubcd1\uc774\uc5b4 \uae30\uc801",
+        "retrieved": [
+          "Ps:106:22",
+          "Ezra:2:20",
+          "Ezra:2:13",
+          "John:4:54",
+          "Acts:19:11",
+          "Ezek:9:3",
+          "Neh:7:15",
+          "2Cor:9:15",
+          "Neh:7:16",
+          "1Chr:8:31"
+        ],
+        "relevant": [
+          "John:6:11",
+          "John:6:9",
+          "Matt:14:17",
+          "Matt:14:19",
+          "Matt:14:20",
+          "Matt:14:21"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 8416.87822341919,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K04",
+        "category": "korean",
+        "query": "\ub178\uc544\uc758 \ubc29\uc8fc \uc774\uc57c\uae30",
+        "retrieved": [
+          "Gen:8:1",
+          "Gen:8:15",
+          "Gen:7:15",
+          "Gen:7:9",
+          "2Kgs:14:25",
+          "Gen:7:6",
+          "Gen:9:20",
+          "1Chr:8:2",
+          "Gen:9:28",
+          "Ezra:2:22"
+        ],
+        "relevant": [
+          "Gen:6:14",
+          "Gen:6:19",
+          "Gen:7:1",
+          "Gen:7:17",
+          "Gen:7:7"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 8559.950113296509,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K05",
+        "category": "korean",
+        "query": "\ub2e4\uc717\uacfc \uace8\ub9ac\uc557",
+        "retrieved": [
+          "1Sam:17:23",
+          "Neh:7:56",
+          "1Chr:13:6",
+          "1Sam:21:9",
+          "1Sam:27:3",
+          "1Sam:17:4",
+          "2Sam:19:22",
+          "1Chr:2:15",
+          "1Chr:15:11",
+          "Hos:3:5"
+        ],
+        "relevant": [
+          "1Sam:17:23",
+          "1Sam:17:4",
+          "1Sam:17:45",
+          "1Sam:17:49",
+          "1Sam:17:50"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 1.0,
+          "ndcg@k": 0.4599715079731103
+        },
+        "latency_ms": 8056.7381381988525,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K06",
+        "category": "korean",
+        "query": "\uc608\uc218\ub2d8\uc758 \ubd80\ud65c",
+        "retrieved": [
+          "Rom:14:9",
+          "Rom:3:24",
+          "Rom:6:9",
+          "Luke:18:33",
+          "2Tim:2:8",
+          "John:21:14",
+          "Rom:1:4",
+          "John:2:22",
+          "1Thess:4:14",
+          "Eph:2:13"
+        ],
+        "relevant": [
+          "John:20:1",
+          "Luke:24:1",
+          "Luke:24:6",
+          "Matt:28:1",
+          "Matt:28:5",
+          "Matt:28:6"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 7372.903823852539,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K07",
+        "category": "korean",
+        "query": "\ub450\ub824\uc6c0\uc744 \uc774\uae30\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "Deut:31:6",
+          "Eccl:11:10",
+          "Isa:35:4",
+          "Josh:1:9",
+          "Deut:1:21",
+          "Ps:115:11",
+          "Job:19:29",
+          "Eccl:7:18",
+          "Deut:3:22",
+          "Job:28:28"
+        ],
+        "relevant": [
+          "2Tim:1:7",
+          "Isa:41:10",
+          "Ps:23:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 9721.385955810547,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K08",
+        "category": "korean",
+        "query": "\uac10\uc0ac\uc5d0 \uad00\ud55c \uc131\uacbd \ub9d0\uc500",
+        "retrieved": [
+          "Lev:22:29",
+          "Ps:118:29",
+          "1Chr:16:34",
+          "Jer:33:11",
+          "1Thess:5:18",
+          "Isa:12:4",
+          "Rom:14:6",
+          "Jonah:2:9",
+          "Ps:50:23",
+          "Ps:136:3"
+        ],
+        "relevant": [
+          "1Thess:5:18",
+          "Phil:4:6",
+          "Ps:100:4"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.2,
+          "ndcg@k": 0.18154179253735267
+        },
+        "latency_ms": 9489.889144897461,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K09",
+        "category": "korean",
+        "query": "\ud0d5\uc790\uc758 \ube44\uc720",
+        "retrieved": [
+          "Prov:26:9",
+          "Isa:1:31",
+          "Isa:32:6",
+          "Prov:27:3",
+          "Isa:25:4",
+          "Prov:12:16",
+          "Prov:14:3",
+          "Prov:10:14",
+          "Job:33:24",
+          "Eccl:7:6"
+        ],
+        "relevant": [
+          "Luke:15:11",
+          "Luke:15:12",
+          "Luke:15:18",
+          "Luke:15:20",
+          "Luke:15:22",
+          "Luke:15:24"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 8924.514055252075,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "K10",
+        "category": "korean",
+        "query": "\uc131\ub839\uc758 \uc5f4\ub9e4",
+        "retrieved": [
+          "Gal:5:22",
+          "Rom:8:23",
+          "Amos:8:1",
+          "Isa:4:2",
+          "Matt:3:8",
+          "Phil:1:11",
+          "Deut:26:2",
+          "Rom:11:16",
+          "1Pet:2:2",
+          "Heb:13:15"
+        ],
+        "relevant": [
+          "Gal:5:22",
+          "Gal:5:23"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.5,
+          "mrr": 1.0,
+          "ndcg@k": 0.6131471927654584
+        },
+        "latency_ms": 9048.201084136963,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X01",
+        "category": "cross_lingual",
+        "query": "\uace0\ub09c \uc911\uc5d0 \ubbff\uc74c\uc744 \uc9c0\ud0a4\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "Rom:12:12",
+          "1Pet:5:9",
+          "1Tim:1:19",
+          "1Cor:16:13",
+          "1Tim:6:12",
+          "2Tim:4:5",
+          "Luke:21:19",
+          "2Thess:1:4",
+          "Ps:4:5",
+          "Rev:14:12"
+        ],
+        "relevant": [
+          "1Pet:1:6",
+          "Jas:1:2",
+          "Jas:1:3",
+          "Jas:1:4",
+          "Rom:5:3",
+          "Rom:5:4"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 8174.806118011475,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X02",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \uc0ac\ub791 (love)?",
+        "retrieved": [
+          "1Cor:13:4",
+          "1John:4:10",
+          "1John:4:16",
+          "Jas:2:8",
+          "Rom:12:9",
+          "Hos:3:1",
+          "Matt:22:37",
+          "Rom:13:10",
+          "Col:1:5",
+          "Luke:10:27"
+        ],
+        "relevant": [
+          "1Cor:13:4",
+          "1Cor:13:5",
+          "1Cor:13:6",
+          "1Cor:13:7",
+          "1John:4:8",
+          "John:3:16"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.16666666666666666,
+          "mrr": 1.0,
+          "ndcg@k": 0.3026024134988135
+        },
+        "latency_ms": 7676.080942153931,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X03",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uc2ed\uc790\uac00 \uc8fd\uc74c",
+        "retrieved": [
+          "John:19:1",
+          "Rom:5:6",
+          "Mark:15:37",
+          "Mark:15:38",
+          "Matt:16:21",
+          "Mark:15:39",
+          "Mark:8:31",
+          "Matt:26:52",
+          "Matt:27:45",
+          "Acts:2:23",
+          "John:19:16"
+        ],
+        "relevant": [
+          "John:19:30",
+          "Luke:23:33",
+          "Luke:23:34",
+          "Matt:27:35",
+          "Matt:27:46",
+          "Matt:27:50"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 7837.632894515991,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X04",
+        "category": "cross_lingual",
+        "query": "\ud558\ub098\ub2d8\uc758 \uc740\ud61c\ub780 \ubb34\uc5c7\uc778\uac00?",
+        "retrieved": [
+          "Eccl:5:19",
+          "Eccl:3:13",
+          "Rev:22:21",
+          "Ps:84:11",
+          "Ps:116:5",
+          "1Cor:16:23",
+          "Heb:13:25",
+          "Eph:1:2",
+          "Phlm:1:25",
+          "Isa:30:18"
+        ],
+        "relevant": [
+          "2Cor:12:9",
+          "Eph:2:8",
+          "Eph:2:9",
+          "Titus:2:11"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 8036.457061767578,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X05",
+        "category": "cross_lingual",
+        "query": "\uacb8\uc190\uc5d0 \ub300\ud55c \uac00\ub974\uce68",
+        "retrieved": [
+          "Ps:25:9",
+          "Prov:15:33",
+          "Eph:4:2",
+          "Titus:3:2",
+          "Phil:2:3",
+          "1Pet:5:5",
+          "Zeph:2:3",
+          "Col:3:12",
+          "Jas:4:6",
+          "Jas:4:10"
+        ],
+        "relevant": [
+          "1Pet:5:6",
+          "Jas:4:6",
+          "Phil:2:3",
+          "Phil:2:4"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.5,
+          "mrr": 0.2,
+          "ndcg@k": 0.2685357229842324
+        },
+        "latency_ms": 8166.731119155884,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X06",
+        "category": "cross_lingual",
+        "query": "What does the Bible say about \ud3c9\uc548 (peace)?",
+        "retrieved": [
+          "Isa:30:15",
+          "1Chr:22:9",
+          "1Cor:14:33",
+          "Isa:57:19",
+          "Rom:5:1",
+          "Luke:10:6",
+          "Ps:85:8",
+          "Ezek:13:10",
+          "Phil:4:7",
+          "Isa:48:22"
+        ],
+        "relevant": [
+          "Isa:26:3",
+          "John:14:27",
+          "Phil:4:7"
+        ],
+        "metrics": {
+          "precision@k": 0.1,
+          "recall@k": 0.3333333333333333,
+          "mrr": 0.1111111111111111,
+          "ndcg@k": 0.14126697285982898
+        },
+        "latency_ms": 8357.923984527588,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X07",
+        "category": "cross_lingual",
+        "query": "\uc608\uc218\ub2d8\uc758 \uccab \ubc88\uc9f8 \uae30\uc801, \ubb3c\ub85c \ud3ec\ub3c4\uc8fc\ub97c \ub9cc\ub4dc\uc2ec",
+        "retrieved": [
+          "Exod:15:25",
+          "John:2:1",
+          "John:19:29",
+          "Mark:15:36",
+          "John:2:9",
+          "Matt:27:48",
+          "Ps:75:8",
+          "Matt:27:34",
+          "Isa:1:22",
+          "Isa:51:21"
+        ],
+        "relevant": [
+          "John:2:1",
+          "John:2:11",
+          "John:2:3",
+          "John:2:7",
+          "John:2:9"
+        ],
+        "metrics": {
+          "precision@k": 0.2,
+          "recall@k": 0.4,
+          "mrr": 0.5,
+          "ndcg@k": 0.34519134224686937
+        },
+        "latency_ms": 9227.131843566895,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X08",
+        "category": "cross_lingual",
+        "query": "\ubaa8\uc138\uac00 \ud64d\ud574\ub97c \uac00\ub974\ub2e4",
+        "retrieved": [
+          "Exod:14:27",
+          "Exod:3:1",
+          "Num:20:27",
+          "Num:13:17",
+          "Exod:14:26",
+          "Exod:14:21",
+          "Isa:11:15",
+          "Isa:63:12",
+          "Num:3:14",
+          "Num:33:50"
+        ],
+        "relevant": [
+          "Exod:14:21",
+          "Exod:14:22",
+          "Exod:14:26",
+          "Exod:14:27",
+          "Exod:14:29"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.6,
+          "mrr": 1.0,
+          "ndcg@k": 0.591176585485452
+        },
+        "latency_ms": 8707.365989685059,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X09",
+        "category": "cross_lingual",
+        "query": "\uae30\ub3c4\ud558\ub294 \ubc29\ubc95",
+        "retrieved": [
+          "Matt:6:6",
+          "Matt:6:9",
+          "Col:4:2",
+          "Jas:5:16",
+          "1Thess:5:17",
+          "Joel:1:14",
+          "Phil:4:6",
+          "Jer:42:3",
+          "Eph:6:18",
+          "Acts:8:22"
+        ],
+        "relevant": [
+          "1Thess:5:17",
+          "Matt:6:10",
+          "Matt:6:11",
+          "Matt:6:9",
+          "Phil:4:6"
+        ],
+        "metrics": {
+          "precision@k": 0.3,
+          "recall@k": 0.6,
+          "mrr": 0.5,
+          "ndcg@k": 0.45824474400474136
+        },
+        "latency_ms": 9693.062782287598,
+        "search_method": "hybrid-rrf+rerank"
+      },
+      {
+        "id": "X10",
+        "category": "cross_lingual",
+        "query": "\uc778\ub0b4\uc5d0 \uad00\ud55c \ub9d0\uc500",
+        "retrieved": [
+          "Heb:10:19",
+          "1Cor:13:4",
+          "Jas:5:7",
+          "Rev:14:12",
+          "Jas:5:10",
+          "2Pet:3:15",
+          "Prov:25:15",
+          "Rom:5:4",
+          "2Tim:2:3",
+          "Rev:2:3"
+        ],
+        "relevant": [
+          "Gal:6:9",
+          "Heb:12:1",
+          "Jas:1:12"
+        ],
+        "metrics": {
+          "precision@k": 0.0,
+          "recall@k": 0.0,
+          "mrr": 0.0,
+          "ndcg@k": 0.0
+        },
+        "latency_ms": 8652.35686302185,
+        "search_method": "hybrid-rrf+rerank"
+      }
+    ]
+  }
+}
