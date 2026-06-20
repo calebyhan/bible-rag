@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     similarity_threshold: float = 0.55  # Lowered from 0.7 for better recall
     overretrieve_factor: int = 3  # Fetch 3x max_results internally before RRF
     rrf_k: int = 60  # RRF smoothing constant
-    enable_query_expansion: bool = True
+    enable_query_expansion: bool = False  # Opt-in: +4% NDCG but +212% latency (8s avg)
     enable_hybrid_search: bool = True
     enable_reranking: bool = True
     reranker_model: str = "BAAI/bge-reranker-v2-m3"

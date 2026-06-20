@@ -5,6 +5,7 @@ pairs, providing fine-grained relevance scoring after initial retrieval.
 """
 
 import logging
+import threading
 
 from config import get_settings
 
@@ -12,17 +13,24 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 _reranker = None
+_reranker_lock = threading.Lock()
 
 
 def _get_reranker():
-    """Load cross-encoder model (lazy, cached singleton)."""
+    """Load cross-encoder model (lazy, cached singleton).
+
+    Lock prevents concurrent first-time loads from racing and corrupting
+    the PyTorch model state (same footgun as the embedding singleton).
+    """
     global _reranker
     if _reranker is None:
-        from sentence_transformers import CrossEncoder
+        with _reranker_lock:
+            if _reranker is None:
+                from sentence_transformers import CrossEncoder
 
-        logger.info(f"Loading reranker model: {settings.reranker_model}")
-        _reranker = CrossEncoder(settings.reranker_model, max_length=512)
-        logger.info("Reranker model loaded successfully")
+                logger.info(f"Loading reranker model: {settings.reranker_model}")
+                _reranker = CrossEncoder(settings.reranker_model, max_length=512)
+                logger.info("Reranker model loaded successfully")
     return _reranker
 
 

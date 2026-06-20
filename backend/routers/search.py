@@ -43,12 +43,16 @@ async def semantic_search(
                 }
                 filters = {k: v for k, v in filters.items() if v is not None}
 
-            # Query expansion: generate alternative search queries
+            # Query expansion: generate alternative search queries.
+            # Skipped for Korean: the multilingual embedding model already handles
+            # Korean semantics well, and expansion adds 6+ seconds of LLM latency
+            # with no measurable NDCG gain for Korean queries (eval result: +0%).
+            language = detect_language(request.query)
             expanded_queries = []
-            if settings.enable_query_expansion:
+            if settings.enable_query_expansion and language != "ko":
                 expanded_queries = await expand_query(
                     query=request.query,
-                    language=detect_language(request.query),
+                    language=language,
                     groq_api_key=x_groq_api_key,
                     gemini_api_key=x_gemini_api_key,
                 )
@@ -77,9 +81,8 @@ async def semantic_search(
             }
             yield json.dumps(search_response) + "\n"
 
-            # Detect language and generate AI response stream
+            # Generate AI response stream
             if results.get("results"):
-                language = detect_language(request.query)
                 
                 # Build conversation history dicts from request
                 history = None

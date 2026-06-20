@@ -8,6 +8,7 @@ The mode is controlled by the EMBEDDING_MODE environment variable.
 """
 
 import numpy as np
+import threading
 
 from config import get_settings
 
@@ -15,21 +16,25 @@ settings = get_settings()
 
 # Local model (lazy loaded only when needed)
 _local_model = None
+_local_model_lock = threading.Lock()
 
 
 def _get_local_model():
     """Load local sentence-transformers model (only in local mode).
 
     The model is loaded lazily on first use and cached for subsequent calls.
-    This avoids loading the ~4GB model when using Gemini API mode.
+    A threading.Lock() prevents concurrent first-time loads from racing and
+    corrupting the PyTorch model (seen as "Cannot copy out of meta tensor").
     """
     global _local_model
     if _local_model is None:
-        from sentence_transformers import SentenceTransformer
+        with _local_model_lock:
+            if _local_model is None:
+                from sentence_transformers import SentenceTransformer
 
-        print(f"Loading local embedding model: {settings.embedding_model}")
-        _local_model = SentenceTransformer(settings.embedding_model)
-        print("Model loaded successfully!")
+                print(f"Loading local embedding model: {settings.embedding_model}")
+                _local_model = SentenceTransformer(settings.embedding_model)
+                print("Model loaded successfully!")
     return _local_model
 
 
