@@ -66,47 +66,71 @@ async def fulltext_search_verses(
 
     cache = get_cache()
 
-    # Extract meaningful search terms from conversational queries
-    # Remove common question words and filler words
-    stopwords = {'what', 'does', 'the', 'bible', 'say', 'about', 'teach', 'us', 'tell', 'me', 'can', 'you', 'how', 'why', 'when', 'where', 'who', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'did', 'will', 'would', 'should', 'could', 'may', 'might', 'must', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'from', 'by', 'as', 'that', 'this', 'these', 'those', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 'so', 'than'}
-
-    # Extract keywords from query
-    words = query.lower().split()
-    keywords = [w for w in words if w not in stopwords and len(w) > 2]
-
-    # If we filtered out everything, use original query
-    search_query = ' '.join(keywords) if keywords else query
-
-    sql_template = """
-        WITH ranked_verses AS (
-            SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
-                v.id as verse_id,
-                v.book_id,
-                v.chapter,
-                v.verse,
-                v.text,
-                v.translation_id,
-                b.name as book_name,
-                b.name_korean as book_name_korean,
-                b.abbreviation as book_abbrev,
-                b.testament,
-                b.genre,
-                ts_rank_cd(to_tsvector('english', v.text), websearch_to_tsquery('english', :search_query)) as rank
-            FROM verses v
-            JOIN books b ON v.book_id = b.id
-            WHERE v.translation_id = ANY(:translation_ids)
-                AND (
-                    to_tsvector('english', v.text) @@ websearch_to_tsquery('english', :search_query)
-                    OR v.text ILIKE '%' || :query_like || '%'
-                )
-    """
-
     bindparams_list = [
         bindparam("translation_ids", value=translation_ids, type_=ARRAY(PGUUID)),
-        bindparam("search_query", value=search_query),
-        bindparam("query_like", value=search_query),
         bindparam("max_results", value=max_results, type_=Integer),
     ]
+
+    if _is_korean(query):
+        sql_template = """
+            WITH ranked_verses AS (
+                SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
+                    v.id as verse_id,
+                    v.book_id,
+                    v.chapter,
+                    v.verse,
+                    v.text,
+                    v.translation_id,
+                    b.name as book_name,
+                    b.name_korean as book_name_korean,
+                    b.abbreviation as book_abbrev,
+                    b.testament,
+                    b.genre,
+                    word_similarity(:search_query, v.text) as rank
+                FROM verses v
+                JOIN books b ON v.book_id = b.id
+                WHERE v.translation_id = ANY(:translation_ids)
+                    AND word_similarity(:search_query, v.text) > 0.1
+        """
+        bindparams_list.append(bindparam("search_query", value=query))
+    else:
+        stopwords = {
+            'what', 'does', 'the', 'bible', 'say', 'about', 'teach', 'us', 'tell',
+            'me', 'can', 'you', 'how', 'why', 'when', 'where', 'who', 'is', 'are',
+            'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'did',
+            'will', 'would', 'should', 'could', 'may', 'might', 'must', 'in', 'on',
+            'at', 'to', 'for', 'of', 'with', 'from', 'by', 'as', 'that', 'this',
+            'these', 'those', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 'so', 'than',
+        }
+        words = query.lower().split()
+        keywords = [w for w in words if w not in stopwords and len(w) > 2]
+        search_query = ' '.join(keywords) if keywords else query
+
+        sql_template = """
+            WITH ranked_verses AS (
+                SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
+                    v.id as verse_id,
+                    v.book_id,
+                    v.chapter,
+                    v.verse,
+                    v.text,
+                    v.translation_id,
+                    b.name as book_name,
+                    b.name_korean as book_name_korean,
+                    b.abbreviation as book_abbrev,
+                    b.testament,
+                    b.genre,
+                    ts_rank_cd(to_tsvector('english', v.text), websearch_to_tsquery('english', :search_query)) as rank
+                FROM verses v
+                JOIN books b ON v.book_id = b.id
+                WHERE v.translation_id = ANY(:translation_ids)
+                    AND (
+                        to_tsvector('english', v.text) @@ websearch_to_tsquery('english', :search_query)
+                        OR v.text ILIKE '%' || :query_like || '%'
+                    )
+        """
+        bindparams_list.append(bindparam("search_query", value=search_query))
+        bindparams_list.append(bindparam("query_like", value=search_query))
 
     # Apply filters
     if filters:
@@ -611,6 +635,15 @@ async def _vector_search(
     return results
 
 
+def _is_korean(text: str) -> bool:
+    """Return True if text contains a meaningful proportion of Korean (Hangul) characters."""
+    alpha = [c for c in text if c.isalpha()]
+    if not alpha:
+        return False
+    korean = sum(1 for c in alpha if "가" <= c <= "힣" or "ㄱ" <= c <= "ㅣ")
+    return korean / len(alpha) > 0.3
+
+
 async def _fulltext_search(
     db: AsyncSession,
     query: str,
@@ -620,55 +653,81 @@ async def _fulltext_search(
 ) -> list[tuple[str, float, dict]]:
     """Run PostgreSQL full-text search.
 
+    For English queries: uses websearch_to_tsquery with ts_rank_cd (cover density).
+    For Korean queries: uses pg_trgm word_similarity() since to_tsvector('english')
+    cannot tokenize Hangul — Korean verses return zero results from tsvector.
+
     Returns:
         List of (ref_key, rank, row_data) tuples sorted by rank desc.
     """
-    # Extract keywords (remove stopwords)
-    stopwords = {
-        'what', 'does', 'the', 'bible', 'say', 'about', 'teach', 'us', 'tell',
-        'me', 'can', 'you', 'how', 'why', 'when', 'where', 'who', 'is', 'are',
-        'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'did',
-        'will', 'would', 'should', 'could', 'may', 'might', 'must', 'in', 'on',
-        'at', 'to', 'for', 'of', 'with', 'from', 'by', 'as', 'that', 'this',
-        'these', 'those', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 'so', 'than',
-    }
-    words = query.lower().split()
-    keywords = [w for w in words if w not in stopwords and len(w) > 2]
-    search_query = ' '.join(keywords) if keywords else query
-
-    # websearch_to_tsquery supports AND/OR/phrase/"exact" syntax and handles
-    # malformed input gracefully. ts_rank_cd weights by cover density (term
-    # proximity matters), producing better ranking than ts_rank for multi-word queries.
-    sql_template = """
-        WITH ranked_verses AS (
-            SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
-                v.id as verse_id,
-                v.book_id,
-                v.chapter,
-                v.verse,
-                v.text,
-                v.translation_id,
-                b.name as book_name,
-                b.name_korean as book_name_korean,
-                b.abbreviation as book_abbrev,
-                b.testament,
-                b.genre,
-                ts_rank_cd(to_tsvector('english', v.text), websearch_to_tsquery('english', :search_query)) as rank
-            FROM verses v
-            JOIN books b ON v.book_id = b.id
-            WHERE v.translation_id = ANY(:translation_ids)
-                AND (
-                    to_tsvector('english', v.text) @@ websearch_to_tsquery('english', :search_query)
-                    OR v.text ILIKE '%' || :query_like || '%'
-                )
-    """
-
     bindparams_list = [
         bindparam("translation_ids", value=translation_ids, type_=ARRAY(PGUUID)),
-        bindparam("search_query", value=search_query),
-        bindparam("query_like", value=search_query),
         bindparam("limit", value=limit, type_=Integer),
     ]
+
+    if _is_korean(query):
+        # pg_trgm word_similarity: score in [0,1], works for any script.
+        # We require at least 0.1 to filter noise; rank directly by similarity.
+        sql_template = """
+            WITH ranked_verses AS (
+                SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
+                    v.id as verse_id,
+                    v.book_id,
+                    v.chapter,
+                    v.verse,
+                    v.text,
+                    v.translation_id,
+                    b.name as book_name,
+                    b.name_korean as book_name_korean,
+                    b.abbreviation as book_abbrev,
+                    b.testament,
+                    b.genre,
+                    word_similarity(:search_query, v.text) as rank
+                FROM verses v
+                JOIN books b ON v.book_id = b.id
+                WHERE v.translation_id = ANY(:translation_ids)
+                    AND word_similarity(:search_query, v.text) > 0.1
+        """
+        bindparams_list.append(bindparam("search_query", value=query))
+    else:
+        # English: strip stopwords, use websearch_to_tsquery with cover-density rank.
+        stopwords = {
+            'what', 'does', 'the', 'bible', 'say', 'about', 'teach', 'us', 'tell',
+            'me', 'can', 'you', 'how', 'why', 'when', 'where', 'who', 'is', 'are',
+            'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'did',
+            'will', 'would', 'should', 'could', 'may', 'might', 'must', 'in', 'on',
+            'at', 'to', 'for', 'of', 'with', 'from', 'by', 'as', 'that', 'this',
+            'these', 'those', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 'so', 'than',
+        }
+        words = query.lower().split()
+        keywords = [w for w in words if w not in stopwords and len(w) > 2]
+        search_query = ' '.join(keywords) if keywords else query
+
+        sql_template = """
+            WITH ranked_verses AS (
+                SELECT DISTINCT ON (v.book_id, v.chapter, v.verse)
+                    v.id as verse_id,
+                    v.book_id,
+                    v.chapter,
+                    v.verse,
+                    v.text,
+                    v.translation_id,
+                    b.name as book_name,
+                    b.name_korean as book_name_korean,
+                    b.abbreviation as book_abbrev,
+                    b.testament,
+                    b.genre,
+                    ts_rank_cd(to_tsvector('english', v.text), websearch_to_tsquery('english', :search_query)) as rank
+                FROM verses v
+                JOIN books b ON v.book_id = b.id
+                WHERE v.translation_id = ANY(:translation_ids)
+                    AND (
+                        to_tsvector('english', v.text) @@ websearch_to_tsquery('english', :search_query)
+                        OR v.text ILIKE '%' || :query_like || '%'
+                    )
+        """
+        bindparams_list.append(bindparam("search_query", value=search_query))
+        bindparams_list.append(bindparam("query_like", value=search_query))
 
     if filters:
         if filters.get("testament"):

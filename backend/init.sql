@@ -1,8 +1,11 @@
 -- Initialize pgvector extension for Bible RAG
 -- This script should be run on a fresh Supabase/PostgreSQL database
 
--- Step 1: Enable pgvector extension
+-- Step 1: Enable extensions
 CREATE EXTENSION IF NOT EXISTS vector;
+-- pg_trgm enables trigram similarity search, which works for any language
+-- including Korean (where tsvector/websearch_to_tsquery cannot tokenize Hangul).
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- Verify pgvector installation
 SELECT * FROM pg_extension WHERE extname = 'vector';
